@@ -20,7 +20,7 @@ const initialize = () => {
       onboardButton.disabled = false;
     } else {
       //If MetaMask is installed we ask the user to connect to their wallet
-      onboardButton.innerText = 'Connect';
+      onboardButton.innerText = 'Connect to Wallet';
       //When the button is clicked we call this function to connect the users MetaMask Wallet
       onboardButton.onclick = onClickConnect;
       //The button is now disabled
@@ -56,7 +56,11 @@ const onClickConnect = async () => {
     // Will open the MetaMask UI
     // You should disable this button while the request is pending!
     await window.ethereum.request({ method: "eth_requestAccounts" });
+    onboardButton.innerText = 'Connected';
+    onboardButton.disabled = true;
   } catch (error) {
     console.error(error);
+    onboardButton.innerText = 'Connect to Wallet';
+    onboardButton.disabled = false;
   }
 };
