@@ -20,12 +20,13 @@ const displayVolatility = async (display, contract) => {
 async function volatilityChainShowVolatility() {
   const web3 = await getWeb3();
   const accounts = await web3.eth.getAccounts();
-  const contract = await getContract(web3, "./contracts/VolatilityChain.json");
+  const contract = await getContract(web3, "./contracts/VolatilityChain.json", "0xf425f1274A20E801B9Bd8e6dF6414F0e337d5fba");
+
   let display;
 
   displayVolatility(display, contract);
   // updateGreeting(display, contract, accounts);
 }
 
-const displayVolatilityButton = document.getElementById('join-us-button');
-displayVolatilityButton.onclick = volatilityChainShowVolatility;
+// const displayVolatilityButton = document.getElementById('join-us-button');
+// displayVolatilityButton.onclick = volatilityChainShowVolatility;

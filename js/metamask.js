@@ -1,11 +1,10 @@
 
-const forwarderOrigin = 'http://localhost:9010';
+// const forwarderOrigin = 'http://localhost:9010';
+
 
 const initialize = () => {
   //You will start here
   const onboardButton = document.getElementById('connectButton');
-
-
 
   //------Inserted Code------\\
 
@@ -31,7 +30,8 @@ const initialize = () => {
   //------/Inserted Code------\\
 
 };
-window.addEventListener('DOMContentLoaded', initialize);
+document.getElementById('connectButton').addEventListener('click', initialize);
+// window.addEventListener('DOMContentLoaded', initialize);
 
 //Created check function to see if the MetaMask extension is installed
 const isMetaMaskInstalled = () => {
@@ -56,11 +56,11 @@ const onClickConnect = async () => {
     // Will open the MetaMask UI
     // You should disable this button while the request is pending!
     await window.ethereum.request({ method: "eth_requestAccounts" });
-    onboardButton.innerText = 'Connected';
+    onboardButton.innerHTML = 'Connected';
     onboardButton.disabled = true;
   } catch (error) {
     console.error(error);
-    onboardButton.innerText = 'Connect to Wallet';
+    onboardButton.innerHTML = 'Connect to Wallet';
     onboardButton.disabled = false;
   }
 };

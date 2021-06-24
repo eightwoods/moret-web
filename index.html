@@ -61,7 +61,7 @@
             <li class="scroll"> <a href="#vol">Volatility</a> </li>
             <li class="scroll"> <a href="#about">About </a> </li>
             <li class="scroll"> <a href="#contact">Contact</a> </li>
-            <li class="scroll"> <a href="#." class="btn" id="connectButton">Connect to Wallet</a> </li>
+            <li class="scroll"> <a href="#." class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
           </ul>
         </div>
       </nav>
@@ -75,7 +75,37 @@
     <div id="particles-js"></div>
     <div class="position-center-center">
       <div class="container text-center">
-        <h1 >Start trading crypto options today!</h1>
+        <h1 >Decentralized crypto option trading</h1>
+
+        <div class="token-menu">
+
+          <ul class="row">
+            <li class="col-md-3">
+              <p>Token</p>
+              <select name="tokenList" id="tokenSelected">
+                <option value="MATIC">MATIC</option>
+                <option value="ETH">ETH</option>
+                <!-- <optgroup label="German Cars">
+                  <option value="mercedes">Mercedes</option>
+                  <option value="audi">Audi</option>
+                </optgroup> -->
+              </select>
+          <!-- <button class="dropbtn" id="tokenSelected" >MATIC</button>
+          <div id="tokenDropdown" class="dropdown-menu">
+            <a href="#">MATIC</a>
+            <a href="#">ETH</a>
+            <a href="#">BNB</a>
+          </div> -->
+
+        </li>
+
+    <li class="col-md-3">
+      <p class="showSpot">Spot Price</p>
+      <p id="tokenSpot"></p>
+    </li>
+
+      </ul>
+        </div>
 
         <div class="countdown">
 
@@ -92,13 +122,7 @@
                 </optgroup> -->
               </select>
 
-              <!-- <div class="ownmenu">
-                <button class="dropbtn">ETH</button>
-                <div id="tokenDropdown" class="dropdown-menu">
-                  <a href="#">ETH</a>
-                  <a href="#"></a>
-                </div>
-              </div> -->
+
             </li>
             <!-- Expiry -->
             <li class="col-md-3">
@@ -114,13 +138,13 @@
             </li>
             <!-- Strike -->
             <li class="col-md-3">
-              <p class="hours_ref">Strike</p>
-              <input type="number" placeholder="1000">
+              <p class="showStrike">Strike</p>
+              <input type="number" placeholder="1000" id="optionStrike">
             </li>
             <!-- Amount -->
             <li class="col-md-3">
               <p class="hours_ref">Amount</p>
-              <input type="number" placeholder="1" >
+              <input type="number" placeholder="1" id="optionAmount">
             </li>
             <!-- Seconds -->
             <!-- <li class="col-md-3">
@@ -132,9 +156,10 @@
           </ul>
         </div>
 
-        <p id="option-premium">Premium:</p>
-        <a href="#." class="btn" id="option-quote">Quote</a>
-        <a href="#." class="btn btn-inverse" id="option-purchase">Purchase</a> </div>
+        <p >Premium:</p>
+        <p id="option-premium"></p>
+        <a href="#." class="btn queryPremium" id="option-quote">Quote</a>
+        <a href="#." class="btn btn-inverse buyOption" id="option-purchase">Purchase</a> </div>
     </div>
   </section>
 
@@ -149,10 +174,10 @@
           <!-- Option List -->
           <ul class="edu-list margin-top-50" id="option-list">
             <!-- fill this automatically  -->
-            <li> <span>17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
-              <h5>0.01 ETH</h5>
-              <p>0.05 ETH - Original cost 0.04 ETH</p>
-              <a href="#." class="btn btn-inverse">Exercise</a>
+            <li> <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
+              <h5 id="option-payoff-1">0.01 ETH</h5>
+              <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
+              <a href="#." class="btn btn-inverse" id="option-exercise-1">Exercise</a>
             </li>
 
           </ul>
@@ -487,8 +512,8 @@
 <script src="js/metamask.js"></script>
 
 <script src="js/web3.objects.js"></script>
-<script src="js/moret.volatility.chain.js"></script>
-
+<!-- <script src="js/moret.volatility.chain.js"></script> -->
+<!-- <script src="js/moret.market.maker.js"></script> -->
 
 
 
