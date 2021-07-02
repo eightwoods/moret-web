@@ -83,8 +83,8 @@
             <li class="col-md-3">
               <p>Token</p>
               <select name="tokenList" id="tokenSelected">
-                <option value="MATIC">MATIC</option>
                 <option value="ETH">ETH</option>
+                <option value="MATIC">MATIC</option>
                 <!-- <optgroup label="German Cars">
                   <option value="mercedes">Mercedes</option>
                   <option value="audi">Audi</option>
@@ -130,10 +130,6 @@
               <select name="optionExpiry" id="optionExpiry">
                 <option value="1d">1 day</option>
                 <option value="1w">1 week</option>
-                <!-- <optgroup label="German Cars">
-                  <option value="mercedes">Mercedes</option>
-                  <option value="audi">Audi</option>
-                </optgroup> -->
               </select>
             </li>
             <!-- Strike -->
@@ -191,8 +187,8 @@
 
             <!-- Pool  -->
             <div class="col-lg-7">
-              <h3>Market Making Pool Utilisation</h3>
-              <p>Pool token holders deposit ETH into the Market Making Pool to provide capital for making the option market and earn profits.</p>
+              <h3>Market Making Pool</h3>
+              <p>Pool token holders deposit into the pool to provide capital for underwriting options and earn premiums.</p>
 
               <!-- Capital -->
               <div class="progress">
@@ -201,13 +197,13 @@
               <div class="row">
                 <div class="col">
                   <h6> Available Capacity</h6>
-                  <span>5,000 ETH</span> </div>
+                  <span id="available-capital">5,000 ETH</span> </div>
                 <div class="col">
-                  <h6> 99,910</h6>
-                  <span>ETH in the Pool</span> </div>
+                  <h6 id="capital-underlying"> 99,910</h6>
+                  <span>in the Pool</span> </div>
                 <div class="col">
-                  <h6> 99,910</h6>
-                  <span>DAI in the Pool</span> </div>
+                  <h6 id="capital-funding"> 99,910</h6>
+                  <span>in the Pool</span> </div>
               </div>
 
               <!-- MP Token holding -->
@@ -217,28 +213,17 @@
                 <ul class="row">
                   <!-- Days -->
                   <li class="col-md-3">
-                    <article> <span class="days">100</span>
-                      <p class="days_ref">MP Tokens</p>
+                    <article> <span class="days" id="mp-supply">100</span>
+                      <p class="days_ref">Pool Tokens</p>
                     </article>
                   </li>
                   <!-- Hours -->
                   <li class="col-md-3">
-                    <article> <span class="hours">10</span>
-                      <p class="hours_ref">Available ETH</p>
+                    <article> <span class="hours" id="average-capital">10</span>
+                      <p class="hours_ref">For each token</p>
                     </article>
                   </li>
-                  <!-- Mintes -->
-                  <li class="col-md-3">
-                    <article><span class="minutes">10</span>
-                      <p class="minutes_ref">Locked ETH</p>
-                    </article>
-                  </li>
-                  <!-- Seconds -->
-                  <li class="col-md-3">
-                    <article><span class="seconds">10%</span>
-                      <p class="seconds_ref">APY</p>
-                    </article>
-                  </li>
+
                 </ul>
               </div>
             </div>
@@ -246,7 +231,7 @@
             <!-- Invest in MP -->
             <div class="col-lg-5">
               <h3>Invest in the Market Making Pool </h3>
-              <p>Earn excess premiums by making market for options.</p>
+              <p>Earn premiums by underwriting options.</p>
               <div class="countdown-all">
 
                 <!-- Countdown -->
@@ -254,19 +239,19 @@
                   <!-- Hours -->
                   <li class="col-md-3">
                     <article>
-                      <span class="hours">10</span>
-                      <p class="hours_ref">MP Tokens</p>
+                      <input type="number" placeholder="1000" id="invest-mp">
+                      <p class="hours_ref">Pool Tokens</p>
                     </article>
                   </li>
                   <!-- Days -->
                   <li class="col-md-3">
                     <article>
-                      <input type="number" placeholder="1000" id="invest-mp">
-                      <p class="days_ref">ETH</p>
+                      <!-- <span class="hours">10</span> -->
+                      <p class="days_ref" id="invest-mp-cost">ETH</p>
                     </article>
                   </li>
                 </ul>
-                <a href="#." class="btn">Withdraw</a> <a href="#." class="btn btn-inverse">Invest</a>
+                <!-- <a href="#." class="btn">Withdraw</a> <a href="#." class="btn btn-inverse">Invest</a> -->
 
                 <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
               </div>
@@ -286,16 +271,18 @@
         <div class="main-half-layout-container half_right_layout">
           <div class="about-us-con">
             <h3>Volatility</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nibh dolor, efficitur eget pharetra ac, cursus sed sapien. Cras posuere ligula ut blandit varius. </p>
+            <p>Moret provides a volatility oracle that is based on price feed from chainlink. You can buy tokens that are linked to volatilities from this exchange and use it to pay for options, or to trade in third-party exchanges. </p>
             <ul class="count-info row">
-              <li class="col"> <span class="counter">5000</span><span>+</span>
-                <p>Customers</p>
+              <li class="col">
+                <!-- <span class="counter" id="1d-vol">5000</span><span>+</span> -->
+                <p id="1d-vol"></p>
+                <p>1-day volatility</p>
               </li>
-              <li class="col"> <span class="counter">750</span><span>+</span>
+              <!-- <li class="col"> <span class="counter">750</span><span>+</span>
                 <p>Deploying</p>
-              </li>
+              </li> -->
             </ul>
-            <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div>
+            <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
         </div>
       </div>
     </section>
@@ -320,7 +307,7 @@
             <span>How it work</span></a>  -->
           </div>
 
-          <div class="col-md-5 text-right"><a href="#." class="btn">Start on GitHub</a> <a href="#." class="btn btn-inverse">White Paper</a> </div>
+          <div class="col-md-5 text-right"><a href="https://github.com/eightwoods/moret" class="btn">Start on GitHub</a> <a href="#." class="btn btn-inverse">White Paper</a> </div>
           <!-- Image -->
           <!-- <div class="col-md-5 text-right"> <img src="images/chain-img.png" alt="Why Choose Us Image" > </div> -->
         </div>
