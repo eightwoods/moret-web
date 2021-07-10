@@ -196,15 +196,13 @@
                 <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span id="mp-gross-capital">3,000 <small>50%</small></span> </div>
               </div>
               <div class="row">
+
                 <div class="col">
-                  <h6> Available Capacity</h6>
-                  <span id="available-capital">5,000 ETH</span> </div>
+                  <h6 id="call-exposure"> 99,910</h6>
+                  <span>Call Exposure</span> </div>
                 <div class="col">
-                  <h6 id="capital-underlying"> 99,910</h6>
-                  <span>in the Pool</span> </div>
-                <div class="col">
-                  <h6 id="capital-funding"> 99,910</h6>
-                  <span>in the Pool</span> </div>
+                  <h6 id="put-exposure"> 99,910</h6>
+                  <span>Put Exposure</span> </div>
               </div>
 
               <!-- MP Token holding -->
@@ -213,6 +211,11 @@
                 <!-- Countdown-->
                 <ul class="row">
                   <!-- Days -->
+                  <li class="col-md-3">
+                    <article> <span class="days" id="available-capital">100</span>
+                      <p class="days_ref">Free Capital</p>
+                    </article>
+                  </li>
                   <li class="col-md-3">
                     <article> <span class="days" id="mp-supply">100</span>
                       <p class="days_ref">Pool Tokens</p>
@@ -224,6 +227,11 @@
                       <p class="hours_ref">For each token</p>
                     </article>
                   </li>
+
+                <li class="col-md-3">
+                    <input type="number" placeholder="1000" id="withdraw-mp">
+                    <a href="#." class="btn" id="withdraw-capital">Withdraw</a>
+                </li>
 
                 </ul>
               </div>
@@ -240,19 +248,21 @@
                   <!-- Hours -->
                   <li class="col-md-3">
                     <article>
+                      <p class="hours_ref">Invest in the Pool</p>
                       <input type="number" placeholder="1000" id="invest-mp">
-                      <p class="hours_ref">Pool Tokens</p>
+                      <p class="hours_ref" id="invest-mp-unit"></p>
                     </article>
                   </li>
                   <!-- Days -->
                   <li class="col-md-3">
                     <article>
                       <!-- <span class="hours">10</span> -->
-                      <p class="days_ref" id="invest-mp-cost">ETH</p>
+                      <p>Pool Tokens</p>
+                      <p class="days_ref" id="invest-mp-cost"></p>
                     </article>
                   </li>
                 </ul>
-                <!-- <a href="#." class="btn">Withdraw</a> <a href="#." class="btn btn-inverse">Invest</a> -->
+                <a href="#." class="btn btn-inverse" id="add-capital">Invest in Pool</a>
 
                 <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
               </div>
@@ -308,7 +318,7 @@
             <span>How it work</span></a>  -->
           </div>
 
-          <div class="col-md-5 text-right"><a href="https://github.com/eightwoods/moret" class="btn">Start on GitHub</a> <a href="#." class="btn btn-inverse">White Paper</a> </div>
+          <div class="col-md-5 text-right"><a href="https://github.com/eightwoods/moret" class="btn">Start on GitHub</a> <a href="https://meridian-moretti.gitbook.io/moret/" class="btn btn-inverse">White Paper</a> </div>
           <!-- Image -->
           <!-- <div class="col-md-5 text-right"> <img src="images/chain-img.png" alt="Why Choose Us Image" > </div> -->
         </div>

@@ -8,7 +8,9 @@ const showPremium = document.getElementById('option-premium');
 const buyOptionButton = document.querySelector('.buyOption');
 const showVol = document.getElementById('1d-vol');
 
-const inputPoolToken = document.getElementById('invest-mp');
+const inputPoolInvest = document.getElementById('invest-mp');
+const investInPool = document.getElementById('add-capital');
+const withdrawFromPool = document.getElementById('withdraw-capital');
 
 const inputType = document.getElementById('optionType');
 const inputExpiry = document.getElementById('optionExpiry');
@@ -49,11 +51,19 @@ inputStrike.addEventListener('focus', async() =>{
       await showOptions(web3,marketContract, exchangeContract, accounts[0]);
     })
 
-    await showMarketCapital(web3, marketContract);
+    await showMarketCapital(web3, marketContract, exchangeContract);
 
-    inputPoolToken.addEventListener('focus', async() =>{
+    inputPoolInvest.addEventListener('focus', async() =>{
       await showPoolCost(web3, marketContract);
     })
+    investInPool.addEventListener('click', async() => {
+      await addCapital(web3,marketContract, tokenContract, accounts[0] );
+    })
+    withdrawFromPool.addEventListener('click', async() =>{
+      await withdrawCapital(web3, marketContract, accounts[0]);
+    })
+
+    document.getElementById('invest-mp-unit').innerHTML = selectedToken.value;
 
     await showVolatility(web3, exchangeContract);
 
@@ -122,37 +132,57 @@ async function showOptions(web3, market, exchange, account){
   }
 }
 
-async function showMarketCapital(web3, market){
+async function showMarketCapital(web3, market, exchange){
    var grossCapital = await market.methods.calcCapital(false, false).call();
-   console.log(grossCapital);
+   var capitalRatios = await exchange.methods.calcUtilisation(0, 0, 0).call();
+   var callExposure = await market.methods.callExposure().call();
+   var putExposure = await market.methods.putExposure().call();
 
    var netCapital = await market.methods.calcCapital(true, false).call();
-   // var capitalRatios = await market.methods.calcUtilityRatios(0, 0).call();
-   // var fundingCapital = market.methods.getFundingCapital().call();
-   // var tokenCapital = market.methods.getUnderlyingCapital().call();
-   // var fundingSymbol = market.methods.getFundingTokenSymbol().call();
-   // console.log(netCapital);
-
    var totalSupply = await market.methods.totalSupply().call();
    var netAvgCapital = await market.methods.calcCapital(true,true).call();
-   console.log(netAvgCapital);
+
+   console.log(grossCapital);
+   console.log(netCapital);
    console.log(totalSupply);
+   console.log(netAvgCapital);
 
-   // document.getElementById('mp-gross-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(4), "<small>", Number(parseFloat(web3.utils.toBN(capitalRatios[0]).div(web3.utils.toBN(capitalRatios[2])))/100).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}), "</small>"].join(' ');
+   document.getElementById('mp-gross-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(4), selectedToken.value, "<small>", Number(parseFloat(web3.utils.fromWei(web3.utils.toBN(capitalRatios[0])))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}), "</small>"].join(' ');
+   document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(4), selectedToken.value].join(' ');
+   document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(4), selectedToken.value].join(' ');
+
    document.getElementById('available-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital))).toFixed(4), selectedToken.value].join(' ');
-   // document.getElementById('capital-underlying').innerHTML = [web3.utils.fromWei(web3.utils.toBN(tokenCapital))).toFixed(4), selectedToken.value].join(' ');
-   // document.getElementById('capital-underlying').innerHTML = [web3.utils.fromWei(web3.utils.toBN(fundingCapital))).toFixed(4), fundingSymbol].join(' ');
-
    document.getElementById('mp-supply').innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(totalSupply))).toFixed(2);
    document.getElementById('average-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(netAvgCapital))).toFixed(4), selectedToken.value].join(' ');
 
 }
 
 async function showPoolCost(web3, market){
-  console.log('mpCost');
-  var mpCost = await market.methods.quoteCapitalCost(web3.utils.toBN(web3.utils.toWei(inputPoolToken.value))).call();
+  var mpCost = await market.methods.calcCapital(false ,true).call();
+    console.log(mpCost);
+  var mpAmount = web3.utils.fromWei(web3.utils.toWei(web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value))).div(web3.utils.toBN(mpCost)));
+  console.log(mpAmount);
+  document.getElementById('invest-mp-cost').innerHTML =parseFloat(mpAmount).toFixed(4);
+}
 
-  document.getElementById('invest-mp-cost').innerHTML =[parseFloat(web3.utils.fromWei(web3.utils.toBN(mpCost))).toFixed(4), selectedToken.value].join(' ');
+async function addCapital(web3, market, tokenContract, account){
+  var investAmount = web3.utils.toWei(inputPoolInvest.value);
+  console.log(investAmount);
+  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: 10**6});
+  console.log(approveSuccess);
+  if(approveSuccess){
+    await market.methods.addCapital(investAmount).send({from: account, gas: 10**6});
+  }
+}
+
+async function withdrawCapital(web3, market, account){
+  var mpWithdraw = web3.utils.toWei(document.getElementById('withdraw-mp').value);
+  console.log(mpWithdraw);
+  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: 10**6});
+  console.log(approveSuccess);
+  if(approveSuccess){
+    await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: 10**6});
+  }
 }
 
 async function showVolatility(web3, exchange){
@@ -163,6 +193,8 @@ async function showVolatility(web3, exchange){
   console.log(volString);
   document.getElementById('1d-vol').innerHTML= volString;
 }
+
+
 
 
 async function formatOptionInfo(web3, exchange, optionInfo){
