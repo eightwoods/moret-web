@@ -50,7 +50,7 @@
     <div class="container">
 
       <!-- Logo -->
-      <div class="logo"> <a href="index.html"><img class="img-responsive" src="images/moret-logo.png" alt="" ></a> </div>
+      <div class="logo"> <a href="index.html"><img class="img-responsive" src="images/moret-yellow.png" alt="" ></a> </div>
       <nav class="navbar ownmenu navbar-expand-lg">
         <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span> </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -60,7 +60,7 @@
             <li class="scroll"> <a href="#pool">Pool</a> </li>
             <li class="scroll"> <a href="#vol">Volatility</a> </li>
             <li class="scroll"> <a href="#about">About </a> </li>
-            <li class="scroll"> <a href="#token">BCO</a> </li>
+            <!-- <li class="scroll"> <a href="#token">BCO</a> </li> -->
             <li class="scroll"> <a href="#." class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
           </ul>
         </div>
@@ -130,7 +130,7 @@
               <p class="hours_ref">Expiry</p>
               <select name="optionExpiry" id="optionExpiry">
                 <option value="1d">1 day</option>
-                <option value="1w">1 week</option>
+                <!-- <option value="1w">1 week</option> -->
               </select>
             </li>
             <!-- Strike -->
@@ -203,6 +203,9 @@
                 <div class="col">
                   <h6 id="put-exposure"> 99,910</h6>
                   <span>Put Exposure</span> </div>
+                  <div class="col">
+                    <h6 id="available-capital">100</h6>
+                    <span>Free Capital</span> </div>
               </div>
 
               <!-- MP Token holding -->
@@ -211,20 +214,16 @@
                 <!-- Countdown-->
                 <ul class="row">
                   <!-- Days -->
+
                   <li class="col-md-3">
-                    <article> <span class="days" id="available-capital">100</span>
-                      <p class="days_ref">Free Capital</p>
-                    </article>
-                  </li>
-                  <li class="col-md-3">
-                    <article> <span class="days" id="mp-supply">100</span>
-                      <p class="days_ref">Pool Tokens</p>
+                    <article> <span class="days" id="mp-holding">100</span>
+                      <p class="days_ref">LP Tokens Owned</p>
                     </article>
                   </li>
                   <!-- Hours -->
                   <li class="col-md-3">
-                    <article> <span class="hours" id="average-capital">10</span>
-                      <p class="hours_ref">For each token</p>
+                    <article> <span class="hours" id="mp-holding-value">10</span>
+                      <p class="hours_ref">Available to withdraw</p>
                     </article>
                   </li>
 
@@ -298,7 +297,7 @@
       </div>
     </section>
 
-    <!-- Why Choose Us -->
+    <!-- What is Moret -->
     <section class="why-choose padding-top-150 padding-bottom-150" id="about">
       <div class="container">
 
@@ -423,21 +422,21 @@
     </section> -->
 
     <!-- Join our community -->
-    <!-- <section class="community-sec padding-top-150 padding-bottom-150" id="contact">
+    <section class="community-sec padding-top-150 padding-bottom-150" id="contact">
       <div class="container">
         <div class="row">
           <div class="col">
             <div class="sm-intro">
               <h2>Join our community</h2>
               <ul class="socials">
-                <li><a href="#."><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="#."><i class="fab fa-twitter"></i></a></li>
-                <li><a href="#."><i class="fab fa-github"></i></a></li>
-                <li><a href="#."><i class="fab fa-telegram"></i></a></li>
-                <li><a href="#."><i class="fab fa-gitter"></i></a></li>
-                <li><a href="#."><i class="fab fa-instagram"></i></a></li>
-                <li><a href="#."><i class="fab fa-linkedin"></i></a></li>
-                <li><a href="#."><i class="fab fa-youtube"></i></a></li>
+                <!-- <li><a href="#."><i class="fab fa-facebook-f"></i></a></li> -->
+                <li><a href="https://twitter.com/moret_crypto"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="https://github.com/eightwoods/moret"><i class="fab fa-github"></i></a></li>
+                <li><a href="https://t.me/moret_crypto"><i class="fab fa-telegram"></i></a></li>
+                <!-- <li><a href="#."><i class="fab fa-gitter"></i></a></li> -->
+                <!-- <li><a href="#."><i class="fab fa-instagram"></i></a></li> -->
+                <!-- <li><a href="#."><i class="fab fa-linkedin"></i></a></li> -->
+                <!-- <li><a href="#."><i class="fab fa-youtube"></i></a></li> -->
               </ul>
             </div>
           </div>
@@ -452,7 +451,7 @@
           </div>
         </div>
       </div>
-    </section> -->
+    </section>
   </div>
 
   <!-- Footer -->
