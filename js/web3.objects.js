@@ -54,9 +54,14 @@ const initMarketMaker =  async () => {
   optionToken.addEventListener('change', async() => {
     console.log('optionToken')
     exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken.value));
-    marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", getMarketMakerAddress(optionToken.value));
-    tokenContract = await getContract(web3, "./contracts/genericERC20.json", getUnderlyingAddress(optionToken.value))
-    refreshSpot(web3, marketContract);
+    console.log('exchangeContract', exchangeContract);
+    const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
+    console.log('marketMakerAddress', marketMakerAddress);
+    marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
+    const tokenAddress = await marketContract.methods.underlyingAddress().call();
+    console.log('tokenAddress', tokenAddress);
+    tokenContract = await getContract(web3, "./contracts/genericERC20.json", tokenAddress)
+    refreshSpot(web3, exchangeContract);
   })
 
   const calcPremium = async () => {
