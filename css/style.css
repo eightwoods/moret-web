@@ -415,7 +415,7 @@ header .navbar li a {
 	font-size: 14px;
 	color: #fff;
 	font-weight: 600;
-	padding: 10px 0px;
+	padding: 10px;
 	margin: 0 10px;
 	position: relative;
 	letter-spacing: -0.5px;
@@ -1062,8 +1062,8 @@ header .is-sticky .sticky .user-basket .dropdown-menu {
 			Community
 ========================================================*/
 .community-sec {
-	background: url(../images/com-bg.jpg) top center no-repeat;
-	background-size: cover;
+	/*background: url(../images/com-bg.jpg) top center no-repeat;
+	background-size: cover;*/
 	z-index: 1;
 }
 .community-sec:before {
@@ -1771,4 +1771,35 @@ footer .rights a:hover {
 a:hover {
 	color: #0b0c22;
 	text-decoration: underline;
+}
+
+/*=======================================================
+	HAO
+========================================================*/
+.connected {
+	display: none !important;
+}
+select, input {
+	padding: 6px 12px;
+	font-size: 1.1em;
+	width: 150px;
+	border-radius: 2px;
+}
+input {
+	text-align: center;
+}
+.spot-container {
+	width: 150px;
+	margin: 0 auto;
+}
+#tokenSpot, #option-premium {
+	padding: 2px;
+    background: #000;
+    color: #ffe115;
+	border-radius: 2px;
+	border: 1px solid #999;
+	height: 34px;
+}
+.premium {
+	margin: 40px 0;
 }

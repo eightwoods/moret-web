@@ -1,66 +1,76 @@
 
 // const forwarderOrigin = 'http://localhost:9010';
+const connectButton = document.getElementById('connectButton');
 
+//We create a new MetaMask onboarding object to use in our app
+const onboarding = new MetaMaskOnboarding({});
 
-const initialize = () => {
-  //You will start here
-  const onboardButton = document.getElementById('connectButton');
+const MetaMaskClientCheck = () => {
+  console.log('MetaMaskClientCheck')
 
-  //------Inserted Code------\\
+  //Now we check to see if Metmask is installed
+  if (!isMetaMaskInstalled) {
+    console.log('not installed')
 
-  const MetaMaskClientCheck = () => {
-    //Now we check to see if Metmask is installed
-    if (!isMetaMaskInstalled) {
-      //If it isn't installed we ask the user to click to install it
-      onboardButton.innerText = 'Click here to install MetaMask!';
-      //When the button is clicked we call this function
-      onboardButton.onclick = onClickInstall;
-      //The button is now disabled
-      onboardButton.disabled = false;
-    } else {
-      //If MetaMask is installed we ask the user to connect to their wallet
-      onboardButton.innerText = 'Connect to Wallet';
-      //When the button is clicked we call this function to connect the users MetaMask Wallet
-      onboardButton.onclick = onClickConnect;
-      //The button is now disabled
-      onboardButton.disabled = false;
-    }
-  };
-  MetaMaskClientCheck();
-  //------/Inserted Code------\\
-
+    //If it isn't installed we ask the user to click to install it
+    connectButton.innerText = 'Click here to install MetaMask!';
+    //When the button is clicked we call this function
+    connectButton.onclick = onClickInstall;
+    //The button is now disabled
+    connectButton.disabled = false;
+  } else {
+    console.log('installed')
+    onClickConnect();
+  }
 };
-document.getElementById('connectButton').addEventListener('click', initialize);
-// window.addEventListener('DOMContentLoaded', initialize);
 
 //Created check function to see if the MetaMask extension is installed
 const isMetaMaskInstalled = () => {
+  console.log('isMetaMaskInstalled')
+
   //Have to check the ethereum binding on the window object to see if it's installed
-  const { ethereum } = window;
-  return Boolean(ethereum && ethereum.isMetaMask);
-};
-
-//We create a new MetaMask onboarding object to use in our app
-const onboarding = new MetaMaskOnboarding({  });
-
-//This will start the onboarding proccess
-const onClickInstall = () => {
-  onboardButton.innerText = 'Onboarding in progress';
-  onboardButton.disabled = true;
-  //On this object we have startOnboarding which will start the onboarding process for our end user
-  onboarding.startOnboarding();
+  return Boolean(window.ethereum && window.ethereum.isMetaMask);
 };
 
 const onClickConnect = async () => {
+  console.log('onClickConnect')
+  connectButton.innerHTML = 'Requesting';
+  connectButton.disabled = true;
+
   try {
     // Will open the MetaMask UI
     // You should disable this button while the request is pending!
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-    onboardButton.innerHTML = 'Connected';
-    onboardButton.disabled = true;
+    await window.ethereum.request({ method: "eth_requestAccounts" })
+    .then((result) => {
+      // The result varies by by RPC method.
+      // For example, this method will return a transaction hash hexadecimal string on success.
+      console.log('result', result)
+
+      connectButton.innerHTML = 'Connected';
+      connectButton.disabled = true;
+
+      // show all sections
+      [].forEach.call(document.querySelectorAll('.connected'), function (el) {
+        el.style.cssText = 'display:inline-block !important';
+      });
+
+      // initialise web3 objects
+      initMarketMaker();
+    })
+    .catch((error) => {
+      // If the request fails, the Promise will reject with an error.
+      console.log('promise error', error)
+      throw error
+    });
   } catch (error) {
-    console.error(error);
-    onboardButton.innerHTML = 'Connect to Wallet';
-    onboardButton.disabled = false;
+    console.log('error', error);
+
+    connectButton.innerHTML = 'Connect to Wallet';
+    connectButton.disabled = false;
+    connectButton.onclick = this;
   }
 };
+
+// Initialise on DOM loaded
+console.log('init')
+window.addEventListener('DOMContentLoaded', MetaMaskClientCheck);

@@ -7,6 +7,7 @@
 <meta name="description" content="">
 <meta name="author" content="M_Adnan">
 <title>Moret - Crpto Option Trading Exchange</title>
+<link rel='shortcut icon' type='image/x-icon' href='./images/favicon.ico' />
 
 <!-- Bootstrap Core CSS -->
 <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -52,16 +53,19 @@
       <!-- Logo -->
       <div class="logo"> <a href="index.html"><img class="img-responsive" src="images/moret-yellow.png" alt="" ></a> </div>
       <nav class="navbar ownmenu navbar-expand-lg">
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span> </button>
+        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> 
+          <span class="navbar-toggler-icon" />
+        </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="nav">
-            <li class="scroll active"><a href="#homl">Home</a></li>
-            <li class="scroll"> <a href="#hodl">Holdings</a> </li>
-            <li class="scroll"> <a href="#pool">Pool</a> </li>
-            <li class="scroll"> <a href="#vol">Volatility</a> </li>
+            <li class="scroll active"><a href="#home">Home</a></li>
+            <li class="connected scroll"> <a href="#holdings">Holdings</a> </li>
+            <li class="connected scroll"> <a href="#pool">Pool</a> </li>
+            <li class="connected scroll"> <a href="#volatility">Volatility</a> </li>
             <li class="scroll"> <a href="#about">About </a> </li>
-            <!-- <li class="scroll"> <a href="#token">BCO</a> </li> -->
-            <li class="scroll"> <a href="#." class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
+            <li> <a href="#contact">Contact</a> </li>
+            <li> <a href="#" class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
           </ul>
         </div>
       </nav>
@@ -76,255 +80,232 @@
     <div class="position-center-center">
       <div class="container text-center">
         <h1 >Decentralized crypto option trading</h1>
+        
+        <div class="connected">
+          <div class="token-menu">
+            <ul class="row">
+              <!-- Token -->
+              <li class="col-md-3">
+                <p>Token</p>
+                <select name="tokenList" id="tokenSelected" class="form-select form-select-lg mb-3" >
+                  <option value="LINK">LINK</option>
+                  <option value="ETH">ETH</option>
+                  <option value="MATIC">MATIC</option>
+                </select>
+              </li>
+              <!-- Spot -->
+              <li class="col-md-3">
+                <p class="showSpot">Spot Price</p>
+                <div class="spot-container">
+                  <p id="tokenSpot"></p>
+                </div>
+              </li>
+            </ul>
+          </div>
 
-        <div class="token-menu">
+          <div class="countdown">
+            <ul class="row">
+                <!-- Type -->
+                <li class="col-md-3">
+                  <p class="hours_ref">Option Type</p>
+                  <select name="optionType" id="optionType">
+                      <option value="Call">Call</option>
+                      <option value="Put">Put</option>
+                  </select>
+                </li>
+                <!-- Expiry -->
+                <li class="col-md-3">
+                  <p class="hours_ref">Expiry</p>
+                  <select name="optionExpiry" id="optionExpiry">
+                      <option value="1d">1 day</option>
+                      <!-- <option value="1w">1 week</option> -->
+                  </select>
+                </li>
+                <!-- Strike -->
+                <li class="col-md-3">
+                  <p class="showStrike">Strike</p>
+                  <input type="number" min="0" placeholder="1000" id="optionStrike">
+                </li>
+                <!-- Amount -->
+                <li class="col-md-3">
+                  <p class="hours_ref">Amount</p>
+                  <input type="number" min="0" placeholder="1" id="optionAmount">
+                </li>
+            </ul>
+          </div>
 
-          <ul class="row">
-            <li class="col-md-3">
-              <p>Token</p>
-              <select name="tokenList" id="tokenSelected">
-                <option value="LINK">LINK</option>
-                <option value="ETH">ETH</option>
-                <option value="MATIC">MATIC</option>
-                <!-- <optgroup label="German Cars">
-                  <option value="mercedes">Mercedes</option>
-                  <option value="audi">Audi</option>
-                </optgroup> -->
-              </select>
-          <!-- <button class="dropbtn" id="tokenSelected" >MATIC</button>
-          <div id="tokenDropdown" class="dropdown-menu">
-            <a href="#">MATIC</a>
-            <a href="#">ETH</a>
-            <a href="#">BNB</a>
-          </div> -->
+          <div class="premium">
+            <p class="showSpot">Premium</p>
+            <div class="spot-container">
+              <p id="option-premium"></p>
+            </div>
+          </div>
 
-        </li>
-
-    <li class="col-md-3">
-      <p class="showSpot">Spot Price</p>
-      <p id="tokenSpot"></p>
-    </li>
-
-      </ul>
+          <a href="#." class="btn btn-inverse buyOption" id="option-purchase">Purchase</a>
         </div>
-
-        <div class="countdown">
-
-          <ul class="row">
-            <!-- Type -->
-            <li class="col-md-3">
-              <p class="hours_ref">Option Type</p>
-              <select name="optionType" id="optionType">
-                <option value="Call">Call</option>
-                <option value="Put">Put</option>
-                <!-- <optgroup label="German Cars">
-                  <option value="mercedes">Mercedes</option>
-                  <option value="audi">Audi</option>
-                </optgroup> -->
-              </select>
-
-
-            </li>
-            <!-- Expiry -->
-            <li class="col-md-3">
-              <p class="hours_ref">Expiry</p>
-              <select name="optionExpiry" id="optionExpiry">
-                <option value="1d">1 day</option>
-                <!-- <option value="1w">1 week</option> -->
-              </select>
-            </li>
-            <!-- Strike -->
-            <li class="col-md-3">
-              <p class="showStrike">Strike</p>
-              <input type="number" placeholder="1000" id="optionStrike">
-            </li>
-            <!-- Amount -->
-            <li class="col-md-3">
-              <p class="hours_ref">Amount</p>
-              <input type="number" placeholder="1" id="optionAmount">
-            </li>
-            <!-- Seconds -->
-            <!-- <li class="col-md-3">
-              <p class="hours_ref" id="optionPremium">Premium:</p>
-              <button type="submit" id="optionPurchase">Quote</button>
-              <input type="submit" value="Submit">
-
-            </li> -->
-          </ul>
-        </div>
-
-        <p >Premium:</p>
-        <p id="option-premium"></p>
-        <a href="#." class="btn queryPremium" id="option-quote">Quote</a>
-        <a href="#." class="btn btn-inverse buyOption" id="option-purchase">Purchase</a> </div>
+      </div>
     </div>
   </section>
 
-  <!-- Content -->
-  <div id="content">
-      <!-- LIST OF ACTIVE OPTIONS -->
-      <section class="road-map padding-top-150 padding-bottom-50" id="hodl">
-        <div class="container-fluid">
-          <h2>Your current active contracts</h2>
-          <p> </p>
-
-          <!-- Option List -->
-          <ul class="edu-list margin-top-50" id="option-list">
-            <!-- fill this automatically  -->
-            <li> <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
+  <!-- HOLDINGS -->
+  <section class="connected road-map padding-top-150 padding-bottom-50" id="holdings">
+    <div class="container-fluid">
+        <h2>Your current active contracts</h2>
+        <p> </p>
+        <!-- Option List -->
+        <ul class="edu-list margin-top-50" id="option-list">
+          <!-- fill this automatically  -->
+          <li>
+              <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
               <h5 id="option-payoff-1">0.01 ETH</h5>
               <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
-              <a href="#." class="btn btn-inverse" id="option-exercise-1">Exercise</a>
-            </li>
+              <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
+          </li>
+        </ul>
+    </div>
+  </section>
 
-          </ul>
-        </div>
-      </section>
+  <!-- Pool Distribution -->
+  <section class="connected distri drk padding-top-150 padding-bottom-150 " id="pool">
+    <div class="container">
+      <div class="row">
 
-      <!-- Pool Distribution -->
-      <section class="distri drk padding-top-150 padding-bottom-150 " id="pool">
-        <div class="container">
+        <!-- Pool  -->
+        <div class="col-lg-7">
+          <h3>Market Making Pool</h3>
+          <p>Pool token holders deposit into the pool to provide capital for underwriting options and earn premiums.</p>
+
+          <!-- Capital -->
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span id="mp-gross-capital">3,000 <small>50%</small></span> </div>
+          </div>
           <div class="row">
 
-            <!-- Pool  -->
-            <div class="col-lg-7">
-              <h3>Market Making Pool</h3>
-              <p>Pool token holders deposit into the pool to provide capital for underwriting options and earn premiums.</p>
-
-              <!-- Capital -->
-              <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span id="mp-gross-capital">3,000 <small>50%</small></span> </div>
-              </div>
-              <div class="row">
-
-                <div class="col">
-                  <h6 id="call-exposure"> 99,910</h6>
-                  <span>Call Exposure</span> </div>
-                <div class="col">
-                  <h6 id="put-exposure"> 99,910</h6>
-                  <span>Put Exposure</span> </div>
-                  <div class="col">
-                    <h6 id="available-capital">100</h6>
-                    <span>Free Capital</span> </div>
-              </div>
-
-              <!-- MP Token holding -->
-              <div class="countdown">
-                <h6>Current Token Holdings in Market Making Pool</h6>
-                <!-- Countdown-->
-                <ul class="row">
-                  <!-- Days -->
-
-                  <li class="col-md-3">
-                    <article> <span class="days" id="mp-holding">100</span>
-                      <p class="days_ref">LP Tokens Owned</p>
-                    </article>
-                  </li>
-                  <!-- Hours -->
-                  <li class="col-md-3">
-                    <article> <span class="hours" id="mp-holding-value">10</span>
-                      <p class="hours_ref">Available to withdraw</p>
-                    </article>
-                  </li>
-
-                <li class="col-md-3">
-                    <input type="number" placeholder="1000" id="withdraw-mp">
-                    <a href="#." class="btn" id="withdraw-capital">Withdraw</a>
-                </li>
-
-                </ul>
-              </div>
-            </div>
-
-            <!-- Invest in MP -->
-            <div class="col-lg-5">
-              <h3>Invest in the Market Making Pool </h3>
-              <p>Earn premiums by underwriting options.</p>
-              <div class="countdown-all">
-
-                <!-- Countdown -->
-                <ul class="row">
-                  <!-- Hours -->
-                  <li class="col-md-3">
-                    <article>
-                      <p class="hours_ref">Invest in the Pool</p>
-                      <input type="number" placeholder="1000" id="invest-mp">
-                      <p class="hours_ref" id="invest-mp-unit"></p>
-                    </article>
-                  </li>
-                  <!-- Days -->
-                  <li class="col-md-3">
-                    <article>
-                      <!-- <span class="hours">10</span> -->
-                      <p>Pool Tokens</p>
-                      <p class="days_ref" id="invest-mp-cost"></p>
-                    </article>
-                  </li>
-                </ul>
-                <a href="#." class="btn btn-inverse" id="add-capital">Invest in Pool</a>
-
-                <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
-              </div>
-            </div>
+            <div class="col">
+              <h6 id="call-exposure"> 99,910</h6>
+              <span>Call Exposure</span> </div>
+            <div class="col">
+              <h6 id="put-exposure"> 99,910</h6>
+              <span>Put Exposure</span> </div>
+              <div class="col">
+                <h6 id="available-capital">100</h6>
+                <span>Free Capital</span> </div>
           </div>
-        </div>
-      </section>
 
+          <!-- MP Token holding -->
+          <div class="countdown">
+            <h6>Current Token Holdings in Market Making Pool</h6>
+            <!-- Countdown-->
+            <ul class="row">
+              <!-- Days -->
 
-    <!-- Volatility -->
-    <section class="about light-bg" id="vol">
-      <!-- Right Background -->
-      <div class="main-page-section half_left_layout">
-        <div class="main-half-layout half_right_layout"> </div>
-
-        <!-- Left Content -->
-        <div class="main-half-layout-container half_right_layout">
-          <div class="about-us-con">
-            <h3>Volatility</h3>
-            <p>Moret provides a volatility oracle that is based on price feed from chainlink. You can buy tokens that are linked to volatilities from this exchange and use it to pay for options, or to trade in third-party exchanges. </p>
-            <ul class="count-info row">
-              <li class="col">
-                <!-- <span class="counter" id="1d-vol">5000</span><span>+</span> -->
-                <p id="1d-vol"></p>
-                <p>1-day volatility</p>
+              <li class="col-md-3">
+                <article> <span class="days" id="mp-holding">100</span>
+                  <p class="days_ref">LP Tokens Owned</p>
+                </article>
               </li>
-              <!-- <li class="col"> <span class="counter">750</span><span>+</span>
-                <p>Deploying</p>
-              </li> -->
+              <!-- Hours -->
+              <li class="col-md-3">
+                <article> <span class="hours" id="mp-holding-value">10</span>
+                  <p class="hours_ref">Available to withdraw</p>
+                </article>
+              </li>
+
+            <li class="col-md-3">
+                <input type="number" placeholder="1000" id="withdraw-mp">
+                <a href="#." class="btn" id="withdraw-capital">Withdraw</a>
+            </li>
+
             </ul>
-            <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
-        </div>
-      </div>
-    </section>
-
-    <!-- What is Moret -->
-    <section class="why-choose padding-top-150 padding-bottom-150" id="about">
-      <div class="container">
-
-        <!-- Why Choose Us  ROW-->
-        <div class="row">
-          <div class="col-md-7 margin-top-60">
-
-            <!-- Tittle -->
-            <div class="heading margin-bottom-20">
-              <h6 class="margin-bottom-10">Under-collateralized Crypto Options DEX</h6>
-              <h4>Option exchange with improved capital efficiency and volatility tokens.</h4>
-            </div>
-            <p>An efficient crypto options exchanges is built on running volatility estimater, an efficient market making process and a way to trade volatilities.</p>
-            <p> </p>
-            <!-- <div class="ultra-ser"> <span><span class="name"> Webicode &nbsp; - &nbsp;</span> <span>Ceo/Founder Chain</span></span> </div>
-            <a class="vid-btn margin-top-30 popup-youtube" href="https://www.youtube.com/watch?v=7e90gBu4pas"><i class="fas fa-play-circle"></i> Watch Video <br>
-            <span>How it work</span></a>  -->
           </div>
-
-          <div class="col-md-5 text-right"><a href="https://github.com/eightwoods/moret" class="btn">Start on GitHub</a> <a href="https://meridian-moretti.gitbook.io/moret/" class="btn btn-inverse">White Paper</a> </div>
-          <!-- Image -->
-          <!-- <div class="col-md-5 text-right"> <img src="images/chain-img.png" alt="Why Choose Us Image" > </div> -->
         </div>
 
+        <!-- Invest in MP -->
+        <div class="col-lg-5">
+          <h3>Invest in the Market Making Pool </h3>
+          <p>Earn premiums by underwriting options.</p>
+          <div class="countdown-all">
 
+            <!-- Countdown -->
+            <ul class="row">
+              <!-- Hours -->
+              <li class="col-md-3">
+                <article>
+                  <p class="hours_ref">Invest in the Pool</p>
+                  <input type="number" placeholder="1000" id="invest-mp">
+                  <p class="hours_ref" id="invest-mp-unit"></p>
+                </article>
+              </li>
+              <!-- Days -->
+              <li class="col-md-3">
+                <article>
+                  <!-- <span class="hours">10</span> -->
+                  <p>Pool Tokens</p>
+                  <p class="days_ref" id="invest-mp-cost"></p>
+                </article>
+              </li>
+            </ul>
+            <a href="#." class="btn btn-inverse" id="add-capital">Invest in Pool</a>
+
+            <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
+
+  <!-- Volatility -->
+  <section class="connected about light-bg" id="volatility">
+    <!-- Right Background -->
+    <div class="main-page-section half_left_layout">
+      <div class="main-half-layout half_right_layout"> </div>
+
+      <!-- Left Content -->
+      <div class="main-half-layout-container half_right_layout">
+        <div class="about-us-con">
+          <h3>Volatility</h3>
+          <p>Moret provides a volatility oracle that is based on price feed from chainlink. You can buy tokens that are linked to volatilities from this exchange and use it to pay for options, or to trade in third-party exchanges. </p>
+          <ul class="count-info row">
+            <li class="col">
+              <!-- <span class="counter" id="1d-vol">5000</span><span>+</span> -->
+              <p id="1d-vol"></p>
+              <p>1-day volatility</p>
+            </li>
+            <!-- <li class="col"> <span class="counter">750</span><span>+</span>
+              <p>Deploying</p>
+            </li> -->
+          </ul>
+          <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
+      </div>
+    </div>
+  </section>
+
+  <!-- What is Moret -->
+  <section class="why-choose padding-top-150 padding-bottom-150" id="about">
+    <div class="container">
+
+      <!-- Why Choose Us  ROW-->
+      <div class="row">
+        <div class="col-md-7 margin-top-60">
+
+          <!-- Tittle -->
+          <div class="heading margin-bottom-20">
+            <h6 class="margin-bottom-10">Under-collateralized Crypto Options DEX</h6>
+            <h4>Option exchange with improved capital efficiency and volatility tokens.</h4>
+          </div>
+          <p>An efficient crypto options exchanges is built on running volatility estimater, an efficient market making process and a way to trade volatilities.</p>
+          <p> </p>
+          <!-- <div class="ultra-ser"> <span><span class="name"> Webicode &nbsp; - &nbsp;</span> <span>Ceo/Founder Chain</span></span> </div>
+          <a class="vid-btn margin-top-30 popup-youtube" href="https://www.youtube.com/watch?v=7e90gBu4pas"><i class="fas fa-play-circle"></i> Watch Video <br>
+          <span>How it work</span></a>  -->
+        </div>
+
+        <div class="col-md-5 text-right"><a href="https://github.com/eightwoods/moret" class="btn">Start on GitHub</a> <a href="https://meridian-moretti.gitbook.io/moret/" class="btn btn-inverse">White Paper</a> </div>
+        <!-- Image -->
+        <!-- <div class="col-md-5 text-right"> <img src="images/chain-img.png" alt="Why Choose Us Image" > </div> -->
+      </div>
+    </div>
+  </section>
 
     <!-- FAQs -->
     <!-- <section class="light-bg padding-top-150 padding-bottom-150">
@@ -472,6 +453,8 @@
       </div>
     </div> -->
 
+    <!-- Footer -->
+  <footer >
     <!-- Rights -->
     <div class="rights">
       <div class="container">
@@ -479,7 +462,7 @@
           <div class="col-md-6">
             <p>© 2021 Moret. All Rights Reserved. Moret.tech</p>
           </div>
-          <div class="col-md-6 text-right"> <a href="#.">Faqs </a> <a href="#.">Terms & Conditions </a> <a href="#.">Contact Us</a> </div>
+          <div class="col-md-6 text-right"> <a href="#">Faqs </a> <a href="#">Terms & Conditions </a> <a href="#">Contact Us</a> </div>
         </div>
       </div>
     </div>
