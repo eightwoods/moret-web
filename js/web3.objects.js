@@ -1,7 +1,21 @@
 // Form
-const optionToken = document.getElementById('tokenSelected');
-const optionType = document.getElementById('optionType');
-const optionExpiry = document.getElementById('optionExpiry');
+let optionToken = 'ETH';
+const optionTokenETH = document.getElementById('tokenSelected').getElementsByClassName("ETH")[0];
+const optionTokenBTC = document.getElementById('tokenSelected').getElementsByClassName("WBTC")[0];
+
+let optionExpiry = '1d';
+const optionExpiryDay = document.getElementById('optionExpiry').getElementsByClassName("day")[0];
+const optionExpiryWeek = document.getElementById('optionExpiry').getElementsByClassName("week")[0];
+const optionExpiryMonth = document.getElementById('optionExpiry').getElementsByClassName("month")[0];
+
+let optionType = 'Call';
+const optionTypeCall = document.getElementById('optionType').getElementsByClassName("up")[0];
+const optionTypePut = document.getElementById('optionType').getElementsByClassName("down")[0];
+
+let optionBuySell = 'Buy';
+const optionBuySellBuy = document.getElementById('optionBuySell').getElementsByClassName("buy")[0];
+const optionBuySellSell = document.getElementById('optionBuySell').getElementsByClassName("sell")[0];
+
 const optionStrike = document.getElementById('optionStrike');
 const optionAmount = document.getElementById('optionAmount');
 
@@ -37,7 +51,108 @@ const initMarketMaker =  async () => {
   const accounts = await web3.eth.getAccounts();
   console.log('account', accounts[0]);
 
-  exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken.value));
+  const calcPremium = async () => {
+    console.log('calcPremium')
+    if (optionStrike.value !== '' && optionAmount.value !== '') {
+      const premium = await calcOptionPremium(web3, exchangeContract);
+      premiumPrice.innerHTML = premium;
+      await showOptions(web3, marketContract, exchangeContract, accounts[0]);
+    }
+  }
+
+  const updateOptionToken = async () => {
+    console.log('optionToken')
+    exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
+    console.log('exchangeContract', exchangeContract);
+    const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
+    console.log('marketMakerAddress', marketMakerAddress);
+    marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
+    const tokenAddress = await marketContract.methods.underlyingAddress().call();
+    console.log('tokenAddress', tokenAddress);
+    tokenContract = await getContract(web3, "./contracts/genericERC20.json", tokenAddress)
+    refreshSpot(web3, exchangeContract);
+  }
+
+  // Tokens
+  optionTokenETH.addEventListener('click', async() => {
+    if (!optionTokenETH.classList.contains('selected')) {
+      optionTokenETH.classList.add('selected');
+      optionTokenBTC.classList.remove('selected');
+      optionToken = 'ETH';
+      //await updateOptionToken();
+    }
+  })
+  optionTokenBTC.addEventListener('click', async() => {
+    if (!optionTokenBTC.classList.contains('selected')) {
+      optionTokenBTC.classList.add('selected');
+      optionTokenETH.classList.remove('selected');
+      optionToken = 'BTC';
+      //await updateOptionToken();
+    }
+  })
+  // Type
+  optionTypeCall.addEventListener('click', async() => {
+    if (!optionTypeCall.classList.contains('selected')) {
+      optionTypeCall.classList.add('selected');
+      optionTypePut.classList.remove('selected');
+      optionType = 'Call';
+      //await calcPremium();
+    }
+  })
+  optionTypePut.addEventListener('click', async() => {
+    if (!optionTypePut.classList.contains('selected')) {
+      optionTypePut.classList.add('selected');
+      optionTypeCall.classList.remove('selected');
+      optionType = 'Put';
+      //await calcPremium();
+    }
+  })
+  // BuySell
+  optionBuySellBuy.addEventListener('click', async() => {
+    if (!optionBuySellBuy.classList.contains('selected')) {
+      optionBuySellBuy.classList.add('selected');
+      optionBuySellSell.classList.remove('selected');
+      optionBuySell = 'Buy';
+    }
+  })
+  optionBuySellSell.addEventListener('click', async() => {
+    if (!optionBuySellSell.classList.contains('selected')) {
+      optionBuySellSell.classList.add('selected');
+      optionBuySellBuy.classList.remove('selected');
+      optionBuySell = 'Sell';
+      //await calcPremium();
+    }
+  })
+  // Expiry
+  optionExpiryDay.addEventListener('click', async() => {
+    if (!optionExpiryDay.classList.contains('selected')) {
+      optionExpiryDay.classList.add('selected');
+      optionExpiryWeek.classList.remove('selected');
+      optionExpiryMonth.classList.remove('selected');
+      optionExpiry = '1d';
+      //await calcPremium();
+    }
+  })
+  optionExpiryWeek.addEventListener('click', async() => {
+    if (!optionExpiryWeek.classList.contains('selected')) {
+      optionExpiryDay.classList.remove('selected');
+      optionExpiryWeek.classList.add('selected');
+      optionExpiryMonth.classList.remove('selected');
+      optionExpiry = '7d';
+      //await calcPremium()
+    }
+  })
+  optionExpiryMonth.addEventListener('click', async() => {
+    if (!optionExpiryMonth.classList.contains('selected')) {
+      optionExpiryDay.classList.remove('selected');
+      optionExpiryWeek.classList.remove('selected');
+      optionExpiryMonth.classList.add('selected');
+      optionExpiry = '30d';
+      //await calcPremium()
+    }
+  })
+
+  exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
   console.log('exchangeContract', exchangeContract);
   const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
   console.log('marketMakerAddress', marketMakerAddress);
@@ -48,33 +163,9 @@ const initMarketMaker =  async () => {
 
   refreshSpot(web3, exchangeContract);
 
-  // Poll refreshSpot every 10s (uncomment to start polling)
-  //refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 10000);
+  // Poll refreshSpot every 30s (uncomment to start polling)
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 30000);
 
-  optionToken.addEventListener('change', async() => {
-    console.log('optionToken')
-    exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken.value));
-    console.log('exchangeContract', exchangeContract);
-    const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
-    console.log('marketMakerAddress', marketMakerAddress);
-    marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
-    const tokenAddress = await marketContract.methods.underlyingAddress().call();
-    console.log('tokenAddress', tokenAddress);
-    tokenContract = await getContract(web3, "./contracts/genericERC20.json", tokenAddress)
-    refreshSpot(web3, exchangeContract);
-  })
-
-  const calcPremium = async () => {
-    console.log('calcPremium')
-    if (optionStrike.value !== '' && optionAmount.value !== '') {
-      const premium = await calcOptionPremium(web3, exchangeContract);
-      premiumPrice.innerHTML = premium;
-      await showOptions(web3, marketContract, exchangeContract, accounts[0]);
-    }
-  }
-
-  optionType.addEventListener('change', calcPremium)
-  optionExpiry.addEventListener('change', calcPremium)
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
 
@@ -105,7 +196,7 @@ const initMarketMaker =  async () => {
     await withdrawCapital(web3, marketContract, accounts[0]);
   })
 
-  document.getElementById('invest-mp-unit').innerHTML = optionToken.value;
+  document.getElementById('invest-mp-unit').innerHTML = optionToken;
 
   await showVolatility(web3, exchangeContract);
 };
@@ -114,8 +205,8 @@ async function calcOptionPremium(web3, exchange) {
   console.log('calcOptionPremium')
 
   const pricePricision = await exchange.methods.priceDecimals().call();
-  const optType = convertOptionType(optionType.options[optionType.selectedIndex].text);
-  const optExpiry = convertExpiry(optionExpiry.options[optionExpiry.selectedIndex].text);
+  const optType = convertOptionType(optionType);
+  const optExpiry = convertExpiry(optionExpiry);
   const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
@@ -133,8 +224,8 @@ async function calcAndBuyOption(web3, exchange, tokenContract, account) {
   console.log('calcAndBuyOption')
 
   const pricePricision = await exchange.methods.priceDecimals().call();
-  const optType = convertOptionType(optionType.options[optionType.selectedIndex].text);
-  const optExpiry = convertExpiry(optionExpiry.options[optionExpiry.selectedIndex].text);
+  const optType = convertOptionType(optionType);
+  const optExpiry = convertExpiry(optionExpiry);
   const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
@@ -172,7 +263,7 @@ async function showOptions(web3, market, exchange, account){
     opt.innerHTML = await formatOptionInfo(web3, exchange, option);
 
     let payoff = document.createElement('h5');
-    payoff.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionPayoff))).toFixed(4) + ' ' + optionToken.value;
+    payoff.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionPayoff))).toFixed(4) + ' ' + optionToken;
 
     let amount = document.createElement('p');
     amount.innerHTML = formatOptionMaturity(web3, option);
@@ -219,13 +310,13 @@ async function showMarketCapital(web3, market, exchange, account){
    console.log(mpHolding);
    console.log(mpHoldingValue);
 
-   document.getElementById('mp-gross-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), optionToken.value, "<small>", Number(parseFloat(web3.utils.fromWei(web3.utils.toBN(capitalRatios[0])))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}), "</small>"].join(' ');
-   document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(2), optionToken.value].join(' ');
-   document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(2), optionToken.value].join(' ');
+   document.getElementById('mp-gross-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), optionToken, "<small>", Number(parseFloat(web3.utils.fromWei(web3.utils.toBN(capitalRatios[0])))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}), "</small>"].join(' ');
+   document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(2), optionToken].join(' ');
+   document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(2), optionToken].join(' ');
 
-   document.getElementById('available-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital))).toFixed(2), optionToken.value].join(' ');
+   document.getElementById('available-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital))).toFixed(2), optionToken].join(' ');
    document.getElementById('mp-holding').innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
-   document.getElementById('mp-holding-value').innerHTML = [parseFloat(web3.utils.fromWei(mpHoldingValue)).toFixed(2), optionToken.value].join(' ');
+   document.getElementById('mp-holding-value').innerHTML = [parseFloat(web3.utils.fromWei(mpHoldingValue)).toFixed(2), optionToken].join(' ');
 
 }
 
@@ -283,7 +374,7 @@ async function formatOptionInfo(web3, exchange, optionInfo){
   var strike = web3.utils.fromWei(web3.utils.toBN(optionInfo['strike']).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(precision)))), 'ether');
   var amount = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionInfo['amount']))).toFixed(4);
 
-  return [amount, optionToken.value, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
+  return [amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
 }
 
 function formatOptionMaturity(web3, optionInfo){

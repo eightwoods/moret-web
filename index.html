@@ -74,7 +74,7 @@
   </header>
 
   <!-- HOME MAIN - NEW OPTIONS  -->
-  <section class="simple-head" data-stellar-background-ratio="0.5" id="homl">
+  <section class="simple-head" data-stellar-background-ratio="0.5" id="home">
     <!-- Particles -->
     <div id="particles-js"></div>
     <div class="position-center-center">
@@ -85,60 +85,97 @@
           <div class="token-menu">
             <ul class="row">
               <!-- Token -->
-              <li class="col-md-3">
-                <p>Token</p>
-                <select name="tokenList" id="tokenSelected" class="form-select form-select-lg mb-3" >
+              <li class="col-md-6">
+                <p>Choose Token</p>
+                <div class="element-tabs" id="tokenSelected" >
+                  <div class="element-tabs__tab ETH with-icon selected"><span class="element-tab__title">ETH</span></div>
+                  <div class="element-tabs__tab WBTC with-icon"><span class="element-tab__title">BTC</span></div>
+                </div>
+                <!--<select name="tokenList" id="tokenSelected" class="form-select form-select-lg mb-3" >
                   <option value="LINK">LINK</option>
                   <option value="ETH">ETH</option>
                   <option value="MATIC">MATIC</option>
-                </select>
+                </select>-->
               </li>
-              <!-- Spot -->
-              <li class="col-md-3">
-                <p class="showSpot">Spot Price</p>
-                <div class="spot-container">
-                  <p id="tokenSpot"></p>
+
+              <!-- Expiry -->
+              <li class="col-md-6">
+                <p class="hours_ref">Expiry</p>
+                <div class="element-tabs" id="optionExpiry">
+                  <div class="element-tabs__tab day selected shorter"><span class="element-tab__title">1 day</span></div>
+                  <div class="element-tabs__tab week shorter"><span class="element-tab__title">7 days</span></div>
+                  <div class="element-tabs__tab month shorter"><span class="element-tab__title">30 days</span></div>
                 </div>
+                <!--<select name="optionExpiry" id="optionExpiry">
+                    <option value="1d">1 day</option>
+                </select>-->
               </li>
             </ul>
           </div>
 
-          <div class="countdown">
+          <div class="options-menu">
             <ul class="row">
-                <!-- Type -->
-                <li class="col-md-3">
+                <!-- Option Type -->
+                <li class="col-md-6">
                   <p class="hours_ref">Option Type</p>
-                  <select name="optionType" id="optionType">
-                      <option value="Call">Call</option>
-                      <option value="Put">Put</option>
-                  </select>
+                  <div class="element-tabs" id="optionType">
+                    <div class="element-tabs__tab up with-icon selected"><span class="element-tab__title">CALL</span></div>
+                    <div class="element-tabs__tab down with-icon"><span class="element-tab__title">PUT</span></div>
+                  </div>
+                  <!--<select name="optionType" id="optionType">
+                    <option value="Call">Call</option>
+                    <option value="Put">Put</option>
+                  </select>-->
                 </li>
-                <!-- Expiry -->
-                <li class="col-md-3">
-                  <p class="hours_ref">Expiry</p>
-                  <select name="optionExpiry" id="optionExpiry">
-                      <option value="1d">1 day</option>
-                      <!-- <option value="1w">1 week</option> -->
-                  </select>
+                <!-- Buy/Sell -->
+                <li class="col-md-6">
+                  <p class="hours_ref">Buy or Sell</p>
+                  <div class="element-tabs" id="optionBuySell">
+                    <div class="element-tabs__tab buy with-icon selected"><span class="element-tab__title">BUY</span></div>
+                    <div class="element-tabs__tab sell with-icon"><span class="element-tab__title">SELL</span></div>
+                  </div>
                 </li>
+            </ul>
+          </div>
+
+          <div class="input-menu">
+            <ul class="row">
                 <!-- Strike -->
-                <li class="col-md-3">
+                <li class="col-md-6">
                   <p class="showStrike">Strike</p>
-                  <input type="number" min="0" placeholder="1000" id="optionStrike">
+                  <div class="element-input-box">
+                    <input class="element-input-box__input" type="number" min="0" placeholder="1000" id="optionStrike">
+                    <!--<div class="element-input-box__token ETH">ETH</div>-->
+                  </div>
                 </li>
                 <!-- Amount -->
-                <li class="col-md-3">
-                  <p class="hours_ref">Amount</p>
-                  <input type="number" min="0" placeholder="1" id="optionAmount">
+                <li class="col-md-6">
+                  <p class="hours_ref">Token Amount</p>
+                  <div class="element-input-box">
+                    <input class="element-input-box__input" type="number" min="0" placeholder="1" id="optionAmount">
+                    <!--<div class="element-input-box__token ETH">ETH</div>-->
+                  </div>
                 </li>
             </ul>
           </div>
 
-          <div class="premium">
-            <p class="showSpot">Premium</p>
-            <div class="spot-container">
-              <p id="option-premium"></p>
-            </div>
+          <div class="premium-menu">
+            <ul class="row">
+                <!-- Spot -->
+                <li class="col-md-6">
+                  <p class="showSpot">Spot Price</p>
+                  <div class="element-input-box noborder">
+                    <p id="tokenSpot" class="element-input-box__input"></p>
+                  </div>
+                </li>
+                <!-- Premium -->
+                <li class="col-md-6">
+                  <p class="showSpot">Premium</p>
+                  <div class="element-input-box noborder">
+                    <p id="option-premium" class="element-input-box__input"></p>
+                  </div>
+                </li>
+            </ul>
           </div>
 
           <a href="#." class="btn btn-inverse buyOption" id="option-purchase">Purchase</a>
@@ -492,7 +529,6 @@
 <script src="js/web3.objects.js"></script>
 <!-- <script src="js/moret.volatility.chain.js"></script> -->
 <!-- <script src="js/moret.market.maker.js"></script> -->
-
 
 
 </body>
