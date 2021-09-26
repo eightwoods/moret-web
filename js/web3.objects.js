@@ -55,7 +55,15 @@ const initMarketMaker =  async () => {
     console.log('calcPremium')
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       const premium = await calcOptionPremium(web3, exchangeContract);
-      premiumPrice.innerHTML = premium;
+      let x = parseFloat(premium).toFixed(2) + '';
+      x = x.split('.');
+      let x1 = x[0];
+      let x2 = x.length > 1 ? '.' + x[1] : '';
+      var rgx = /(\d+)(\d{3})/;
+      while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+      }
+      premiumPrice.innerHTML = x1 + x2;
       await showOptions(web3, marketContract, exchangeContract, accounts[0]);
     }
   }
@@ -420,7 +428,15 @@ const refreshSpot = async (web3, exchange)=>{
   const pricePrecision = await exchange.methods.priceDecimals().call();
 
   const spotText = web3.utils.fromWei(web3.utils.toBN(Number(price[0])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePrecision)))), 'ether');
-  spotPrice.innerHTML =  parseFloat(spotText).toFixed(5);
+  let x = parseFloat(spotText).toFixed(4) + '';
+  x = x.split('.');
+  let x1 = x[0];
+  let x2 = x.length > 1 ? '.' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+  spotPrice.innerHTML = x1 + x2;
 }
 
 const refreshVolatility = async (web3, market, exchange)=>{
