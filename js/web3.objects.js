@@ -43,6 +43,7 @@ let refreshSpotPoller
 let exchangeContract
 let marketContract
 let tokenContract
+let fundingContract
 
 // Init
 const initMarketMaker =  async () => {
@@ -77,7 +78,10 @@ const initMarketMaker =  async () => {
     marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
     const tokenAddress = await marketContract.methods.underlyingAddress().call();
     console.log('tokenAddress', tokenAddress);
-    tokenContract = await getContract(web3, "./contracts/genericERC20.json", tokenAddress)
+    tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
+    const fundingAddress = await marketContract.methods.fundingAddress().call();
+    console.log('fundingAddress', fundingAddress);
+    fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
     refreshSpot(web3, exchangeContract);
   }
 
@@ -167,7 +171,10 @@ const initMarketMaker =  async () => {
   marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
   const tokenAddress = await marketContract.methods.underlyingAddress().call();
   console.log('tokenAddress', tokenAddress);
-  tokenContract = await getContract(web3, "./contracts/genericERC20.json", tokenAddress)
+  tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
+  const fundingAddress = await marketContract.methods.fundingAddress().call();
+  console.log('fundingAddress', fundingAddress);
+  fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
   refreshSpot(web3, exchangeContract);
 
@@ -212,40 +219,48 @@ const initMarketMaker =  async () => {
 async function calcOptionPremium(web3, exchange) {
   console.log('calcOptionPremium')
 
-  const pricePricision = await exchange.methods.priceDecimals().call();
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
-  const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  const optBuySell = convertBuySell(optionBuySell);
+  // const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
   console.log(optExpiry);
   console.log(parseFloat(optStrike));
+  console.log(optionExpiry);
   console.log(optType);
+  console.log(optBuySell);
   console.log(parseFloat(optAmount));
 
-  const premium = await exchange.methods.queryOptionCost(optExpiry, optStrike, optAmount, optType, 0).call();
-  console.log('premium', premium);
-  return parseFloat(web3.utils.fromWei(web3.utils.toBN(premium))).toFixed(8);
+  const optCost = await exchange.methods.calcOptionCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
+  console.log('premium & cost', optCost);
+
+  const pricePricision = await fundingContract.methods.decimals().call();
+  const cost = web3.utils.toBN(optCost[1].value).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  return parseFloat(web3.utils.fromWei(web3.utils.toBN(cost))).toFixed(4);
 }
 
 async function calcAndBuyOption(web3, exchange, tokenContract, account) {
   console.log('calcAndBuyOption')
 
-  const pricePricision = await exchange.methods.priceDecimals().call();
+  // const pricePricision = await exchange.methods.priceDecimals().call();
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
-  const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  const optBuySell = convertBuySell(optionBuySell);
+  // const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
-  const premium = await exchange.methods.queryOptionCost(optExpiry, optStrike, optAmount, optType, 0).call();
-  console.log('premium', premium);
-  console.log(exchange._address);
+  const optCost = await exchange.methods.calcOptionCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
+  console.log('premium & cost', optCost);
+  // console.log(exchange._address);
 
-  //const approveSuccess = await tokenContract.methods.increaseAllowance(exchange._address, premium).send({from:account, gas: 10**6});
-  //console.log(approveSuccess);
-  //if (approveSuccess){
-    await exchange.methods.purchaseOption(optExpiry, optStrike, optType, optAmount, premium).send({from:account, gas: 10**6});
-  //}
+  const approveSuccess = await fundingContract.methods.approve(exchange.methods.contractAddress(), optCost[1]).send({from:account, gas: 10**6});
+  console.log(approveSuccess);
+  if (approveSuccess){
+    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, optCost[1]).send({from:account, gas: 10**6});
+  }
 }
 
 async function showOptions(web3, market, exchange, account){
@@ -425,9 +440,10 @@ const refreshSpot = async (web3, exchange)=>{
   console.log('refreshSpot')
 
   const price = await exchange.methods.queryPrice().call();
-  const pricePrecision = await exchange.methods.priceDecimals().call();
+  // const pricePrecision = await exchange.methods.priceDecimals().call();
+  // const spotText = web3.utils.fromWei(web3.utils.toBN(Number(price[0])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePrecision)))), 'ether');
 
-  const spotText = web3.utils.fromWei(web3.utils.toBN(Number(price[0])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePrecision)))), 'ether');
+  const spotText = web3.utils.fromWei(web3.utils.toBN(price[0]), 'ether');
   let x = parseFloat(spotText).toFixed(4) + '';
   x = x.split('.');
   let x1 = x[0];
@@ -474,27 +490,40 @@ function convertOptionType(typeString) {
 
 function convertExpiry(expiryString) {
   switch(expiryString) {
-    case "1 day":
+    case "1d":
       return 86400;
       break;
-    case "1 week":
+    case "7d":
       return 7 * 86400;
+      break;
+    case "30d":
+      return 30 * 86400;
       break;
     default:
       return 0;
   }
 }
 
+function convertBuySell(buySellString){
+  switch(buySellString){
+    case "Buy":
+      return 0;
+      break;
+    case "Sell":
+      return 1;
+      break;
+    default:
+      return -1;
+  }
+}
+
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
-    case "MATIC":
-      return "0x5C7d29A315E0760939F224BC5A181fC1612F9E6C";
-      break;
     case "ETH":
-      return "0x0Ac7e78f7A92F2BBd9D2709fF31e039da2D356eC";
+      return "0xd847fD7fd19254a04Ac14824915Bc47286A70Af1";
       break;
-    case "LINK":
-      return "0xf6a5a85f32AC1022Fd7D39007827DAF9772E5495";
+    case "BTC":
+      return "";
       break;
     default:
       return -1;
