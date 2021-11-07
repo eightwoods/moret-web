@@ -40,7 +40,8 @@ const quoteButton = document.querySelector('.queryPremium');
 const optionList = document.getElementById('option-list');
 
 // Vol
-const showVol = document.getElementById('1d-vol');
+const showVol = [document.getElementById('1d-vol'), document.getElementById('7d-vol'), document.getElementById('30d-vol')];
+const volTenors = [1, 7, 30];
 
 // Pool
 const inputPoolInvest = document.getElementById('invest-lp-tokens');
@@ -306,10 +307,10 @@ async function showOptions(web3, market, exchange, account){
     let amount = document.createElement('p');
     amount.innerHTML = formatOptionMaturity(web3, option);
 
-    let exercise = document.createElement('a');
-    exercise.appendChild(document.createTextNode("EXERCISE"));
-    exercise.classList.add('btn')
-    exercise.classList.add('btn-inverse')
+    // let exercise = document.createElement('a');
+    // exercise.appendChild(document.createTextNode("EXERCISE"));
+    // exercise.classList.add('btn')
+    // exercise.classList.add('btn-inverse')
     // exercise.addEventListener('click', async() => {
     //   await exchange.methods.exerciseOption(optionId).send({from: account});
     // });
@@ -323,7 +324,7 @@ async function showOptions(web3, market, exchange, account){
     li.appendChild(opt)
     li.appendChild(payoff)
     li.appendChild(amount)
-    li.appendChild(exercise)
+    // li.appendChild(exercise)
     optionList.appendChild(li);
   }
 }
@@ -334,9 +335,6 @@ async function refreshCapital(web3, market, account){
   var netCapital = await market.methods.calcCapital(true, false).call();
   var netAvgCapital = await market.methods.calcCapital(true,true).call();
   var grossAvgCapital = await market.methods.calcCapital(false,true).call();
-  //  var capitalRatios = await exchange.methods.calcUtilisation(0, 0, 0).call();
-  //  var callExposure = await market.methods.callExposure().call();
-  //  var putExposure = await market.methods.putExposure().call();
   //  var totalSupply = await market.methods.totalSupply().call();
    
   let mpHolding = await market.methods.balanceOf(account).call();
@@ -344,19 +342,15 @@ async function refreshCapital(web3, market, account){
   let capitalUsed = 1 - parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
   // console.log(grossCapital);
-  //  console.log(['call', parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(4)].join(' '));
-  //  console.log(['put', parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(4)].join(' '));
   // console.log(netCapital);
-  // console.log(mpHoldingValue);
+  // console.log(capitalUsed);
   //  console.log(mpHoldingValue);
 
   let progress = Number(capitalUsed).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
-  console.log(progress);
+  // console.log(progress);
   let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress,"</small></span> </div>"].join(' ');
-  console.log(cap_html);
+  // console.log(cap_html);
   grossCap.innerHTML = cap_html;
-  //  document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(2), optionToken].join(' ');
-  //  document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(2), optionToken].join(' ');
 
   lpTokenHeld.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
   avgNetValue.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingValue))).toFixed(2), fundingToken].join(' ');
@@ -402,12 +396,14 @@ async function withdrawCapital(web3, market, account){
 }
 
 async function showVolatility(web3, exchange){
-  var vol = await exchange.methods.queryVol(web3.utils.toBN(86400)).call();
-  console.log(vol);
-  // var volDecimals = await exchange.methods.priceDecimals().call();
-  var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol)))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
-  console.log(volString);
-  showVol.innerHTML= volString;
+  console.log('showVolatility')
+  for (let i = 0;i < volTenors.length; i++){
+    var vol = await exchange.methods.queryVol(web3.utils.toBN(86400 * volTenors[i])).call();
+    // console.log(volTenors[i], vol);
+    var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol)))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+    // console.log(volString);
+    showVol[i].innerHTML= volString;
+  }
 }
 
 async function formatOptionInfo(web3, optionInfo){
@@ -423,8 +419,8 @@ async function formatOptionInfo(web3, optionInfo){
       poType = "Undefined";
   }
 
-  var precision = await exchange.methods.priceDecimals().call();
-  var strike = web3.utils.fromWei(web3.utils.toBN(optionInfo['strike']).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(precision)))), 'ether');
+  // var precision = await exchange.methods.priceDecimals().call();
+  var strike = web3.utils.fromWei(web3.utils.toBN(optionInfo['strike']), 'ether');
   var amount = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionInfo['amount']))).toFixed(4);
 
   return [amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
