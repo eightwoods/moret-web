@@ -80,7 +80,7 @@
     <div class="position-center-center">
       <div class="container text-center">
         <h1 >Decentralized crypto option trading</h1>
-        <h2 style="color:white"><i>alpha testing</i></h2>
+        <h3 style="color:yellow">alpha testing</h3>
         
         <div class="connected">
           <div class="token-menu">
@@ -171,7 +171,7 @@
                 </li>
                 <!-- Premium -->
                 <li class="col-md-6">
-                  <p class="showSpot">Premium USDC</p>
+                  <p class="showSpot">Cost in USDC</p>
                   <div class="element-input-box noborder">
                     <p id="option-premium" class="element-input-box__input"></p>
                   </div>
@@ -210,15 +210,14 @@
 
         <!-- Pool  -->
         <div class="col-lg-7">
-          <h3>Market Making Pool</h3>
-          <p>Pool token holders deposit into the pool to provide capital for underwriting options and earn premiums.</p>
+          <h3>Liquidity Pool</h3>
+          <p>Pool token holders deposit into the pool to provide capital for underwriting options and earning premiums.</p>
 
           <!-- Capital -->
-          <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span id="mp-gross-capital">3,000 <small>50%</small></span> </div>
+          <div class="progress" id="gross-capital">
+            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span >3,000 <small>50%</small></span> </div>
           </div>
-          <div class="row">
-
+          <!-- <div class="row">
             <div class="col">
               <h6 id="call-exposure"> 99,910</h6>
               <span>Call Exposure</span> </div>
@@ -228,30 +227,28 @@
               <div class="col">
                 <h6 id="available-capital">100</h6>
                 <span>Free Capital</span> </div>
-          </div>
+          </div> -->
 
           <!-- MP Token holding -->
           <div class="countdown">
-            <h6>Current Token Holdings in Market Making Pool</h6>
+            <h6>Current Liquidity Pool Tokens</h6>
             <!-- Countdown-->
             <ul class="row">
               <!-- Days -->
 
               <li class="col-md-3">
-                <article> <span class="days" id="mp-holding">100</span>
-                  <p class="days_ref">LP Tokens Owned</p>
+                <article> <span class="days" id="lp-holding">100</span>
+                  <p class="days_ref">LP Tokens Held</p>
                 </article>
               </li>
-              <!-- Hours -->
               <li class="col-md-3">
-                <article> <span class="hours" id="mp-holding-value">10</span>
-                  <p class="hours_ref">Available to withdraw</p>
+                <article> <span class="days" id="lp-average-net">1</span>
+                  <p class="days_ref">Withdrawable</p>
                 </article>
               </li>
-
             <li class="col-md-3">
-                <input type="number" placeholder="1000" id="withdraw-mp">
-                <a href="#." class="btn" id="withdraw-capital">Withdraw</a>
+                <input type="number" placeholder="1000" id="withdraw-lp">
+                <a href="#." class="btn" id="withdraw-capital">Withdraw LP Tokens</a>
             </li>
 
             </ul>
@@ -260,30 +257,34 @@
 
         <!-- Invest in MP -->
         <div class="col-lg-5">
-          <h3>Invest in the Market Making Pool </h3>
-          <p>Earn premiums by underwriting options.</p>
+          <h3>Invest in Liquidity Pool </h3>
+          <!-- <p>Earn premiums by underwriting options.</p> -->
           <div class="countdown-all">
 
             <!-- Countdown -->
             <ul class="row">
-              <!-- Hours -->
               <li class="col-md-3">
                 <article>
-                  <p class="hours_ref">Invest in the Pool</p>
-                  <input type="number" placeholder="1000" id="invest-mp">
-                  <p class="hours_ref" id="invest-mp-unit"></p>
+                  <p class="hours_ref">Add USDC</p>
+                  <input type="number" placeholder="1000" id="invest-lp-tokens">
+                  <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
                 </article>
               </li>
-              <!-- Days -->
+              <li class="col-md-3">
+                <article> 
+                  <p class="days_ref">Average token value</p>
+                  <p class="days_ref" id="lp-average-gross">1</p>
+                </article>
+              </li>
               <li class="col-md-3">
                 <article>
-                  <!-- <span class="hours">10</span> -->
-                  <p>Pool Tokens</p>
-                  <p class="days_ref" id="invest-mp-cost"></p>
+                  <p>Equivalent LP Tokens</p>
+                  <p class="days_ref" id="invest-lp-cost"></p>
                 </article>
               </li>
+              
             </ul>
-            <a href="#." class="btn btn-inverse" id="add-capital">Invest in Pool</a>
+            <a href="#." class="btn btn-inverse" id="add-capital">Invest</a>
 
             <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
           </div>

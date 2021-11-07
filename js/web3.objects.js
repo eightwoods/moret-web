@@ -3,6 +3,8 @@ let optionToken = 'ETH';
 const optionTokenETH = document.getElementById('tokenSelected').getElementsByClassName("ETH")[0];
 const optionTokenBTC = document.getElementById('tokenSelected').getElementsByClassName("WBTC")[0];
 
+const fundingToken = 'USDC';
+
 let optionExpiry = '1d';
 const optionExpiryDay = document.getElementById('optionExpiry').getElementsByClassName("day")[0];
 const optionExpiryWeek = document.getElementById('optionExpiry').getElementsByClassName("week")[0];
@@ -23,6 +25,13 @@ const optionAmount = document.getElementById('optionAmount');
 const spotPrice = document.getElementById('tokenSpot');
 const premiumPrice = document.getElementById('option-premium');
 
+// capital
+const grossCap = document.getElementById('gross-capital');
+const lpTokenHeld = document.getElementById('lp-holding');
+const avgNetValue = document.getElementById('lp-average-net');
+const avgGrossValue = document.getElementById('lp-average-gross');
+const investLPCost = document.getElementById('invest-lp-cost');
+
 // buttons
 const purchaseButton = document.querySelector('.buyOption');
 const quoteButton = document.querySelector('.queryPremium');
@@ -34,12 +43,14 @@ const optionList = document.getElementById('option-list');
 const showVol = document.getElementById('1d-vol');
 
 // Pool
-const inputPoolInvest = document.getElementById('invest-mp');
+const inputPoolInvest = document.getElementById('invest-lp-tokens');
 const investInPool = document.getElementById('add-capital');
+const inputPoolWithdraw = document.getElementById('withdraw-lp');
 const withdrawFromPool = document.getElementById('withdraw-capital');
 
 // Hao
 let refreshSpotPoller
+let refreshCapitalPoller
 let exchangeContract
 let marketContract
 let tokenContract
@@ -56,7 +67,7 @@ const initMarketMaker =  async () => {
     console.log('calcPremium')
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       const premium = await calcOptionPremium(web3, exchangeContract);
-      let x = parseFloat(premium).toFixed(2) + '';
+      let x = parseFloat(premium).toFixed(4) + '';
       x = x.split('.');
       let x1 = x[0];
       let x2 = x.length > 1 ? '.' + x[1] : '';
@@ -177,9 +188,11 @@ const initMarketMaker =  async () => {
   fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
   refreshSpot(web3, exchangeContract);
+  refreshCapital(web3, marketContract, accounts[0]);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
   refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 30000);
+  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract, accounts[0]); }, 60000);
 
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
@@ -191,7 +204,7 @@ const initMarketMaker =  async () => {
 
   purchaseButton.addEventListener('click', async() => {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
-      await calcAndBuyOption(web3, exchangeContract, tokenContract, accounts[0]);
+      await calcAndBuyOption(web3, exchangeContract, fundingContract, accounts[0]);
       await showOptions(web3, marketContract, exchangeContract, accounts[0]);
     }
   })
@@ -199,19 +212,19 @@ const initMarketMaker =  async () => {
   await showOptions(web3, marketContract, exchangeContract, accounts[0]);
   
   // OTHER
-  await showMarketCapital(web3, marketContract, exchangeContract, accounts[0]);
+  // await showMarketCapital(web3, marketContract, exchangeContract, accounts[0]);
 
   inputPoolInvest.addEventListener('focus', async() =>{
-    await showPoolCost(web3, marketContract);
+    await showInvestPoolCost(web3, marketContract);
   })
   investInPool.addEventListener('click', async() => {
-    await addCapital(web3,marketContract, tokenContract, accounts[0] );
+    await addCapital(web3,marketContract, fundingContract, accounts[0] );
   })
   withdrawFromPool.addEventListener('click', async() =>{
     await withdrawCapital(web3, marketContract, accounts[0]);
   })
 
-  document.getElementById('invest-mp-unit').innerHTML = optionToken;
+  // document.getElementById('invest-mp-unit').innerHTML = optionToken;
 
   await showVolatility(web3, exchangeContract);
 };
@@ -237,8 +250,8 @@ async function calcOptionPremium(web3, exchange) {
   console.log('premium & cost', optCost);
 
   const pricePricision = await fundingContract.methods.decimals().call();
-  const cost = web3.utils.toBN(optCost[1].value).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
-  return parseFloat(web3.utils.fromWei(web3.utils.toBN(cost))).toFixed(4);
+  const cost = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
+  return parseFloat(web3.utils.fromWei(cost)).toFixed(4);
 }
 
 async function calcAndBuyOption(web3, exchange, tokenContract, account) {
@@ -255,11 +268,12 @@ async function calcAndBuyOption(web3, exchange, tokenContract, account) {
   const optCost = await exchange.methods.calcOptionCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
   console.log('premium & cost', optCost);
   // console.log(exchange._address);
-
-  const approveSuccess = await fundingContract.methods.approve(exchange.methods.contractAddress(), optCost[1]).send({from:account, gas: 10**6});
+  var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(105))).div(web3.utils.toBN(Number(100)));
+  console.log('pay', web3.utils.fromWei(payInValue));
+  const approveSuccess = await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: 10**6});
   console.log(approveSuccess);
   if (approveSuccess){
-    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, optCost[1]).send({from:account, gas: 10**6});
+    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: 10**6});
   }
 }
 
@@ -277,16 +291,17 @@ async function showOptions(web3, market, exchange, account){
   for (let i = 0; i < optionCount; i++) {
     var option = await market.methods.getHoldersOption(i, account).call();
     var optionId = parseInt(option['id']);
+    console.log(optionId);
     var optionPayoff = await exchange.methods.getOptionPayoffValue(optionId).call();
 
     // Please populate the section of 'Your current active contract' by adding more blocks
     // each of which contains the information specified below and an 'Exercise' button to link to the exerciseOption function
 
     let opt = document.createElement('span');
-    opt.innerHTML = await formatOptionInfo(web3, exchange, option);
+    opt.innerHTML = await formatOptionInfo(web3, option);
 
     let payoff = document.createElement('h5');
-    payoff.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionPayoff))).toFixed(4) + ' ' + optionToken;
+    payoff.innerHTML = parseFloat(web3.utils.fromWei(optionPayoff)).toFixed(4) + ' ' + fundingToken;
 
     let amount = document.createElement('p');
     amount.innerHTML = formatOptionMaturity(web3, option);
@@ -295,14 +310,14 @@ async function showOptions(web3, market, exchange, account){
     exercise.appendChild(document.createTextNode("EXERCISE"));
     exercise.classList.add('btn')
     exercise.classList.add('btn-inverse')
-    exercise.addEventListener('click', async() => {
-      await exchange.methods.exerciseOption(optionId).send({from: account});
-    });
-    exchange.events.optionExercised({filter: {_purchaser: account} }, function(error, event) {  
-      console.log(event);
-    }).on('data', function(returnValues) {
-      console.log(returnValues);
-    }); // returnValues is the array of option information when it's purchased.
+    // exercise.addEventListener('click', async() => {
+    //   await exchange.methods.exerciseOption(optionId).send({from: account});
+    // });
+    // exchange.events.optionExercised({filter: {_purchaser: account} }, function(error, event) {  
+    //   console.log(event);
+    // }).on('data', function(returnValues) {
+    //   console.log(returnValues);
+    // }); // returnValues is the array of option information when it's purchased.
     
     let li = document.createElement('li');
     li.appendChild(opt)
@@ -313,74 +328,89 @@ async function showOptions(web3, market, exchange, account){
   }
 }
 
-async function showMarketCapital(web3, market, exchange, account){
-   var grossCapital = await market.methods.calcCapital(false, false).call();
-   var capitalRatios = await exchange.methods.calcUtilisation(0, 0, 0).call();
-   var callExposure = await market.methods.callExposure().call();
-   var putExposure = await market.methods.putExposure().call();
+async function refreshCapital(web3, market, account){
+  console.log('refreshCapital');
+  var grossCapital = await market.methods.calcCapital(false, false).call();
+  var netCapital = await market.methods.calcCapital(true, false).call();
+  var netAvgCapital = await market.methods.calcCapital(true,true).call();
+  var grossAvgCapital = await market.methods.calcCapital(false,true).call();
+  //  var capitalRatios = await exchange.methods.calcUtilisation(0, 0, 0).call();
+  //  var callExposure = await market.methods.callExposure().call();
+  //  var putExposure = await market.methods.putExposure().call();
+  //  var totalSupply = await market.methods.totalSupply().call();
+   
+  let mpHolding = await market.methods.balanceOf(account).call();
+  let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
+  let capitalUsed = 1 - parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
+ 
+  // console.log(grossCapital);
+  //  console.log(['call', parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(4)].join(' '));
+  //  console.log(['put', parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(4)].join(' '));
+  // console.log(netCapital);
+  // console.log(mpHoldingValue);
+  //  console.log(mpHoldingValue);
 
-   var netCapital = await market.methods.calcCapital(true, false).call();
-   var totalSupply = await market.methods.totalSupply().call();
-   var netAvgCapital = await market.methods.calcCapital(true,true).call();
+  let progress = Number(capitalUsed).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
+  console.log(progress);
+  let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress,"</small></span> </div>"].join(' ');
+  console.log(cap_html);
+  grossCap.innerHTML = cap_html;
+  //  document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(2), optionToken].join(' ');
+  //  document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(2), optionToken].join(' ');
 
-   let mpHolding = await market.methods.balanceOf(account).call();
-   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
-
-   console.log(grossCapital);
-   console.log(['call', parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(4)].join(' '));
-   console.log(['put', parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(4)].join(' '));
-   console.log(netCapital);
-   console.log(mpHolding);
-   console.log(mpHoldingValue);
-
-   document.getElementById('mp-gross-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), optionToken, "<small>", Number(parseFloat(web3.utils.fromWei(web3.utils.toBN(capitalRatios[0])))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}), "</small>"].join(' ');
-   document.getElementById('call-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(callExposure))).toFixed(2), optionToken].join(' ');
-   document.getElementById('put-exposure').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(putExposure))).toFixed(2), optionToken].join(' ');
-
-   document.getElementById('available-capital').innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital))).toFixed(2), optionToken].join(' ');
-   document.getElementById('mp-holding').innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
-   document.getElementById('mp-holding-value').innerHTML = [parseFloat(web3.utils.fromWei(mpHoldingValue)).toFixed(2), optionToken].join(' ');
+  lpTokenHeld.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
+  avgNetValue.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingValue))).toFixed(2), fundingToken].join(' ');
+  avgGrossValue.innerHTML = [parseFloat(web3.utils.fromWei(grossAvgCapital)).toFixed(2), fundingToken].join(' ');
 
 }
 
-async function showPoolCost(web3, market){
+async function showInvestPoolCost(web3, market){
+  console.log('showInvestPoolCost');
   var mpCost = await market.methods.calcCapital(false ,true).call();
-    console.log(mpCost);
-  var mpAmount = web3.utils.fromWei(web3.utils.toWei(web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value))).div(web3.utils.toBN(mpCost)));
+  console.log(web3.utils.fromWei(web3.utils.toBN(mpCost)));
+  // console.log(inputPoolInvest.value);
+  var mpAmount = inputPoolInvest.value / parseFloat(web3.utils.fromWei(web3.utils.toBN(mpCost)));
+  // web3.utils.fromWei(web3.utils.toWei(web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value))).div(web3.utils.toBN(mpCost)));
   console.log(mpAmount);
-  document.getElementById('invest-mp-cost').innerHTML =parseFloat(mpAmount).toFixed(4);
+  investLPCost.innerHTML =mpAmount.toFixed(4);
 }
 
 async function addCapital(web3, market, tokenContract, account){
-  var investAmount = web3.utils.toWei(inputPoolInvest.value);
+  var fundingTokenDecimals = await tokenContract.methods.decimals().call();
+  var investAmount = web3.utils.toBN(inputPoolInvest.value).mul(web3.utils.toBN(10).pow(web3.utils.toBN(Number(fundingTokenDecimals))));
   console.log(investAmount);
-    const approveSuccess = await tokenContract.methods.increaseAllowance(market._address, investAmount).send({from:account, gas: 10**6});
+  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: 10**6});
   console.log(approveSuccess);
   if(approveSuccess){
     await market.methods.addCapital(investAmount).send({from: account, gas: 10**6});
+    refreshCapital(web3, market, account);
   }
 }
 
 async function withdrawCapital(web3, market, account){
-  var mpWithdraw = web3.utils.toWei(document.getElementById('withdraw-mp').value);
+  if(Number(lpTokenHeld.value)>= Number(inputPoolWithdraw.value))
+  {
+  var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
   console.log(mpWithdraw);
-  const approveSuccess = await market.methods.increaseAllowance(market._address, mpWithdraw).send({from:account, gas: 10**6});
+  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: 10**6});
   console.log(approveSuccess);
   if(approveSuccess){
     await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: 10**6});
+    refreshCapital(web3, market, account);
   }
+}
 }
 
 async function showVolatility(web3, exchange){
   var vol = await exchange.methods.queryVol(web3.utils.toBN(86400)).call();
   console.log(vol);
-  var volDecimals = await exchange.methods.priceDecimals().call();
-  var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol[0]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(volDecimals))))))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+  // var volDecimals = await exchange.methods.priceDecimals().call();
+  var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol)))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
   console.log(volString);
   showVol.innerHTML= volString;
 }
 
-async function formatOptionInfo(web3, exchange, optionInfo){
+async function formatOptionInfo(web3, optionInfo){
   let poType;
   switch(parseInt(optionInfo['poType'])){
     case 0:
@@ -520,7 +550,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0xd847fD7fd19254a04Ac14824915Bc47286A70Af1";
+      return "0xf84b72F8B88a2cf155c594B42B27Cbd3bA792f53";
       break;
     case "BTC":
       return "";
@@ -528,4 +558,17 @@ const getExchangeAddress = (tokenName) => {
     default:
       return -1;
   }
+}
+
+function formatNumber(number, decimal){
+  const numberText = web3.utils.fromWei(web3.utils.toBN(number), 'ether');
+  let x = parseFloat(numberText).toFixed(decimal) + '';
+  x = x.split('.');
+  let x1 = x[0];
+  let x2 = x.length > 1 ? '.' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+  return x1 + x2
 }
