@@ -372,7 +372,7 @@ header .navbar .nav {
 header .logo {
 	float: left;
 	position: relative;
-	max-width: 120px;
+	max-width: 300px;
 }
 header .logo img {
 	z-index: 3;
