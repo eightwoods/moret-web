@@ -17,6 +17,7 @@
 <link href="css/style.css" rel="stylesheet">
 <link href="css/responsive.css" rel="stylesheet">
 <link href="fonts/flaticon.css" rel="stylesheet">
+<link href="fonts/mrrobot/stylesheet.css" rel="stylesheet">
 <link href="css/ionicons.min.css" rel="stylesheet">
 
 <!-- JavaScripts -->
@@ -54,7 +55,7 @@
       <div class="logo"> <a href="index.html"><img class="img-responsive" src="images/moret.png" alt="" ></a> </div>
       <nav class="navbar ownmenu navbar-expand-lg">
         <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> 
-          <span class="navbar-toggler-icon" />
+          <span class="navbar-toggler-icon">
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -80,7 +81,7 @@
     <div class="position-center-center">
       <div class="container text-center">
         <h1 >Trade options on Polygon chain</h1>
-        <h3 style="color:yellow">alpha testing</h3>
+        <h3 style="color:red;font-family:MrRobot" >alpha testing</h3>
         
         <div class="connected">
           <div class="token-menu">
@@ -238,20 +239,22 @@
 
               <li class="col-md-3">
                 <article> <span class="days" id="lp-holding">100</span>
-                  <p class="days_ref">LP Tokens Held</p>
+                  <p class="days_ref">LP Tokens</p>
                 </article>
               </li>
               <li class="col-md-3">
                 <article> <span class="days" id="lp-average-net">1</span>
-                  <p class="days_ref">Withdrawable</p>
+                  <p class="days_ref">Available to withdraw</p>
                 </article>
               </li>
-            <li class="col-md-3">
-                <input type="number" placeholder="1000" id="withdraw-lp">
-                <a href="#." class="btn" id="withdraw-capital">Withdraw LP Tokens</a>
-            </li>
-
+            
             </ul>
+            <ul class="row"><li class="col-md-3">
+              <input type="number" placeholder="1000" id="withdraw-lp">
+              
+          </li>
+          <li class="col-md-3"><a href="#." class="btn" id="withdraw-capital">Withdraw LP Tokens</a></li>
+</ul>
           </div>
         </div>
 
@@ -263,28 +266,37 @@
 
             <!-- Countdown -->
             <ul class="row">
+              
               <li class="col-md-3">
                 <article>
-                  <p class="hours_ref">Add USDC</p>
                   <input type="number" placeholder="1000" id="invest-lp-tokens">
                   <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
                 </article>
               </li>
-              <li class="col-md-3">
-                <article> 
-                  <p class="days_ref">Average token value</p>
-                  <p class="days_ref" id="lp-average-gross">1</p>
-                </article>
-              </li>
-              <li class="col-md-3">
-                <article>
-                  <p>Equivalent LP Tokens</p>
-                  <p class="days_ref" id="invest-lp-cost"></p>
-                </article>
-              </li>
+              
               
             </ul>
-            <a href="#." class="btn btn-inverse" id="add-capital">Invest</a>
+            <ul class="row"><li class="col-md-3">
+              <article>
+                <!-- <p class="hours_ref">Add USDC</p> -->
+                <a href="#." class="btn btn-inverse" id="add-capital">Invest USDC</a>
+                <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
+              </article>
+            </li>
+          </ul>
+            <ul class="row"><li class="col-md-3">
+              <article> 
+                <p class="days_ref">Average token value</p>
+                <p class="days_ref" id="lp-average-gross">1</p>
+              </article>
+            </li>
+            <li class="col-md-3">
+              <article>
+                <p>Equivalent LP Tokens</p>
+                <p class="days_ref" id="invest-lp-cost"></p>
+              </article>
+            </li></ul>
+            
 
             <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
           </div>
@@ -474,11 +486,14 @@
           </div>
           <div class="col">
             <div class="news-letter">
-              <h2>Subscribe to our newsletter</h2>
-              <form>
+              <!-- <h2>Partners</h2> -->
+              <ul class="partners">
+
+              </ul>
+              <!-- <form>
                 <input type="email" placeholder="Enter your email address" required>
                 <button type="submit">SEND</button>
-              </form>
+              </form> -->
             </div>
           </div>
         </div>

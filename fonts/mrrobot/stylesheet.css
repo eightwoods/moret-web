@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'MrRobot';
+    src: url('MrRobot.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+        url('MrRobot.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+/*     
+    src: url('MrRobot.eot');
+    src: url('MrRobot.eot?#iefix') format('embedded-opentype'),
+        url('MrRobot.woff2') format('woff2'),
+        url('MrRobot.woff') format('woff'),
+        url('MrRobot.ttf') format('truetype'),
+        url('MrRobot.svg#MrRobot') format('svg'); */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+h3{
+    font-family:MrRobot Condensed;
+}
