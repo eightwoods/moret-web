@@ -373,7 +373,10 @@ async function addCapital(web3, market, tokenContract, account){
   var fundingTokenDecimals = await tokenContract.methods.decimals().call();
   var investAmount = web3.utils.toBN(inputPoolInvest.value).mul(web3.utils.toBN(10).pow(web3.utils.toBN(Number(fundingTokenDecimals))));
   console.log(investAmount);
-  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: 10**6});
+  var gasPriceAvg = await web3.eth.getGasPrice();
+  var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
+  console.log([web3.utils.fromWei(gasPriceAvg), web3.utils.fromWei(gasPriceSent)]);
+  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: 10**5, gasPrice: gasPriceSent});
   console.log(approveSuccess);
   if(approveSuccess){
     await market.methods.addCapital(investAmount).send({from: account, gas: 10**6});
@@ -382,11 +385,15 @@ async function addCapital(web3, market, tokenContract, account){
 }
 
 async function withdrawCapital(web3, market, account){
-  if(Number(lpTokenHeld.value)>= Number(inputPoolWithdraw.value))
+  console.log(['Withdraw capital', Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value)]);
+  if(Number(lpTokenHeld.innerHTML)>= Number(inputPoolWithdraw.value))
   {
   var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
   console.log(mpWithdraw);
-  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: 10**6});
+  var gasPriceAvg = await web3.eth.getGasPrice();
+  var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
+  console.log([web3.utils.fromWei(gasPriceAvg), web3.utils.fromWei(gasPriceSent)]);
+  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: 10**5, gasPrice: gasPriceSent});
   console.log(approveSuccess);
   if(approveSuccess){
     await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: 10**6});
@@ -419,11 +426,23 @@ async function formatOptionInfo(web3, optionInfo){
       poType = "Undefined";
   }
 
+  let side;
+  switch(parseInt(optionInfo['side'])){
+    case 0:
+      side = "Buy";
+      break;
+    case 1:
+      side = "Sell";
+      break;
+    default:
+      side = "Undefined";
+  }
+
   // var precision = await exchange.methods.priceDecimals().call();
   var strike = web3.utils.fromWei(web3.utils.toBN(optionInfo['strike']), 'ether');
   var amount = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionInfo['amount']))).toFixed(4);
 
-  return [amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
+  return [side, amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
 }
 
 function formatOptionMaturity(web3, optionInfo){
@@ -546,7 +565,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0xf84b72F8B88a2cf155c594B42B27Cbd3bA792f53";
+      return "0xA98C7b1aaC9f03a7A5F9E7E292599441EC850761";
       break;
     case "BTC":
       return "";
