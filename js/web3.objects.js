@@ -77,7 +77,7 @@ const initMarketMaker =  async () => {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
       }
       premiumPrice.innerHTML = x1 + x2;
-      await showOptions(web3, marketContract, exchangeContract, accounts[0]);
+      await showOptions(web3, marketContract, exchangeContract);
     }
   }
 
@@ -189,11 +189,11 @@ const initMarketMaker =  async () => {
   fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
   refreshSpot(web3, exchangeContract);
-  refreshCapital(web3, marketContract, accounts[0]);
+  refreshCapital(web3, marketContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
   refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 30000);
-  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract, accounts[0]); }, 60000);
+  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 60000);
 
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
@@ -205,12 +205,13 @@ const initMarketMaker =  async () => {
 
   purchaseButton.addEventListener('click', async() => {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
-      await calcAndBuyOption(web3, exchangeContract, fundingContract, accounts[0]);
-      await showOptions(web3, marketContract, exchangeContract, accounts[0]);
+      
+      await calcAndBuyOption(web3, exchangeContract, fundingContract);
+      await showOptions(web3, marketContract, exchangeContract);
     }
   })
 
-  await showOptions(web3, marketContract, exchangeContract, accounts[0]);
+  await showOptions(web3, marketContract, exchangeContract);
   
   // OTHER
   // await showMarketCapital(web3, marketContract, exchangeContract, accounts[0]);
@@ -219,10 +220,10 @@ const initMarketMaker =  async () => {
     await showInvestPoolCost(web3, marketContract);
   })
   investInPool.addEventListener('click', async() => {
-    await addCapital(web3,marketContract, fundingContract, accounts[0] );
+    await addCapital(web3,marketContract, fundingContract );
   })
   withdrawFromPool.addEventListener('click', async() =>{
-    await withdrawCapital(web3, marketContract, accounts[0]);
+    await withdrawCapital(web3, marketContract);
   })
 
   // document.getElementById('invest-mp-unit').innerHTML = optionToken;
@@ -255,9 +256,11 @@ async function calcOptionPremium(web3, exchange) {
   return parseFloat(web3.utils.fromWei(cost)).toFixed(4);
 }
 
-async function calcAndBuyOption(web3, exchange, tokenContract, account) {
-  console.log('calcAndBuyOption')
-
+async function calcAndBuyOption(web3, exchange, tokenContract) {
+  var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
+  var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
+  console.log('calcAndBuyOption', account);
+  
   // const pricePricision = await exchange.methods.priceDecimals().call();
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
@@ -270,16 +273,23 @@ async function calcAndBuyOption(web3, exchange, tokenContract, account) {
   console.log('premium & cost', optCost);
   // console.log(exchange._address);
   var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(105))).div(web3.utils.toBN(Number(100)));
-  console.log('pay', web3.utils.fromWei(payInValue));
-  const approveSuccess = await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: 10**6});
+
+  var gasPriceAvg = await web3.eth.getGasPrice();
+  var gasEstimated = await tokenContract.methods.approve(exchange._address, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+  const approveSuccess = await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   console.log(approveSuccess);
   if (approveSuccess){
-    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: 10**6});
+    gasPriceAvg = await web3.eth.getGasPrice();
+    gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
+    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated});
   }
 }
 
-async function showOptions(web3, market, exchange, account){
-  console.log('showOptions');
+async function showOptions(web3, market, exchange){
+  var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
+  var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
+  console.log('showOptions', account);
 
   const optionCount = await market.methods.getHoldersOptionCount(account).call();
   console.log(optionCount);
@@ -329,8 +339,11 @@ async function showOptions(web3, market, exchange, account){
   }
 }
 
-async function refreshCapital(web3, market, account){
-  console.log('refreshCapital');
+async function refreshCapital(web3, market){
+  var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
+  var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
+  console.log('refreshCapital', account);
+
   var grossCapital = await market.methods.calcCapital(false, false).call();
   var netCapital = await market.methods.calcCapital(true, false).call();
   var netAvgCapital = await market.methods.calcCapital(true,true).call();
@@ -369,35 +382,49 @@ async function showInvestPoolCost(web3, market){
   investLPCost.innerHTML =mpAmount.toFixed(4);
 }
 
-async function addCapital(web3, market, tokenContract, account){
+async function addCapital(web3, market, tokenContract){
+  var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
+  var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
+  console.log('addCapital', account);
+
   var fundingTokenDecimals = await tokenContract.methods.decimals().call();
   var investAmount = web3.utils.toBN(inputPoolInvest.value).mul(web3.utils.toBN(10).pow(web3.utils.toBN(Number(fundingTokenDecimals))));
   console.log(investAmount);
   var gasPriceAvg = await web3.eth.getGasPrice();
-  var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
-  console.log([web3.utils.fromWei(gasPriceAvg), web3.utils.fromWei(gasPriceSent)]);
-  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: 10**5, gasPrice: gasPriceSent});
+  var gasEstimated = await tokenContract.methods.approve(market._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+  // var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
+  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   console.log(approveSuccess);
   if(approveSuccess){
-    await market.methods.addCapital(investAmount).send({from: account, gas: 10**6});
-    refreshCapital(web3, market, account);
+    gasPriceAvg = await web3.eth.getGasPrice();
+    gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+    console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+    await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+    refreshCapital(web3, market);
   }
 }
 
-async function withdrawCapital(web3, market, account){
-  console.log(['Withdraw capital', Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value)]);
+async function withdrawCapital(web3, market){
+  var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
+  var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
+  console.log('withdrawCapital', account, Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value));
+  
   if(Number(lpTokenHeld.innerHTML)>= Number(inputPoolWithdraw.value))
   {
   var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
   console.log(mpWithdraw);
   var gasPriceAvg = await web3.eth.getGasPrice();
-  var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
-  console.log([web3.utils.fromWei(gasPriceAvg), web3.utils.fromWei(gasPriceSent)]);
-  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: 10**5, gasPrice: gasPriceSent});
+  var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasPrice, gasPrice: gasPriceAvg});
   console.log(approveSuccess);
   if(approveSuccess){
-    await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: 10**6});
-    refreshCapital(web3, market, account);
+    gasPriceAvg = await web3.eth.getGasPrice();
+    gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+    console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+    await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+    refreshCapital(web3, market);
   }
 }
 }
