@@ -276,14 +276,14 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
 
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(exchange._address, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
-  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
-  const approveSuccess = await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
-  console.log(approveSuccess);
-  if (approveSuccess){
-    gasPriceAvg = await web3.eth.getGasPrice();
-    gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
-    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated});
-  }
+  console.log('gas estimated for approval', gasEstimated, 'price', gasPriceAvg);
+  await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  console.log('approval done');
+  gasPriceAvg = await web3.eth.getGasPrice();
+  console.log('gasPriceAvg', gasPriceAvg);
+  gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated for purchase', gasEstimated, 'price', gasPriceAvg);
+  await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
 }
 
 async function showOptions(web3, market, exchange){
@@ -292,7 +292,7 @@ async function showOptions(web3, market, exchange){
   console.log('showOptions', account);
 
   const optionCount = await market.methods.getHoldersOptionCount(account).call();
-  console.log(optionCount);
+  console.log('option count',optionCount);
 
   // empty
   while( optionList.firstChild ){
@@ -352,14 +352,11 @@ async function refreshCapital(web3, market){
    
   let mpHolding = await market.methods.balanceOf(account).call();
   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
-  let capitalUsed = 1 - parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
+  let capitalAvailable = parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
-  // console.log(grossCapital);
-  // console.log(netCapital);
-  // console.log(capitalUsed);
-  //  console.log(mpHoldingValue);
+  console.log('capital', grossCapital, netCapital, capitalAvailable);
 
-  let progress = Number(capitalUsed).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
+  let progress = Number(capitalAvailable).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
   // console.log(progress);
   let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress,"</small></span> </div>"].join(' ');
   // console.log(cap_html);
@@ -394,15 +391,12 @@ async function addCapital(web3, market, tokenContract){
   var gasEstimated = await tokenContract.methods.approve(market._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   // var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
-  const approveSuccess = await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
-  console.log(approveSuccess);
-  if(approveSuccess){
-    gasPriceAvg = await web3.eth.getGasPrice();
-    gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
-    console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
-    await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
-    refreshCapital(web3, market);
-  }
+  await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  gasPriceAvg = await web3.eth.getGasPrice();
+  gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+  await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  refreshCapital(web3, market);
 }
 
 async function withdrawCapital(web3, market){
@@ -417,15 +411,12 @@ async function withdrawCapital(web3, market){
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
-  const approveSuccess = await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasPrice, gasPrice: gasPriceAvg});
-  console.log(approveSuccess);
-  if(approveSuccess){
-    gasPriceAvg = await web3.eth.getGasPrice();
-    gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
-    console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
-    await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
-    refreshCapital(web3, market);
-  }
+  await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasPrice, gasPrice: gasPriceAvg});
+  gasPriceAvg = await web3.eth.getGasPrice();
+  gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+  await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  refreshCapital(web3, market);
 }
 }
 
@@ -592,7 +583,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0xA98C7b1aaC9f03a7A5F9E7E292599441EC850761";
+      return "0xaa9db8b7F0EF8eAdb311AaE6Bd11000eD5767e51"; // "0xA98C7b1aaC9f03a7A5F9E7E292599441EC850761";
       break;
     case "BTC":
       return "";
