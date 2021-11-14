@@ -354,7 +354,7 @@ async function refreshCapital(web3, market){
   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let capitalAvailable = parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
-  console.log('capital', grossCapital, netCapital, capitalAvailable);
+  console.log('capital', grossCapital, capitalAvailable, netAvgCapital);
 
   let progress = Number(capitalAvailable).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
   // console.log(progress);
@@ -411,7 +411,7 @@ async function withdrawCapital(web3, market){
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
-  await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasPrice, gasPrice: gasPriceAvg});
+  await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
@@ -583,7 +583,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0xaa9db8b7F0EF8eAdb311AaE6Bd11000eD5767e51"; // "0xA98C7b1aaC9f03a7A5F9E7E292599441EC850761";
+      return "0xa5fFb8B8cC551E5A5fD187AdA824c07C41cb8b0E";
       break;
     case "BTC":
       return "";
