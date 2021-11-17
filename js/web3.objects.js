@@ -28,6 +28,7 @@ const premiumPrice = document.getElementById('option-premium');
 // capital
 const grossCap = document.getElementById('gross-capital');
 const lpTokenHeld = document.getElementById('lp-holding');
+const lpTokenEquity = document.getElementById('lp-holding-gross');
 const avgNetValue = document.getElementById('lp-average-net');
 const avgGrossValue = document.getElementById('lp-average-gross');
 const investLPCost = document.getElementById('invest-lp-cost');
@@ -277,13 +278,16 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(exchange._address, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
   console.log('gas estimated for approval', gasEstimated, 'price', gasPriceAvg);
-  await tokenContract.methods.approve(exchange._address, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  var nonceNew = await web3.eth.getTransactionCount(account);
+  await tokenContract.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew});
   console.log('approval done');
+
   gasPriceAvg = await web3.eth.getGasPrice();
-  console.log('gasPriceAvg', gasPriceAvg);
   gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
   console.log('gas estimated for purchase', gasEstimated, 'price', gasPriceAvg);
-  await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  nonceNew = await web3.eth.getTransactionCount(account);
+  await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew});
 }
 
 async function showOptions(web3, market, exchange){
@@ -351,6 +355,7 @@ async function refreshCapital(web3, market){
   //  var totalSupply = await market.methods.totalSupply().call();
    
   let mpHolding = await market.methods.balanceOf(account).call();
+  let mpHoldingEquity = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(grossAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let capitalAvailable = parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
@@ -363,6 +368,7 @@ async function refreshCapital(web3, market){
   grossCap.innerHTML = cap_html;
 
   lpTokenHeld.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
+  lpTokenEquity.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingEquity))).toFixed(2), fundingToken].join(' ');
   avgNetValue.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingValue))).toFixed(2), fundingToken].join(' ');
   avgGrossValue.innerHTML = [parseFloat(web3.utils.fromWei(grossAvgCapital)).toFixed(2), fundingToken].join(' ');
 
