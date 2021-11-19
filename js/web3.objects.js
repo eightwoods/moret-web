@@ -85,7 +85,7 @@ const initMarketMaker =  async () => {
   const updateOptionToken = async () => {
     console.log('optionToken')
     exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
-    console.log('exchangeContract', exchangeContract);
+    console.log('exchangeContract', exchangeContract._address);
     const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
     console.log('marketMakerAddress', marketMakerAddress);
     marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
@@ -178,7 +178,7 @@ const initMarketMaker =  async () => {
   })
 
   exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
-  console.log('exchangeContract', exchangeContract);
+  console.log('exchangeContract', exchangeContract._address);
   const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
   console.log('marketMakerAddress', marketMakerAddress);
   marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
@@ -589,7 +589,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x56aB02592Aa6A3aBD20a5bC0e5C88097D37a65C5";
+      return "0xa83a9088CD9A8Da11213d3Cb21D2700f9B1902AB";
       break;
     case "BTC":
       return "";
