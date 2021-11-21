@@ -78,7 +78,7 @@ const initMarketMaker =  async () => {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
       }
       premiumPrice.innerHTML = x1 + x2;
-      await showOptions(web3, marketContract, exchangeContract);
+      await showOptions(web3, vaultContract, exchangeContract);
     }
   }
 
@@ -89,10 +89,13 @@ const initMarketMaker =  async () => {
     const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
     console.log('marketMakerAddress', marketMakerAddress);
     marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
-    const tokenAddress = await marketContract.methods.underlyingAddress().call();
+    const vaultAddress = await exchangeContract.methods.vaultAddress().call();
+    console.log('vaultAddress:', vaultAddress);
+    vaultContract = await getContract(web3, "./contracts/OptionVault.json", vaultAddress);
+    const tokenAddress = await vaultContract.methods.underlying().call();
     console.log('tokenAddress', tokenAddress);
     tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
-    const fundingAddress = await marketContract.methods.fundingAddress().call();
+    const fundingAddress = await vaultContract.methods.funding().call();
     console.log('fundingAddress', fundingAddress);
     fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
     refreshSpot(web3, exchangeContract);
@@ -182,10 +185,13 @@ const initMarketMaker =  async () => {
   const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
   console.log('marketMakerAddress', marketMakerAddress);
   marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
-  const tokenAddress = await marketContract.methods.underlyingAddress().call();
+  const vaultAddress = await exchangeContract.methods.vaultAddress().call();
+  console.log('vaultAddress:', vaultAddress);
+  vaultContract = await getContract(web3, "./contracts/OptionVault.json", vaultAddress);
+  const tokenAddress = await vaultContract.methods.underlying().call();
   console.log('tokenAddress', tokenAddress);
   tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
-  const fundingAddress = await marketContract.methods.fundingAddress().call();
+  const fundingAddress = await vaultContract.methods.funding().call();
   console.log('fundingAddress', fundingAddress);
   fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
@@ -208,11 +214,11 @@ const initMarketMaker =  async () => {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       
       await calcAndBuyOption(web3, exchangeContract, fundingContract);
-      await showOptions(web3, marketContract, exchangeContract);
+      await showOptions(web3, vaultContract, exchangeContract);
     }
   })
 
-  await showOptions(web3, marketContract, exchangeContract);
+  await showOptions(web3, vaultContract, exchangeContract);
   
   // OTHER
   // await showMarketCapital(web3, marketContract, exchangeContract, accounts[0]);
@@ -290,12 +296,12 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
   await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew});
 }
 
-async function showOptions(web3, market, exchange){
+async function showOptions(web3, vault, exchange){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   console.log('showOptions', account);
 
-  const optionCount = await market.methods.getHoldersOptionCount(account).call();
+  const optionCount = await vault.methods.getHoldersOptionCount(account).call();
   console.log('option count',optionCount);
 
   // empty
@@ -304,7 +310,7 @@ async function showOptions(web3, market, exchange){
   }
 
   for (let i = 0; i < optionCount; i++) {
-    var option = await market.methods.getHoldersOption(i, account).call();
+    var option = await vault.methods.getHoldersOption(i, account).call();
     var optionId = parseInt(option['id']);
     console.log(optionId);
     var optionPayoff = await exchange.methods.getOptionPayoffValue(optionId).call();
@@ -524,7 +530,7 @@ const refreshSpot = async (web3, exchange)=>{
   spotPrice.innerHTML = x1 + x2;
 }
 
-const refreshVolatility = async (web3, market, exchange)=>{
+const refreshVolatility = async (web3, exchange)=>{
   const vol = await exchange.methods.queryVol().call();
   const volPrecision = await exchange.methods.priceDecimals().call();
 
@@ -589,7 +595,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0xa83a9088CD9A8Da11213d3Cb21D2700f9B1902AB";
+      return "0xAAf68Df273d46aE211aC8626873Dc3F12f68fb5c";
       break;
     case "BTC":
       return "";
