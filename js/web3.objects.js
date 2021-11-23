@@ -598,7 +598,7 @@ const getExchangeAddress = (tokenName) => {
       return "0x335f866ec115D9e542898ea2BE3A31CA92EDf34a";
       break;
     case "BTC":
-      return "";
+      return "0xBa28a2c09e4efA78BdEe8e0dc34fcf8Ff009D17F";
       break;
     default:
       return -1;

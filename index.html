@@ -81,7 +81,7 @@
     <div class="position-center-center">
       <div class="container text-center">
         <h1 >Trade options on Polygon chain</h1>
-        <h3 style="color:red;font-family:MrRobot" >alpha testing</h3>
+        <h3 style="color:yellow;font-family:MrRobot" >beta test</h3>
         
         <div class="connected">
           <div class="token-menu">
@@ -218,17 +218,50 @@
           <div class="progress" id="gross-capital">
             <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span >3,000 <small>50%</small></span> </div>
           </div>
-          <!-- <div class="row">
-            <div class="col">
-              <h6 id="call-exposure"> 99,910</h6>
-              <span>Call Exposure</span> </div>
-            <div class="col">
-              <h6 id="put-exposure"> 99,910</h6>
-              <span>Put Exposure</span> </div>
-              <div class="col">
-                <h6 id="available-capital">100</h6>
-                <span>Free Capital</span> </div>
-          </div> -->
+
+          
+          <!-- Invest in MP -->
+          <div class="countdown">
+            <h6>Invest in Liquidity Pool </h6>
+            <!-- <p>Earn premiums by underwriting options.</p> -->
+            <div class="countdown-all">
+
+              <!-- Countdown -->
+              <ul class="row">
+                
+                <li class="col-md-3">
+                  <article>
+                    <input type="number" placeholder="1000" id="invest-lp-tokens">
+                    <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
+                  </article>
+                </li>
+                
+                
+              </ul>
+              <ul class="row"><li class="col-md-3">
+                <article>
+                  <!-- <p class="hours_ref">Add USDC</p> -->
+                  <a href="#." class="btn btn-inverse" id="add-capital">Invest USDC</a>
+                  <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
+                </article>
+                </li>
+              </ul>
+              <ul class="row"><li class="col-md-3">
+                <article> 
+                  <p class="days_ref">Average token value</p>
+                  <p class="days_ref" id="lp-average-gross">1</p>
+                </article>
+              </li>
+              <li class="col-md-3">
+                <article>
+                  <p>Equivalent LP Tokens</p>
+                  <p class="days_ref" id="invest-lp-cost"></p>
+                </article>
+              </li></ul>
+            
+            <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
+            </div>
+          </div>
 
           <!-- MP Token holding -->
           <div class="countdown">
@@ -256,57 +289,14 @@
             </ul>
             <ul class="row"><li class="col-md-3">
               <input type="number" placeholder="1000" id="withdraw-lp">
-              
-          </li>
-          <li class="col-md-3"><a href="#." class="btn" id="withdraw-capital">Withdraw LP Tokens</a></li>
-</ul>
-          </div>
-        </div>
-
-        <!-- Invest in MP -->
-        <div class="col-lg-5">
-          <h3>Invest in Liquidity Pool </h3>
-          <!-- <p>Earn premiums by underwriting options.</p> -->
-          <div class="countdown-all">
-
-            <!-- Countdown -->
-            <ul class="row">
-              
-              <li class="col-md-3">
-                <article>
-                  <input type="number" placeholder="1000" id="invest-lp-tokens">
-                  <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
-                </article>
               </li>
-              
-              
+              <li class="col-md-3"><a href="#." class="btn" id="withdraw-capital">Withdraw LP Tokens</a></li>
             </ul>
-            <ul class="row"><li class="col-md-3">
-              <article>
-                <!-- <p class="hours_ref">Add USDC</p> -->
-                <a href="#." class="btn btn-inverse" id="add-capital">Invest USDC</a>
-                <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
-              </article>
-            </li>
-          </ul>
-            <ul class="row"><li class="col-md-3">
-              <article> 
-                <p class="days_ref">Average token value</p>
-                <p class="days_ref" id="lp-average-gross">1</p>
-              </article>
-            </li>
-            <li class="col-md-3">
-              <article>
-                <p>Equivalent LP Tokens</p>
-                <p class="days_ref" id="invest-lp-cost"></p>
-              </article>
-            </li></ul>
-            
-
-            <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
           </div>
         </div>
       </div>
+
+        
     </div>
   </section>
 
