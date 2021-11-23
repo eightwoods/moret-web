@@ -67,7 +67,10 @@ const onClickConnect = async () => {
         // initialise web3 objects
         initMarketMaker();
       }
-      else{console.log('Non-Polygon chain.');}
+      else{
+        console.log('Non-Polygon chain.');
+        connectButton.innerHTML = 'Please use Polygon chain!';
+      }
     })
 
   } catch (error) {
@@ -75,7 +78,7 @@ const onClickConnect = async () => {
 
     connectButton.innerHTML = 'Connect to Wallet';
     connectButton.disabled = false;
-    connectButton.onclick = this;
+    // connectButton.onclick = this;
   }
 };
 

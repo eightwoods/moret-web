@@ -106,7 +106,7 @@ const initMarketMaker =  async () => {
     }
     catch (error) {
       console.log('error', error);
-      purchaseButton.innerHTML='Premium cannot be calculated.';
+      purchaseButton.innerHTML='Option Unavailable due to capital limit';
       purchaseButton.disabled=true;
     }
   }
@@ -637,10 +637,10 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x335f866ec115D9e542898ea2BE3A31CA92EDf34a";
+      return "0x31BA7C171065022425156AB5Ce48d42930C5Af8a";
       break;
     case "BTC":
-      return "0xBa28a2c09e4efA78BdEe8e0dc34fcf8Ff009D17F";
+      return "0x3A4e815F264909f8Bd4a45fb58Ee3C38386A0803";
       break;
     default:
       return -1;
