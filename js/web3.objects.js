@@ -401,11 +401,15 @@ async function addCapital(web3, market, tokenContract){
   console.log(investAmount);
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(market._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = parseInt(gasEstimated * 1.5)
+  gasPriceAvg = parseInt(gasPriceAvg*1.2)
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   // var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
   await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = parseInt(gasEstimated * 1.5)
+  gasPriceAvg = parseInt(gasPriceAvg*1.2)
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
   refreshCapital(web3, market);
@@ -422,10 +426,14 @@ async function withdrawCapital(web3, market){
   console.log(mpWithdraw);
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = parseInt(gasEstimated * 1.5)
+  gasPriceAvg = parseInt(gasPriceAvg*1.2)
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = parseInt(gasEstimated * 1.5)
+  gasPriceAvg = parseInt(gasPriceAvg*1.2)
   console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
   refreshCapital(web3, market);
