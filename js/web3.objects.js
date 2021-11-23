@@ -58,11 +58,30 @@ let marketContract
 let tokenContract
 let fundingContract
 
+// account
+let currentAccount = null;
+function handleAccountsChanged(accounts){
+  if(accounts.length===0){
+    console.log('Please connect to MetaMask.');
+  }
+  else if(accounts[0]!==currentAccount){
+    currentAccount =accounts[0];
+    console.log('current account', currentAccount);
+  }
+}
+
+ethereum.on('accountsChanged', handleAccountsChanged);
+
 // Init
 const initMarketMaker =  async () => {
 
+  console.log('initialise');
   const web3 = new Web3(window.ethereum);
   const accounts = await web3.eth.getAccounts();
+  ethereum.request({method: 'eth_accounts'}).then(handleAccountsChanged).catch((err)=>{
+    console.error(err);
+  })
+
   console.log('account', accounts[0]);
 
   const calcPremium = async () => {
@@ -99,6 +118,8 @@ const initMarketMaker =  async () => {
     console.log('fundingAddress', fundingAddress);
     fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
     refreshSpot(web3, exchangeContract);
+    refreshCapital(web3, marketContract);
+    await showOptions(web3, vaultContract, exchangeContract);
   }
 
   // Tokens
@@ -107,7 +128,7 @@ const initMarketMaker =  async () => {
       optionTokenETH.classList.add('selected');
       optionTokenBTC.classList.remove('selected');
       optionToken = 'ETH';
-      //await updateOptionToken();
+      await updateOptionToken();
     }
   })
   optionTokenBTC.addEventListener('click', async() => {
@@ -115,7 +136,7 @@ const initMarketMaker =  async () => {
       optionTokenBTC.classList.add('selected');
       optionTokenETH.classList.remove('selected');
       optionToken = 'BTC';
-      //await updateOptionToken();
+      await updateOptionToken();
     }
   })
   // Type
