@@ -34,6 +34,7 @@ const avgGrossValue = document.getElementById('lp-average-gross');
 const investLPCost = document.getElementById('invest-lp-cost');
 
 // buttons
+// const purchaseButton = document.getElementById('option-purchase');
 const purchaseButton = document.querySelector('.buyOption');
 const quoteButton = document.querySelector('.queryPremium');
 
@@ -86,6 +87,7 @@ const initMarketMaker =  async () => {
 
   const calcPremium = async () => {
     console.log('calcPremium')
+    try {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       const premium = await calcOptionPremium(web3, exchangeContract);
       let x = parseFloat(premium).toFixed(4) + '';
@@ -97,7 +99,15 @@ const initMarketMaker =  async () => {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
       }
       premiumPrice.innerHTML = x1 + x2;
+      purchaseButton.innerHTML='Purchase';
+      purchaseButton.disabled=false;
       await showOptions(web3, vaultContract, exchangeContract);
+    }
+    }
+    catch (error) {
+      console.log('error', error);
+      purchaseButton.innerHTML='Premium cannot be calculated.';
+      purchaseButton.disabled=true;
     }
   }
 
@@ -129,6 +139,7 @@ const initMarketMaker =  async () => {
       optionTokenBTC.classList.remove('selected');
       optionToken = 'ETH';
       await updateOptionToken();
+      await calcPremium();
     }
   })
   optionTokenBTC.addEventListener('click', async() => {
@@ -137,6 +148,7 @@ const initMarketMaker =  async () => {
       optionTokenETH.classList.remove('selected');
       optionToken = 'BTC';
       await updateOptionToken();
+      await calcPremium();
     }
   })
   // Type
@@ -145,7 +157,7 @@ const initMarketMaker =  async () => {
       optionTypeCall.classList.add('selected');
       optionTypePut.classList.remove('selected');
       optionType = 'Call';
-      //await calcPremium();
+      await calcPremium();
     }
   })
   optionTypePut.addEventListener('click', async() => {
@@ -153,7 +165,7 @@ const initMarketMaker =  async () => {
       optionTypePut.classList.add('selected');
       optionTypeCall.classList.remove('selected');
       optionType = 'Put';
-      //await calcPremium();
+      await calcPremium();
     }
   })
   // BuySell
@@ -162,6 +174,7 @@ const initMarketMaker =  async () => {
       optionBuySellBuy.classList.add('selected');
       optionBuySellSell.classList.remove('selected');
       optionBuySell = 'Buy';
+      await calcPremium();
     }
   })
   optionBuySellSell.addEventListener('click', async() => {
@@ -169,7 +182,7 @@ const initMarketMaker =  async () => {
       optionBuySellSell.classList.add('selected');
       optionBuySellBuy.classList.remove('selected');
       optionBuySell = 'Sell';
-      //await calcPremium();
+      await calcPremium();
     }
   })
   // Expiry
@@ -179,7 +192,7 @@ const initMarketMaker =  async () => {
       optionExpiryWeek.classList.remove('selected');
       optionExpiryMonth.classList.remove('selected');
       optionExpiry = '1d';
-      //await calcPremium();
+      await calcPremium();
     }
   })
   optionExpiryWeek.addEventListener('click', async() => {
@@ -188,7 +201,7 @@ const initMarketMaker =  async () => {
       optionExpiryWeek.classList.add('selected');
       optionExpiryMonth.classList.remove('selected');
       optionExpiry = '7d';
-      //await calcPremium()
+      await calcPremium();
     }
   })
   optionExpiryMonth.addEventListener('click', async() => {
@@ -197,7 +210,7 @@ const initMarketMaker =  async () => {
       optionExpiryWeek.classList.remove('selected');
       optionExpiryMonth.classList.add('selected');
       optionExpiry = '30d';
-      //await calcPremium()
+      await calcPremium();
     }
   })
 
@@ -390,7 +403,7 @@ async function refreshCapital(web3, market){
 
   let progress = Number(capitalAvailable).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
   // console.log(progress);
-  let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress,"</small></span> </div>"].join(' ');
+  let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress," available</small></span> </div>"].join(' ');
   // console.log(cap_html);
   grossCap.innerHTML = cap_html;
 
