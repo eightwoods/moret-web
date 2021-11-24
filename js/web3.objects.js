@@ -106,7 +106,7 @@ const initMarketMaker =  async () => {
     }
     catch (error) {
       console.log('error', error);
-      purchaseButton.innerHTML='Option Unavailable due to capital limit';
+      purchaseButton.innerHTML='Liquidity Pool unable to underwrite this option';
       purchaseButton.disabled=true;
     }
   }
