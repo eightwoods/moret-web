@@ -26,6 +26,7 @@ const spotPrice = document.getElementById('tokenSpot');
 const premiumPrice = document.getElementById('option-premium');
 
 // capital
+const capTitle = document.getElementById('capital-title');
 const grossCap = document.getElementById('gross-capital');
 const lpTokenHeld = document.getElementById('lp-holding');
 const lpTokenEquity = document.getElementById('lp-holding-gross');
@@ -387,6 +388,7 @@ async function refreshCapital(web3, market){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   console.log('refreshCapital', account);
+  capTitle.innerHTML = [optionToken, 'Liquidity Pool'].join(' ');
 
   var grossCapital = await market.methods.calcCapital(false, false).call();
   var netCapital = await market.methods.calcCapital(true, false).call();
