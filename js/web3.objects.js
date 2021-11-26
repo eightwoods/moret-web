@@ -29,7 +29,7 @@ const premiumPrice = document.getElementById('option-premium');
 const capTitle = document.getElementById('capital-title');
 const grossCap = document.getElementById('gross-capital');
 const lpTokenHeld = document.getElementById('lp-holding');
-const lpTokenEquity = document.getElementById('lp-holding-gross');
+// const lpTokenEquity = document.getElementById('lp-holding-gross');
 const avgNetValue = document.getElementById('lp-average-net');
 const avgGrossValue = document.getElementById('lp-average-gross');
 const investLPCost = document.getElementById('invest-lp-cost');
@@ -234,8 +234,9 @@ const initMarketMaker =  async () => {
   refreshCapital(web3, marketContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
-  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 30000);
-  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 60000);
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 10000);
+  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
+  refreshPremiumPoller = setInterval(function() { calcPremium(); }, 10000);
 
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
@@ -410,7 +411,7 @@ async function refreshCapital(web3, market){
   grossCap.innerHTML = cap_html;
 
   lpTokenHeld.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
-  lpTokenEquity.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingEquity))).toFixed(2), fundingToken].join(' ');
+  // lpTokenEquity.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingEquity))).toFixed(2), fundingToken].join(' ');
   avgNetValue.innerHTML = [parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHoldingValue))).toFixed(2), fundingToken].join(' ');
   avgGrossValue.innerHTML = [parseFloat(web3.utils.fromWei(grossAvgCapital)).toFixed(2), fundingToken].join(' ');
 
@@ -639,10 +640,10 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x890F8D3aD8c3a1adb295a4062C2a5D3659d78AD1";
+      return "0x1E79e1176aEEe781ac30382c868F3c49C1594b77";
       break;
     case "BTC":
-      return "0x55310680d4a9Ed08BB6B573451169eFe92Ca7801";
+      return "0xe6Bc3D0AFD761A5B0fE7fef1DeCFF8a7B46681C8";
       break;
     default:
       return -1;
