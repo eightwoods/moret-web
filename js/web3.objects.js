@@ -62,7 +62,7 @@ let fundingContract
 
 // account
 let currentAccount = null;
-function handleAccountsChanged(accounts){
+async function handleAccountsChanged(accounts){
   if(accounts.length===0){
     console.log('Please connect to MetaMask.');
   }
@@ -102,7 +102,7 @@ const initMarketMaker =  async () => {
       premiumPrice.innerHTML = x1 + x2;
       purchaseButton.innerHTML='Purchase';
       purchaseButton.disabled=false;
-      await showOptions(web3, vaultContract, exchangeContract);
+      //await showOptions(web3, vaultContract, exchangeContract);
     }
     }
     catch (error) {
@@ -234,9 +234,10 @@ const initMarketMaker =  async () => {
   refreshCapital(web3, marketContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
-  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 10000);
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 5000);
   refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
-  refreshPremiumPoller = setInterval(function() { calcPremium(); }, 10000);
+  refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
+  refreshPremiumPoller = setInterval(function() { calcPremium(); }, 5000);
 
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
