@@ -641,10 +641,10 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x1E79e1176aEEe781ac30382c868F3c49C1594b77";
+      return "0x0c53A9cAC37327C00D9c622A6f1439CCFd1A0d1b";
       break;
     case "BTC":
-      return "0xe6Bc3D0AFD761A5B0fE7fef1DeCFF8a7B46681C8";
+      return "0xEc1d5bFb1C170D6d560b1A4C913aA9b5C5308359";
       break;
     default:
       return -1;

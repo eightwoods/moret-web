@@ -20,7 +20,7 @@ function startApp(provider) {
     console.error('Do you have multiple wallets installed?');
   }
   // Access the decentralized web!
-
+  
 }
 
 /**********************************************************/
