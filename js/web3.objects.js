@@ -128,7 +128,7 @@ const initMarketMaker =  async () => {
     const fundingAddress = await vaultContract.methods.funding().call();
     console.log('fundingAddress', fundingAddress);
     fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
-    refreshSpot(web3, exchangeContract);
+    refreshSpot(web3, vaultContract);
     refreshCapital(web3, marketContract);
     await showOptions(web3, vaultContract, exchangeContract);
   }
@@ -230,11 +230,11 @@ const initMarketMaker =  async () => {
   console.log('fundingAddress', fundingAddress);
   fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
-  refreshSpot(web3, exchangeContract);
+  refreshSpot(web3, vaultContract);
   refreshCapital(web3, marketContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
-  refreshSpotPoller = setInterval(function() { refreshSpot(web3, exchangeContract); }, 5000);
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, vaultContract); }, 5000);
   refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
   refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
   refreshPremiumPoller = setInterval(function() { calcPremium(); }, 5000);
@@ -272,7 +272,7 @@ const initMarketMaker =  async () => {
 
   // document.getElementById('invest-mp-unit').innerHTML = optionToken;
 
-  await showVolatility(web3, exchangeContract);
+  await showVolatility(web3, vaultContract);
 };
 
 async function calcOptionPremium(web3, exchange) {
@@ -478,10 +478,10 @@ async function withdrawCapital(web3, market){
 }
 }
 
-async function showVolatility(web3, exchange){
+async function showVolatility(web3, vault){
   console.log('showVolatility')
   for (let i = 0;i < volTenors.length; i++){
-    var vol = await exchange.methods.queryVol(web3.utils.toBN(86400 * volTenors[i])).call();
+    var vol = await vault.methods.queryVol(web3.utils.toBN(86400 * volTenors[i])).call();
     // console.log(volTenors[i], vol);
     var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol)))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
     // console.log(volString);
@@ -557,13 +557,11 @@ const getWeb3 = async () => {
   });
 };
 
-const refreshSpot = async (web3, exchange)=>{
+const refreshSpot = async (web3, vault)=>{
   console.log('refreshSpot')
 
-  const price = await exchange.methods.queryPrice().call();
-  // const pricePrecision = await exchange.methods.priceDecimals().call();
-  // const spotText = web3.utils.fromWei(web3.utils.toBN(Number(price[0])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePrecision)))), 'ether');
-
+  const price = await vault.methods.queryPrice().call();
+  
   const spotText = web3.utils.fromWei(web3.utils.toBN(price[0]), 'ether');
   let x = parseFloat(spotText).toFixed(4) + '';
   x = x.split('.');
