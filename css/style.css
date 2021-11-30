@@ -2038,7 +2038,7 @@ input {
 	font-size: 16px;
 }
 
-#tokenSpot, #option-premium {
+#tokenSpot, #option-premium, #option-collateral, #option-cost {
 	webkit-box-flex: 1;
     -moz-box-flex: 1;
     -o-box-flex: 1;

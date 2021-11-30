@@ -142,6 +142,13 @@
 
           <div class="input-menu">
             <ul class="row">
+                <!-- Spot -->
+                <li class="col-md-6">
+                  <p class="showSpot">Spot Price</p>
+                  <div class="element-input-box noborder">
+                    <p id="tokenSpot" class="element-input-box__input"></p>
+                  </div>
+                </li>
                 <!-- Strike -->
                 <li class="col-md-6">
                   <p class="showStrike">Strike</p>
@@ -150,31 +157,44 @@
                     <!--<div class="element-input-box__token ETH">ETH</div>-->
                   </div>
                 </li>
-                <!-- Amount -->
-                <li class="col-md-6">
-                  <p class="hours_ref">Token Amount</p>
-                  <div class="element-input-box">
-                    <input class="element-input-box__input" type="number" min="0" placeholder="1" id="optionAmount">
-                    <!--<div class="element-input-box__token ETH">ETH</div>-->
-                  </div>
-                </li>
+                
             </ul>
           </div>
 
           <div class="premium-menu">
             <ul class="row">
-                <!-- Spot -->
+              <!-- Amount -->
+              <li class="col-md-6">
+                <p class="hours_ref">Token Amount</p>
+                <div class="element-input-box">
+                  <input class="element-input-box__input" type="number" min="0" placeholder="1" id="optionAmount">
+                  <!--<div class="element-input-box__token ETH">ETH</div>-->
+                </div>
+              </li>
+              <!-- Premium -->
+              <li class="col-md-6">
+                <p class="showSpot">Premium</p>
+                <div class="element-input-box noborder">
+                  <p id="option-premium" class="element-input-box__input"></p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="premium-menu">
+            <ul class="row">
+                <!-- Collateral -->
                 <li class="col-md-6">
-                  <p class="showSpot">Spot Price</p>
+                  <p class="showSpot">Collateral</p>
                   <div class="element-input-box noborder">
-                    <p id="tokenSpot" class="element-input-box__input"></p>
+                    <p id="option-collateral" class="element-input-box__input"></p>
                   </div>
                 </li>
-                <!-- Premium -->
+                <!-- Cost -->
                 <li class="col-md-6">
-                  <p class="showSpot">Cost in USDC</p>
+                  <p class="showSpot">Total Cost</p>
                   <div class="element-input-box noborder">
-                    <p id="option-premium" class="element-input-box__input"></p>
+                    <p id="option-cost" class="element-input-box__input"></p>
                   </div>
                 </li>
             </ul>
