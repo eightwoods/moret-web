@@ -98,10 +98,8 @@ const initMarketMaker =  async () => {
     console.error(err);
   })
 
-  console.log('account', accounts[0]);
-
   const calcPremium = async () => {
-    console.log('calcPremium')
+    // console.log('calcPremium')
     try {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       const premium = await calcOptionPremium(web3, exchangeContract);
@@ -122,7 +120,6 @@ const initMarketMaker =  async () => {
   }
 
   const updateOptionToken = async () => {
-    console.log('optionToken')
     exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
     console.log('exchangeContract', exchangeContract._address);
     const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
@@ -245,7 +242,7 @@ const initMarketMaker =  async () => {
   // Poll refreshSpot every 30s (uncomment to start polling)
   refreshSpotPoller = setInterval(function() { refreshSpot(web3, vaultContract); }, 5000);
   refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
-  refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
+  // refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
   refreshPremiumPoller = setInterval(function() { calcPremium(); }, 5000);
 
   optionStrike.addEventListener('blur', calcPremium)
@@ -254,6 +251,7 @@ const initMarketMaker =  async () => {
   exchangeContract.events.newOptionBought({filter: {_purchaser: accounts[0]} },
     function(error, event){ console.log(event); })
     .on('data', function(returnValues){console.log(returnValues);
+      showOptions(web3, vaultContract, exchangeContract);
   }); // returnValues is the array of option information when it's purchased.
 
   purchaseButton.addEventListener('click', async() => {
@@ -285,25 +283,14 @@ const initMarketMaker =  async () => {
 };
 
 async function calcOptionPremium(web3, exchange) {
-  console.log('calcOptionPremium')
-
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
   const optBuySell = convertBuySell(optionBuySell);
-  // const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
   const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
-  // console.log(optExpiry);
-  // console.log(parseFloat(optStrike));
-  // console.log(optionExpiry);
-  // console.log(optType);
-  // console.log(optBuySell);
-  // console.log(parseFloat(optAmount));
-
   const optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
-  console.log('premium & cost', optCost);
-
+  
   const pricePricision = await fundingContract.methods.decimals().call();
   const premium = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
   const cost = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
@@ -316,30 +303,23 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   console.log('calcAndBuyOption', account);
   
-  // const pricePricision = await exchange.methods.priceDecimals().call();
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
   const optBuySell = convertBuySell(optionBuySell);
-  // const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18-Number(pricePricision))));
   const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
   const optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
-  console.log('premium & cost', optCost);
-  // console.log(exchange._address);
   var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(101))).div(web3.utils.toBN(Number(100)));
 
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(exchange._address, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
-  console.log('gas estimated for approval', gasEstimated, 'price', gasPriceAvg);
   var nonceNew = await web3.eth.getTransactionCount(account);
   await tokenContract.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew});
-  console.log('approval done');
-
+  
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
-  console.log('gas estimated for purchase', gasEstimated, 'price', gasPriceAvg);
   nonceNew = await web3.eth.getTransactionCount(account);
   await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew});
 }
@@ -347,10 +327,9 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
 async function showOptions(web3, vault, exchange){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
-  console.log('showOptions', account);
 
   const optionCount = await vault.methods.getHoldersOptionCount(account).call();
-  console.log('option count',optionCount);
+  // console.log('option count',optionCount);
 
   // empty
   while( optionList.firstChild ){
@@ -360,7 +339,6 @@ async function showOptions(web3, vault, exchange){
   for (let i = 0; i < optionCount; i++) {
     var option = await vault.methods.getHoldersOption(i, account).call();
     var optionId = parseInt(option['id']);
-    console.log(optionId);
     var optionPayoff = await exchange.methods.getOptionPayoffValue(optionId).call();
 
     // Please populate the section of 'Your current active contract' by adding more blocks
@@ -400,7 +378,6 @@ async function showOptions(web3, vault, exchange){
 async function refreshCapital(web3, market){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
-  console.log('refreshCapital', account);
   capTitle.innerHTML = [optionToken, 'Liquidity Pool'].join(' ');
 
   var grossCapital = await market.methods.calcCapital(false, false).call();
@@ -414,12 +391,8 @@ async function refreshCapital(web3, market){
   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let capitalAvailable = parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
-  console.log('capital', grossCapital, capitalAvailable, netAvgCapital);
-
   let progress = Number(capitalAvailable).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0});
-  // console.log(progress);
   let cap_html = ["<div class=\"progress-bar\" role=\"progressbar\" style=\"width:", progress, ";\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"150\"><span >", parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital))).toFixed(2), fundingToken, "<small>", progress," available</small></span> </div>"].join(' ');
-  // console.log(cap_html);
   grossCap.innerHTML = cap_html;
 
   lpTokenHeld.innerHTML = parseFloat(web3.utils.fromWei(web3.utils.toBN(mpHolding))).toFixed(2);
@@ -430,13 +403,9 @@ async function refreshCapital(web3, market){
 }
 
 async function showInvestPoolCost(web3, market){
-  console.log('showInvestPoolCost');
   var mpCost = await market.methods.calcCapital(false ,true).call();
-  console.log(web3.utils.fromWei(web3.utils.toBN(mpCost)));
-  // console.log(inputPoolInvest.value);
   var mpAmount = inputPoolInvest.value / parseFloat(web3.utils.fromWei(web3.utils.toBN(mpCost)));
   // web3.utils.fromWei(web3.utils.toWei(web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value))).div(web3.utils.toBN(mpCost)));
-  console.log(mpAmount);
   investLPCost.innerHTML =mpAmount.toFixed(4);
 }
 
@@ -447,19 +416,17 @@ async function addCapital(web3, market, tokenContract){
 
   var fundingTokenDecimals = await tokenContract.methods.decimals().call();
   var investAmount = web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value,'ether')).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(fundingTokenDecimals))));
-  console.log(investAmount);
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(market._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+
   // var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
   await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
   await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
   refreshCapital(web3, market);
 }
@@ -472,30 +439,26 @@ async function withdrawCapital(web3, market){
   if(Number(lpTokenHeld.innerHTML)>= Number(inputPoolWithdraw.value))
   {
   var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
-  console.log(mpWithdraw);
-  var gasPriceAvg = await web3.eth.getGasPrice();
+ var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+
   await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
   gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  console.log('gas estimated', gasEstimated, 'price', gasPriceAvg);
+
   await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
   refreshCapital(web3, market);
 }
 }
 
 async function showVolatility(web3, vault){
-  console.log('showVolatility')
   for (let i = 0;i < volTenors.length; i++){
     var vol = await vault.methods.queryVol(web3.utils.toBN(86400 * volTenors[i])).call();
-    // console.log(volTenors[i], vol);
     var volString = await (parseFloat(web3.utils.fromWei(web3.utils.toBN(vol)))).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
-    // console.log(volString);
     showVol[i].innerHTML= volString;
   }
 }
@@ -569,8 +532,6 @@ const getWeb3 = async () => {
 };
 
 const refreshSpot = async (web3, vault)=>{
-  console.log('refreshSpot')
-
   const price = await vault.methods.queryPrice().call();
   
   const spotText = web3.utils.fromWei(web3.utils.toBN(price[0]), 'ether');
@@ -650,7 +611,7 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x15Ef56C194Aa6081b84b0CC10091EdAe9992e1D6";
+      return "0x52ea476C538165F0eaE93A2FB1a4FB6D2B8EdFd8";
       break;
     case "BTC":
       return "0x4980D84ca1E4Eee41cf8685bE38359F659d37B89";
