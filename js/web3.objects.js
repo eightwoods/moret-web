@@ -103,7 +103,7 @@ const initMarketMaker =  async () => {
     try {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
       const premium = await calcOptionPremium(web3, exchangeContract);
-      console.log(premium);
+      //console.log(premium);
       await formatPrice(premium[0], premiumPrice);
       await formatPrice(premium[1], collateralAmount);
       await formatPrice(premium[2], optionCost);
@@ -240,10 +240,10 @@ const initMarketMaker =  async () => {
   refreshCapital(web3, marketContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
-  refreshSpotPoller = setInterval(function() { refreshSpot(web3, vaultContract); }, 5000);
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, vaultContract); }, 2000);
   refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
-  // refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
-  refreshPremiumPoller = setInterval(function() { calcPremium(); }, 5000);
+  refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
+  refreshPremiumPoller = setInterval(function() { calcPremium(); }, 2000);
 
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
@@ -252,7 +252,7 @@ const initMarketMaker =  async () => {
     function(error, event){ console.log(event); })
     .on('data', function(returnValues){console.log(returnValues);
       showOptions(web3, vaultContract, exchangeContract);
-  }); // returnValues is the array of option information when it's purchased.
+  }).on('connected', str => console.log(str)); 
 
   purchaseButton.addEventListener('click', async() => {
     if (optionStrike.value !== '' && optionAmount.value !== '') {
@@ -310,7 +310,7 @@ async function calcAndBuyOption(web3, exchange, tokenContract) {
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
   const optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
-  var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(101))).div(web3.utils.toBN(Number(100)));
+  var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
 
   var gasPriceAvg = await web3.eth.getGasPrice();
   var gasEstimated = await tokenContract.methods.approve(exchange._address, payInValue).estimateGas({from: account, gasPrice: gasPriceAvg});
@@ -611,10 +611,10 @@ function convertBuySell(buySellString){
 const getExchangeAddress = (tokenName) => {
   switch(tokenName) {
     case "ETH":
-      return "0x52ea476C538165F0eaE93A2FB1a4FB6D2B8EdFd8";
+      return "0x14013FdEf58B691328E87Ef0C929B5831c65Fe49";
       break;
     case "BTC":
-      return "0x4980D84ca1E4Eee41cf8685bE38359F659d37B89";
+      return "0xfEaeead6441B4C9328EF1a5B9C917Ba86c7ed024";
       break;
     default:
       return -1;
