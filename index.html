@@ -26,7 +26,7 @@
 <!-- Online Fonts -->
 <link href="https://fonts.googleapis.com/css?family=Merriweather:300,400,700,900|Montserrat:300,400,500,600,700,800" rel="stylesheet">
 <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 <!--[if lt IE 9]>
@@ -41,6 +41,19 @@
 <div id="loader">
   <div class="position-center-center">
     <div class="ldr"></div>
+  </div>
+</div>
+
+<div class="banner">
+  <div class="banner__content">
+    <div class="banner__text">
+      Moret is currently in <string>beta</string> test. Welcome to join our Telegram and Discord channels!
+    </div>
+    <button class="banner__close">
+      <span class="material-icons">
+        close
+      </span>
+    </button>
   </div>
 </div>
 
@@ -81,7 +94,7 @@
     <div class="position-center-center">
       <div class="container text-center">
         <h1 >Trade options on Polygon chain</h1>
-        <h3 style="color:yellow;font-family:MrRobot" >beta test</h3>
+        <!-- <h3 style="color:yellow;font-family:MrRobot" >beta test</h3> -->
         
         <div class="connected">
           <div class="token-menu">
@@ -568,6 +581,7 @@
 <!-- Smart Contract -->
 <script type="text/javascript" src="js/web3.min.js"></script>
 <script type="text/javascript" src="js/metamask-onboarding.bundle.js"></script>
+<script type="text/javascript" src="js/banner.js"></script>
 
 <script src="js/metamask.js"></script>
 
