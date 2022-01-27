@@ -248,7 +248,7 @@ const initMarketMaker =  async () => {
   optionStrike.addEventListener('blur', calcPremium)
   optionAmount.addEventListener('blur', calcPremium)
 
-  exchangeContract.events.newOptionBought({filter: {_purchaser: accounts[0]} },
+  exchangeContract.events.NewOption({filter: {_purchaser: accounts[0]} },
     function(error, event){ console.log(event); })
     .on('data', function(returnValues){console.log(returnValues);
       showOptions(web3, vaultContract, exchangeContract);
@@ -614,7 +614,7 @@ const getExchangeAddress = (tokenName) => {
       return "0x752d5da34267d84a960c6eABc73ba492bDcF5eca";
       break;
     case "BTC":
-      return "0x43a8409D3DF1B87F342AEBd0a12aBF8E7A38b2A8";
+      return "0x70d1feAaa2Bba27731bcf20a031CAff33F949b6f";
       break;
     default:
       return -1;
