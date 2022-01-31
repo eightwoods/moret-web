@@ -490,9 +490,9 @@ async function formatOptionInfo(web3, optionInfo){
 
   // var precision = await exchange.methods.priceDecimals().call();
   var strike = web3.utils.fromWei(web3.utils.toBN(optionInfo['strike']), 'ether');
-  var amount = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionInfo['amount']))).toFixed(4);
+  var amount = parseFloat(web3.utils.fromWei(web3.utils.toBN(optionInfo['amount']))).toFixed(2);
 
-  return [side, amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(4)].join(' ');
+  return [side, amount, optionToken, poType, 'at' , parseFloat(strike).toFixed(0)].join(' ');
 }
 
 function formatOptionMaturity(web3, optionInfo){
