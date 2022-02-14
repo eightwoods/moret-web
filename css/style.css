@@ -2096,3 +2096,123 @@ input {
 .banner__close > span{
 	color: #0b0c22;
 }
+
+ /* checkbox */
+.checkbox_container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 52%;
+}
+
+.checkbox {
+	position: relative;
+	width: 30px;
+	height: 30px;
+	background-color: transparent;
+}
+
+.checkbox input, .checkbox-inner:before, .checkbox-inner span, .checkbox-inner label {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.checkbox input {
+	opacity: 0;
+	z-index: 3;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+}
+
+.checkbox-inner {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	border: 2px solid #707070;
+	border-radius: 15px;
+	overflow: hidden;
+	/* transform: rotate(-12deg); */
+	box-shadow: 0 8px 16px 0 rgba(0,0,0,0.15);
+	transition-property: transform;
+	transition-timing-function: linear;
+	transition-delay: 0;
+	transition-duration: .32s;
+}
+
+.checkbox-inner:before {
+	content: "";
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	box-shadow: inset 0 10px 16px 0 rgba(0,0,0,0.28);
+}
+
+.checkbox-inner span {
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	background-color: #1f1f1f;
+	transform-origin: right;
+	transition-property: transform;
+	transition-timing-function: cubic-bezier(.2, .585, 2, .875);
+	transition-delay: .32s;
+	transition-duration: 1.6s;
+}
+
+.checkbox-inner label {
+	position: absolute;
+	z-index: 2;
+	width: 27px;
+	height: 27px;
+	border-radius: 50%;
+	background-image: radial-gradient(50% 88%, #FFFFFF 3%, #F5F5F5 97%);
+	transition-property: left;
+	transition-timing-function: cubic-bezier(1, .885, 2, .875);
+	transition-delay: .32s;
+	transition-duration: 1.32s;
+}
+
+.checkbox__on, .checkbox__off {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	color: #fff;
+	font-size: 16px;
+	transition: opacity .32s linear 0s;
+}
+
+.checkbox__on {
+	right: 100%;
+	margin-right: 16px;
+	opacity: 1;
+}
+
+.checkbox__off {
+	left: 100%;
+	margin-left: 16px;
+	opacity: .24;
+}
+
+/* .checkbox input:checked + .checkbox-inner {
+	transform: rotate(12deg);
+} */
+
+/* .checkbox input:checked + .checkbox-inner label {
+	left: calc(100% - 27px);
+} */
+
+/* .checkbox input:checked + .checkbox-inner span {
+	transform: scaleX(0);
+} */
+
+.checkbox input:checked ~ .checkbox__on {
+	opacity: .24;
+}
+
+.checkbox input:checked ~ .checkbox__off {
+	opacity: 1;
+}
