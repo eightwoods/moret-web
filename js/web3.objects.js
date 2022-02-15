@@ -317,7 +317,7 @@ async function calcOptionPremium(web3, exchange) {
 
     var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
     // console.log(optCost);
-    var premium = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision))));
+    var premium = optCost[0];
     var collateral = (optBuySell == 1) ? web3.utils.toBN(optCost[2]).add(web3.utils.toBN(optCost[3])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision)))) : web3.utils.toBN(Number(0));
   }
   else{
@@ -348,10 +348,11 @@ async function calcAndBuyOption(web3, exchange, funding) {
 
     if (volTokenAddress>0){
       var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
-
+      console.log(optCost);
       // buy with vol token
       if (optBuySell == 0) {
         var payInValue = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
+        console.log(payInValue);
         var gasPriceAvg = await web3.eth.getGasPrice();
         var volToken = await getContract(web3, "./contracts/ERC20.json", volTokenAddress)
         var gasEstimated = await volToken.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
@@ -485,19 +486,23 @@ async function showVolatility(web3, vault, exchange, funding) {
 
     let amount = document.createElement('p');
     let volAmount = await volToken.methods.balanceOf(account).call();
-    // console.log(volAmount);
-    let volAmountString = await parseFloat(web3.utils.toBN(Number(volAmount)).div(web3.utils.toBN(10).pow(web3.utils.toBN(Number(volTokenDecimals))))).toLocaleString(undefined); //formatOptionMaturity(web3, option);
+    // console.log([volAmount, volTokenDecimals]);
+    let volAmountString = await parseFloat(web3.utils.fromWei(volAmount)).toLocaleString(undefined, {
+      minimumFractionDigits: 3}); //formatOptionMaturity(web3, option);
     amount.innerHTML = 'Holdings: ' + volAmountString;
 
     let tradeAmount = document.createElement('input');
     tradeAmount.type = 'number';
+    tradeAmount.placeholder = '1';
     let tradeInputId = 'volTradeAmount' + String(volTenors[i]);
     tradeAmount.id = tradeInputId;
 
     // let tradeLabel = document.createElement('label');
     // tradeLabel.innerHTML = optionToken;
 
-    let tradeAmountBox = document.createElement('row');
+    let tradeAmountBox = document.createElement('div');
+    tradeAmountBox.classList.add('col-md-5');
+    tradeAmountBox.classList.add('text-right');
     tradeAmountBox.appendChild(tradeAmount);
     // tradeAmountBox.appendChild(tradeLabel);
 
@@ -505,6 +510,7 @@ async function showVolatility(web3, vault, exchange, funding) {
     buyButton.appendChild(document.createTextNode("BUY"));
     buyButton.classList.add('btn')
     buyButton.classList.add('btn-inverse')
+    buyButton.href = "#." 
     buyButton.addEventListener('click', async() => {
       await buyVolToken(web3, account, exchange, vault, volExpiry, tradeInputId, funding);
     });
@@ -517,6 +523,7 @@ async function showVolatility(web3, vault, exchange, funding) {
     let sellButton = document.createElement('a');
     sellButton.appendChild(document.createTextNode("SELL"));
     sellButton.classList.add('btn')
+    sellButton.href = "#." 
     sellButton.addEventListener('click', async () => {
       await sellVolToken(web3, account, exchange, vault, volExpiry, tradeInputId, volToken);
     });
