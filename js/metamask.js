@@ -70,6 +70,8 @@ const onClickConnect = async () => {
       else{
         console.log('Non-Polygon chain.');
         connectButton.innerHTML = 'Please use Polygon chain!';
+        connectButton.disabled = false;
+        connectButton.onclick = this;
       }
     })
 

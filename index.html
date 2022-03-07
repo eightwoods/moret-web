@@ -73,12 +73,12 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="nav">
-            <li class="scroll active"><a href="#home">Home</a></li>
-            <li class="connected scroll"> <a href="#holdings">Holdings</a> </li>
-            <li class="connected scroll"> <a href="#pool">Pool</a> </li>
+            <li class="scroll active"><a href="#home">Options</a></li>
             <li class="connected scroll"> <a href="#volatility">Volatility</a> </li>
+            <li class="connected scroll"> <a href="#pool">Pool</a> </li>
+            <li class="connected scroll"> <a href="#holdings">Holdings</a> </li>
             <li class="scroll"> <a href="#about">About </a> </li>
-            <li> <a href="#contact">Contact</a> </li>
+            <!-- <li class="scroll"> <a href="#contact">Contact</a> </li> -->
             <li> <a href="#" class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
           </ul>
         </div>
@@ -227,22 +227,54 @@
     </div>
   </section>
 
-  <!-- HOLDINGS -->
-  <section class="connected road-map padding-top-150 padding-bottom-50" id="holdings">
+  <!-- Volatility -->
+  <section class="connected road-map padding-top-150 padding-bottom-50" id="volatility">
     <div class="container-fluid">
-        <h3>Your current active contracts</h3>
-        <p> </p>
-        <!-- Option List -->
-        <ul class="edu-list margin-top-50" id="option-list">
+      <!-- <section class="connected about light-bg" id="volatility"> -->
+      <!-- Right Background -->
+      <!-- <div class="main-page-section half_left_layout"> -->
+      <!-- <div class="main-half-layout half_right_layout"> </div> -->
+  
+      <!-- Left Content -->
+      <!-- <div class="main-half-layout-container half_right_layout"> -->
+      <div class="container-fluid">
+        <div class="about-us-con">
+          <h3>Volatility</h3>
+          <p>Moret provides a volatility oracle that is based on price feed from chainlink.</p>
+          <!-- <ul class="count-info row"> -->
+        </div>
+        <ul class="edu-list margin-top-50" id="volatility-list">
           <!-- fill this automatically  -->
           <!-- <li>
-              <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
-              <h5 id="option-payoff-1">0.01 ETH</h5>
-              <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
-              <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
-          </li> -->
+                            <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
+                            <h5 id="option-payoff-1">0.01 ETH</h5>
+                            <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
+                            <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
+                        </li>
+             -->
+  
+          <!-- <li class="col">
+                <span class="counter" id="1d-vol">5000</span><span>+</span>
+                <p id="1d-vol"></p>
+                <p>1-day volatility</p>
+              </li>
+              <li class="col">
+                <span class="counter" id="1d-vol">5000</span><span>+</span>
+                <p id="7d-vol"></p>
+                <p>7-day volatility</p>
+              </li>
+              <li class="col">
+                <span class="counter" id="1d-vol">5000</span><span>+</span>
+                <p id="30d-vol"></p>
+                <p>30-day volatility</p>
+              </li> -->
+          <!-- <li class="col"> <span class="counter">750</span><span>+</span>
+                <p>Deploying</p>
+              </li> -->
         </ul>
-    </div>
+        <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
+        <!-- </div> -->
+      </div>
   </section>
 
   <!-- Pool Distribution -->
@@ -342,53 +374,21 @@
     </div>
   </section>
 
-  <!-- Volatility -->
-  <section class="connected road-map padding-top-150 padding-bottom-50" id="volatility">
+  <!-- HOLDINGS -->
+  <section class="connected road-map padding-top-150 padding-bottom-50" id="holdings">
     <div class="container-fluid">
-  <!-- <section class="connected about light-bg" id="volatility"> -->
-    <!-- Right Background -->
-    <!-- <div class="main-page-section half_left_layout"> -->
-      <!-- <div class="main-half-layout half_right_layout"> </div> -->
-
-      <!-- Left Content -->
-      <!-- <div class="main-half-layout-container half_right_layout"> -->
-      <div class="container-fluid">
-        <div class="about-us-con">
-          <h3>Volatility</h3>
-          <p>Moret provides a volatility oracle that is based on price feed from chainlink.</p>
-          <!-- <ul class="count-info row"> -->
-        </div>
-          <ul class="edu-list margin-top-50" id="volatility-list">
-              <!-- fill this automatically  -->
-              <!-- <li>
-                          <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
-                          <h5 id="option-payoff-1">0.01 ETH</h5>
-                          <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
-                          <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
-                      </li>
-           -->
-
-            <!-- <li class="col">
-              <span class="counter" id="1d-vol">5000</span><span>+</span>
-              <p id="1d-vol"></p>
-              <p>1-day volatility</p>
-            </li>
-            <li class="col">
-              <span class="counter" id="1d-vol">5000</span><span>+</span>
-              <p id="7d-vol"></p>
-              <p>7-day volatility</p>
-            </li>
-            <li class="col">
-              <span class="counter" id="1d-vol">5000</span><span>+</span>
-              <p id="30d-vol"></p>
-              <p>30-day volatility</p>
+      <h3>Your current active contracts</h3>
+      <p> </p>
+      <!-- Option List -->
+      <ul class="edu-list margin-top-50" id="option-list">
+        <!-- fill this automatically  -->
+        <!-- <li>
+                <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
+                <h5 id="option-payoff-1">0.01 ETH</h5>
+                <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
+                <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
             </li> -->
-            <!-- <li class="col"> <span class="counter">750</span><span>+</span>
-              <p>Deploying</p>
-            </li> -->
-          </ul>
-          <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
-      <!-- </div> -->
+      </ul>
     </div>
   </section>
 
