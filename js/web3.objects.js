@@ -304,33 +304,48 @@ const initMarketMaker =  async () => {
   // console.log('test2');
 };
 
-async function calcOptionPremium(web3, exchange) {
+// get list of tokens - to be used in conjunction with Chainlink API to get spot prices
+async function getAllTokens(moret){
+  const underlyingArray = await moret.methods.getAllUnderlyings().call();
+  return underlyingArray;
+}
+
+// get list of liquidity pools for a given underlying (address)
+async function getAllPools(broker, underlyingSelected){
+  const poolArray = await broker.methods.getAllUnderlyings(underlyingSelected).call();
+  return poolArray;
+}
+
+// get option price, collateral and implied volatility (annualised values)
+async function calcOptionPremium(web3, exchange, pool) {
   const optType = convertOptionType(optionType);
   const optExpiry = convertExpiry(optionExpiry);
   const optBuySell = convertBuySell(optionBuySell);
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
   const pricePricision = await fundingContract.methods.decimals().call();
 
-  if(optionPaymentInVol){
-    // const volTokenAddress = await exchangeContract.methods.volTokenAddressList(optExpiry).call();
-    // console.log(volTokenAddress);
+  // if(optionPaymentInVol){
+  //   // const volTokenAddress = await exchangeContract.methods.volTokenAddressList(optExpiry).call();
+  //   // console.log(volTokenAddress);
 
-    var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
-    // console.log(optCost);
-    var premium = optCost[0];
-    var collateral = (optBuySell == 1) ? web3.utils.toBN(optCost[2]).add(web3.utils.toBN(optCost[3])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision)))) : web3.utils.toBN(Number(0));
-  }
-  else{
-    const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
-    var optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
-    var premium = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision))));
-    var collateral = (optBuySell == 1) ? web3.utils.toBN(optCost[0]).add(web3.utils.toBN(optCost[1])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision)))) : web3.utils.toBN(Number(0));
-  }
+  //   var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
+  //   // console.log(optCost);
+  //   var premium = optCost[0];
+  //   var collateral = (optBuySell == 1) ? web3.utils.toBN(optCost[2]).add(web3.utils.toBN(optCost[3])).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision)))) : web3.utils.toBN(Number(0));
+  // }
+  // else{
+  const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
+  var optCost = await exchange.methods.queryOption(pool, optExpiry, optStrike, optAmount, optType, optBuySell, false).call();
+  var premium = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision))));
+  var collateral = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision))));
+  var volatility = web3.utils.fromWei(web3.utils.toBN(optCost[3]),'ether');
+  // }
   
   // const cost = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(pricePricision))));
-  return [parseFloat(web3.utils.fromWei(premium)).toFixed(4), parseFloat(web3.utils.fromWei(collateral)).toFixed(4)];
+  return [parseFloat(web3.utils.fromWei(premium)).toFixed(4), parseFloat(web3.utils.fromWei(collateral)).toFixed(4), parseFloat(volatility).toFixed(4)];
 }
 
+// 
 async function calcAndBuyOption(web3, exchange, funding) {
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
@@ -342,62 +357,62 @@ async function calcAndBuyOption(web3, exchange, funding) {
   const optStrike = web3.utils.toBN(web3.utils.toWei(optionStrike.value));
   const optAmount = web3.utils.toBN(web3.utils.toWei(optionAmount.value));
 
-  if (optionPaymentInVol) {
-    const volTokenAddress = await exchangeContract.methods.volTokenAddressList(optExpiry).call();
-    // print(volTokenAddress);
+  // if (optionPaymentInVol) {
+  //   const volTokenAddress = await exchangeContract.methods.volTokenAddressList(optExpiry).call();
+  //   // print(volTokenAddress);
 
-    if (volTokenAddress>0){
-      var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
-      console.log(optCost);
-      // buy with vol token
-      if (optBuySell == 0) {
-        var payInValue = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
-        console.log(payInValue);
-        var gasPriceAvg = await web3.eth.getGasPrice();
-        var volToken = await getContract(web3, "./contracts/ERC20.json", volTokenAddress)
-        var gasEstimated = await volToken.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-        var nonceNew = await web3.eth.getTransactionCount(account);
-        await volToken.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  //   if (volTokenAddress>0){
+  //     var optCost = await exchange.methods.calcVolAmount(optExpiry, optAmount, optBuySell).call();
+  //     console.log(optCost);
+  //     // buy with vol token
+  //     if (optBuySell == 0) {
+  //       var payInValue = web3.utils.toBN(optCost[0]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
+  //       console.log(payInValue);
+  //       var gasPriceAvg = await web3.eth.getGasPrice();
+  //       var volToken = await getContract(web3, "./contracts/ERC20.json", volTokenAddress)
+  //       var gasEstimated = await volToken.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  //       var nonceNew = await web3.eth.getTransactionCount(account);
+  //       await volToken.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
 
-        gasPriceAvg = await web3.eth.getGasPrice();
-        gasEstimated = await exchange.methods.buyOptionInVol(optExpiry, optAmount, optType, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
-        nonceNew = await web3.eth.getTransactionCount(account);
-        await exchange.methods.buyOptionInVol(optExpiry, optAmount, optType, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
-      }
-      // sell for vol tokens but deposit collateral in USDC
-      else if (optBuySell == 1) {
-        var payInValue = web3.utils.toBN(optCost[2] + optCost[3]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
-        var gasPriceAvg = await web3.eth.getGasPrice();
-        var gasEstimated = await funding.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-        var nonceNew = await web3.eth.getTransactionCount(account);
-        await funding.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  //       gasPriceAvg = await web3.eth.getGasPrice();
+  //       gasEstimated = await exchange.methods.buyOptionInVol(optExpiry, optAmount, optType, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  //       gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
+  //       nonceNew = await web3.eth.getTransactionCount(account);
+  //       await exchange.methods.buyOptionInVol(optExpiry, optAmount, optType, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  //     }
+  //     // sell for vol tokens but deposit collateral in USDC
+  //     else if (optBuySell == 1) {
+  //       var payInValue = web3.utils.toBN(optCost[2] + optCost[3]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
+  //       var gasPriceAvg = await web3.eth.getGasPrice();
+  //       var gasEstimated = await funding.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  //       var nonceNew = await web3.eth.getTransactionCount(account);
+  //       await funding.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
 
-        gasPriceAvg = await web3.eth.getGasPrice();
-        gasEstimated = await exchange.methods.sellOptionInVol(optExpiry, optAmount, optType, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
-        nonceNew = await web3.eth.getTransactionCount(account);
-        await exchange.methods.sellOptionInVol(optExpiry, optAmount, optType, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
-      }
-    }
-    else{
-      console.log("Vol token for tenor " + str(optExpiry) + " does not exist.");
-    }
-  }
-  else{
-    var optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
-    var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
-    var gasPriceAvg = await web3.eth.getGasPrice();
-    var gasEstimated = await funding.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-    var nonceNew = await web3.eth.getTransactionCount(account);
-    await funding.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  //       gasPriceAvg = await web3.eth.getGasPrice();
+  //       gasEstimated = await exchange.methods.sellOptionInVol(optExpiry, optAmount, optType, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  //       gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
+  //       nonceNew = await web3.eth.getTransactionCount(account);
+  //       await exchange.methods.sellOptionInVol(optExpiry, optAmount, optType, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  //     }
+  //   }
+  //   else{
+  //     console.log("Vol token for tenor " + str(optExpiry) + " does not exist.");
+  //   }
+  // }
+  // else{
+  var optCost = await exchange.methods.calcCost(optExpiry, optStrike, optAmount, optType, optBuySell).call();
+  var payInValue = web3.utils.toBN(optCost[1]).mul(web3.utils.toBN(Number(102))).div(web3.utils.toBN(Number(100)));
+  var gasPriceAvg = await web3.eth.getGasPrice();
+  var gasEstimated = await funding.methods.approve(exchange._address, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  var nonceNew = await web3.eth.getTransactionCount(account);
+  await funding.methods.approve(exchange._address, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
 
-    gasPriceAvg = await web3.eth.getGasPrice();
-    gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
-    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
-    nonceNew = await web3.eth.getTransactionCount(account);
-    await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
-  }
+  gasPriceAvg = await web3.eth.getGasPrice();
+  gasEstimated = await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).estimateGas({ from: account, gasPrice: gasPriceAvg });
+  gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))))
+  nonceNew = await web3.eth.getTransactionCount(account);
+  await exchange.methods.purchaseOption(optExpiry, optStrike, optAmount, optType, optBuySell, payInValue).send({ from: account, gas: gasEstimated, gasPrice: gasPriceAvg, nonce: nonceNew });
+  // }
 }
 
 async function showOptions(web3, vault, exchange){
