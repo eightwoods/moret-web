@@ -1,3 +1,11 @@
+// Addresses - tokens
+const tokenAddressMapping = { 137: { 'ETH': '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', 'BTC':'0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6'}, 80001: { 'ETH':'0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa'}};
+const factoryMapping = {'MarketMaker': '', 'Pool': '', 'PoolFactory': ''};
+
+// Addresses - moret ane exchange - to be updated later
+const moretAddress = "0xE1c3dB131d772EdeC15500fB1051e99473DcA517";
+const exchangeAddress = "0xb63F673AC388D17CE202c9599A88efE213f7f6Cb";
+
 // Form
 let optionToken = 'ETH';
 const optionTokenETH = document.getElementById('tokenSelected').getElementsByClassName("ETH")[0];
@@ -66,13 +74,15 @@ let moretContract
 let brokerContract
 let exchangeContract
 let vaultContract
-// let poolContract
-// let marketContract
+let poolContract
+let marketContract
+let tokenContract
 let fundingContract
 let marketFactory
 let poolFactory
 let poolGovenorFactory
 let poolTimelocker
+let chainId
 
 // account
 let currentAccount = null;
@@ -132,23 +142,21 @@ const initMarketMaker =  async () => {
   }
 
   const updateOptionToken = async () => {
-    exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress(optionToken));
-    console.log('exchangeContract', exchangeContract._address);
-    const marketMakerAddress = await exchangeContract.methods.marketMakerAddress().call();
-    console.log('marketMakerAddress', marketMakerAddress);
-    marketContract = await getContract(web3, "./contracts/MoretMarketMaker.json", marketMakerAddress);
-    const vaultAddress = await exchangeContract.methods.vaultAddress().call();
-    console.log('vaultAddress:', vaultAddress);
-    vaultContract = await getContract(web3, "./contracts/OptionVault.json", vaultAddress);
-    // const tokenAddress = await vaultContract.methods.underlying().call();
-    // console.log('tokenAddress', tokenAddress);
-    // tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
-    const fundingAddress = await vaultContract.methods.funding().call();
-    console.log('fundingAddress', fundingAddress);
-    fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
+    await ethereum.request({ method: 'eth_chainId' }).then((_chainId) => {
+      chainId = _chainId;})
+    let tokenAddress = tokenAddressMapping[chainId][optionToken];
+    console.log('tokenAddress', tokenAddress);
+    tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
+    let pools = await brokerContract.methods.getAllPools(tokenAddress).call();
+    console.log('pool', pools[0]);
+    poolContract = await getContract(web3, "./contracts/Pool.json", pools[0]);
+    let marketAddress = await poolContract.methods.marketMaker().call();
+    console.log('market maker', marketAddress);
+    marketContract = await getContract(web3, "./contracts/MarketMaker.json", marketAddress);
     
-    refreshSpot(web3, vaultContract);
-    refreshCapital(web3, marketContract);
+    refreshSpot(web3, marketContract);
+    refreshCapital(web3, vaultContract, poolContract);
+
     await showOptions(web3, vaultContract, exchangeContract);
     await showVolatility(web3, vaultContract, exchangeContract, fundingContract);
   }
@@ -250,14 +258,14 @@ const initMarketMaker =  async () => {
     calcPremium();
   })
 
-  moretContract = await getContract(web3, './contracts/Moret.json', getMoretAddress());
+  moretContract = await getContract(web3, './contracts/Moret.json', moretAddress);
   console.log('moretContract', moretContract._address);
-  exchangeContract = await getContract(web3, "./contracts/Exchange.json", getExchangeAddress());
-  console.log('exchangeContract', exchangeContract._address);
-
   const brokerAddress = await moretContract.methods.broker().call();
   brokerContract = await getContract(web3, './contracts/MoretBroker.json', brokerAddress);
   const vaultAddressInBroker = await brokerContract.methods.vault().call();
+
+  exchangeContract = await getContract(web3, "./contracts/Exchange.json", exchangeAddress);
+  console.log('exchangeContract', exchangeContract._address);
   const vaultAddress = await exchangeContract.methods.vault().call();
   if(vaultAddress!=vaultAddressInBroker){
     console.log('inconsistent vault address', vaultAddress, vaultAddressInBroker);
@@ -269,19 +277,29 @@ const initMarketMaker =  async () => {
   fundingContract = await getContract(web3, "./contracts/ERC20.json", fundingAddress)
 
   // factories
-  marketFactory = await getContract(web3, "./contracts/MarketMakerFactory.json", getMarketFactory());
-  poolFactory = await getContract(web3, "./contracts/PoolFactory.json", getPoolFactory());
-  poolGovernorFactory = await getContract(web3, "./contracts/PoolGovenorFactory.json", getPoolGovernorFactory());
+  marketFactory = await getContract(web3, "./contracts/MarketMakerFactory.json", factoryMapping['MarketMaker']);
+  poolFactory = await getContract(web3, "./contracts/PoolFactory.json", factoryMapping['Pool']);
+  poolGovernorFactory = await getContract(web3, "./contracts/PoolGovenorFactory.json", factoryMapping['PoolFactory']);
 
-  // timelocker
-  poolTimelocker = await getContract(web3, "./contracts/TimelockController.json", getTimelocker());
-  
-  // refreshSpot(web3, vaultContract);
-  // refreshCapital(web3, marketContract);
+  await ethereum.request({ method: 'eth_chainId' }).then((_chainId) => {
+    chainId = _chainId;
+  })
+  let tokenAddress = tokenAddressMapping[chainId][optionToken];
+  console.log('tokenAddress', tokenAddress);
+  tokenContract = await getContract(web3, "./contracts/ERC20.json", tokenAddress)
+  let pools = await brokerContract.methods.getAllPools(tokenAddress).call();
+  console.log('pool', pools[0]);
+  poolContract = await getContract(web3, "./contracts/Pool.json", pools[0]);
+  let marketAddress = await poolContract.methods.marketMaker().call();
+  console.log('market maker', marketAddress);
+  marketContract = await getContract(web3, "./contracts/MarketMaker.json", marketAddress);
+
+  refreshSpot(web3, marketContract);
+  refreshCapital(web3, vaultContract, poolContract);
 
   // Poll refreshSpot every 30s (uncomment to start polling)
-  refreshSpotPoller = setInterval(function() { refreshSpot(web3, vaultContract); }, 2000);
-  refreshCapitalPoller = setInterval(function() { refreshCapital(web3, marketContract); }, 10000);
+  refreshSpotPoller = setInterval(function() { refreshSpot(web3, marketContract); }, 2000);
+  refreshCapitalPoller = setInterval(function () { refreshCapital(web3, vaultContract, poolContract); }, 10000);
   refreshOptionListPoller = setInterval(function() { showOptions(web3, vaultContract, exchangeContract); }, 60000);
   refreshPremiumPoller = setInterval(function() { calcPremium(); }, 2000);
 
@@ -791,19 +809,19 @@ async function addNewPool(web3, token_address){
 }
 
 
-async function refreshCapital(web3, market){
+async function refreshCapital(web3, vault, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   capTitle.innerHTML = [optionToken, 'Liquidity Pool'].join(' ');
 
-  var grossCapital = await market.methods.calcCapital(false, false).call();
-  var netCapital = await market.methods.calcCapital(true, false).call();
-  var netAvgCapital = await market.methods.calcCapital(true,true).call();
-  var grossAvgCapital = await market.methods.calcCapital(false,true).call();
+  var grossCapital = await vault.methods.calcCapital(pool, false, false).call();
+  var netCapital = await vault.methods.calcCapital(pool, true, false).call();
+  var netAvgCapital = await vault.methods.calcCapital(pool, true,true).call();
+  var grossAvgCapital = await vault.methods.calcCapital(pool, false,true).call();
   //  var totalSupply = await market.methods.totalSupply().call();
    
-  let mpHolding = await market.methods.balanceOf(account).call();
-  let mpHoldingEquity = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(grossAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
+  let mpHolding = await pool.methods.balanceOf(account).call();
+  // let mpHoldingEquity = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(grossAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let mpHoldingValue = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(netAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
   let capitalAvailable = parseFloat(web3.utils.fromWei(web3.utils.toBN(netCapital), 'ether')) / parseFloat(web3.utils.fromWei(web3.utils.toBN(grossCapital), 'ether'))
  
@@ -825,49 +843,49 @@ async function showInvestPoolCost(web3, market){
   investLPCost.innerHTML =mpAmount.toFixed(4);
 }
 
-async function addCapital(web3, market, tokenContract){
+async function addCapital(web3, exchange, vault, funding, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   console.log('addCapital', account);
 
-  var fundingTokenDecimals = await tokenContract.methods.decimals().call();
+  var fundingTokenDecimals = await funding.methods.decimals().call();
   var investAmount = web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value,'ether')).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(fundingTokenDecimals))));
   var gasPriceAvg = await web3.eth.getGasPrice();
-  var gasEstimated = await tokenContract.methods.approve(market._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  var gasEstimated = await funding.methods.approve(exchange._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
 
   // var gasPriceSent = web3.utils.toBN(Number(gasPriceAvg)).mul(web3.utils.toBN(5)).div(web3.utils.toBN(10));
-  await tokenContract.methods.approve(market._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  await funding.methods.approve(exchange._address, investAmount).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
   gasPriceAvg = await web3.eth.getGasPrice();
-  gasEstimated = await market.methods.addCapital(investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  gasEstimated = await exchange.methods.addCapital(pool, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  await market.methods.addCapital(investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
-  refreshCapital(web3, market);
+  await exchange.methods.addCapital(pool, investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  refreshCapital(web3, vault, pool);
 }
 
-async function withdrawCapital(web3, market){
+async function withdrawCapital(web3, exchange, vault, funding, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
   console.log('withdrawCapital', account, Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value));
   
   if(Number(lpTokenHeld.innerHTML)>= Number(inputPoolWithdraw.value))
   {
-  var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
- var gasPriceAvg = await web3.eth.getGasPrice();
-  var gasEstimated = await market.methods.approve(market._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
-  gasEstimated = parseInt(gasEstimated * 1.5)
-  gasPriceAvg = parseInt(gasPriceAvg*1.2)
+    var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
+    var gasPriceAvg = await web3.eth.getGasPrice();
+    var gasEstimated = await pool.methods.approve(exchange._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+    gasEstimated = parseInt(gasEstimated * 1.5)
+    gasPriceAvg = parseInt(gasPriceAvg*1.2)
 
-  await market.methods.approve(market._address, mpWithdraw).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
-  gasPriceAvg = await web3.eth.getGasPrice();
-  gasEstimated = await market.methods.withdrawCapital(mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
-  gasEstimated = parseInt(gasEstimated * 1.5)
-  gasPriceAvg = parseInt(gasPriceAvg*1.2)
+    await pool.methods.approve(exchange._address, mpWithdraw).send({from:account, gas: gasEstimated, gasPrice: gasPriceAvg});
+    gasPriceAvg = await web3.eth.getGasPrice();
+    gasEstimated = await exchange.methods.withdrawCapital(pool, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+    gasEstimated = parseInt(gasEstimated * 1.5)
+    gasPriceAvg = parseInt(gasPriceAvg*1.2)
 
-  await market.methods.withdrawCapital(mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
-  refreshCapital(web3, market);
+    await exchange.methods.withdrawCapital(pool, mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+    refreshCapital(web3, vault, pool);
   }
 }
 
@@ -949,10 +967,12 @@ const getWeb3 = async () => {
   });
 };
 
-const refreshSpot = async (web3, vault)=>{
-  const price = await vault.methods.queryPrice().call();
+const refreshSpot = async (web3, market)=>{
+  let volChainAddress = await market.methods.getVolatilityChain().call();
+  let volChain = await getContract(web3, "./contracts/VolatilityChain.json", volChainAddress);
+  const price = await volChain.methods.queryPrice().call();
   
-  const spotText = web3.utils.fromWei(web3.utils.toBN(price[0]), 'ether');
+  const spotText = web3.utils.fromWei(web3.utils.toBN(price), 'ether');
   let x = parseFloat(spotText).toFixed(2) + '';
   x = x.split('.');
   let x1 = x[0];
@@ -984,6 +1004,19 @@ const getContract = async (web3, path, address) => {
   return contract;
 };
 
+function getTokenAddress(tokenString, chainId){
+  switch(tokenString){
+    case "ETH":
+      return '0x4DfAe612aaCB5b448C12A591cD0879bFa2e51d62';
+      break;
+    case "BTC":
+      return '';
+      break;
+    default:
+      return '';
+  }
+}
+
 function convertOptionType(typeString) {
   switch(typeString) {
     case "Call":
@@ -1014,19 +1047,6 @@ function convertBuySell(buySellString){
       break;
     case "Sell":
       return 1;
-      break;
-    default:
-      return -1;
-  }
-}
-
-const getExchangeAddress = (tokenName) => {
-  switch(tokenName) {
-    case "ETH":
-      return "0xF8DbD3b5c17624e4769BD1aa35cD8ef46886a9F7";
-      break;
-    case "BTC":
-      return "0x5D6eBa1Be9c762f0Bb0febDf90BF28A0C5771873";
       break;
     default:
       return -1;
