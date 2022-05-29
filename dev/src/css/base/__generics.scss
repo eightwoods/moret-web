@@ -37,11 +37,13 @@ a {
         border: 2px solid $white-0;
         padding: 3px 18px;
         border-radius: 18px;
+        &:hover, &-active {
+            color: $white;
+            border-color: $white-14;
+        }
         &-active {
             cursor: not allowed;
             pointer-events: none;
-            color: $white;
-            border-color: $white-14;
         }
     }
 
