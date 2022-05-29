@@ -1,0 +1,88 @@
+main.home {
+    section {
+        opacity: 0;
+    }
+
+    .hero {
+        .header {
+            .btn {
+                overflow: hidden;
+                span {
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        .content {
+            @include mediaQuery($pb-sm, max) {
+                margin-left: -#{spacer()};
+                margin-right: -#{spacer()};
+
+                img {
+                    height: 250px;
+                    object-fit: cover;
+                    object-position: center;
+                }
+            }
+        }
+    }
+
+    .features {
+        .content {
+            display: grid;
+            @include mediaQuery($pb-xl) {
+                grid-auto-flow: column;
+            }
+            align-items: center;
+            row-gap: spacer(1.5);
+            column-gap: spacer(2.5);
+        }
+    }
+
+    .volatility-tokens {
+        .content {
+            .listings {
+                display: grid;
+                @include mediaQuery($pb-md) {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                gap: spacer();
+            }
+
+            .tokens {
+                display: grid;
+                @include mediaQuery($pb-sm) {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    @include mediaQuery($pb-lgmd, max) {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
+                }
+                row-gap: 10px;
+                column-gap: 16px;
+            }
+        }
+    }
+
+    .partners {
+        .content {
+            text-align: center;
+
+            ul {
+                display: inline-flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                row-gap: spacer();
+                column-gap: spacer(3);
+                @include mediaQuery($pb-xs, max) {
+                    column-gap: spacer(2);
+                }
+
+                li {
+                    @include mediaQuery($pb-xs, max) {
+                        width: 40%;
+                    }
+                }
+            }
+        }
+    }
+}

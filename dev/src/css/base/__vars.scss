@@ -1,0 +1,74 @@
+// -------------------------------
+// ----- Website -----------------
+// -------------------------------
+$shortcode:     "moret";
+
+// -------------------------------
+// ----- Breakpoints -------------
+// -------------------------------
+$pb-xl:         1200px;
+$pb-lg:         1024px;
+$pb-lgmd:       900px;
+$pb-md:         768px;
+$pb-sm:         640px;
+$pb-xs:         460px;
+$pb-xxs:        321px;
+
+// -------------------------------
+// ----- Colour ------------------
+// -------------------------------
+$white:         #ffffff;
+$white-50:      rgba(255, 255, 255, 0.5);
+$white-14:      rgba(255, 255, 255, 0.14);
+$white-8:       rgba(255, 255, 255, 0.08);
+$white-6:       rgba(255, 255, 255, 0.06);
+$white-4:       rgba(255, 255, 255, 0.04);
+$white-0:       rgba(255, 255, 255, 0);
+$black:         #000000;
+$color-bg:      #151B24;
+$color-blue:    #2E81FF;
+$color-green:   #A3FF5B;
+$color-pink:    #FF4E78;
+
+// -------------------------------
+// ----- Structure ---------------
+// -------------------------------
+$max-width:     1440px;
+$min-height:    800px;
+
+$mw-grid-12:    1138px;
+$mw-grid-11:    1042px;
+$mw-grid-10:    948px;
+$mw-grid-9:     853px;
+$mw-grid-8:     758px;
+$mw-grid-7:     664px;
+$mw-grid-6:     569px;
+
+// -------------------------------
+// ----- Margin/Padding ----------
+// -------------------------------
+@function spacer($num: null) {
+    $spacer: 20px;
+    
+    @if $num != null {
+        @return $spacer * $num;
+    } 
+    @else {
+        @return $spacer;
+    }
+}
+
+$spacerMax: 25;
+$spacerOffset: 4;
+$spacerSides: (top, bottom, left, right);
+@for $i from 0 to ($spacerMax + 1) {
+    $outputVal: $i * $spacerOffset;
+    @each $side in $spacerSides {
+        .m-#{str-slice($side, 0, 1)}-#{$outputVal} {
+            margin-#{$side}: #{$outputVal}px;
+        }
+        .p-#{str-slice($side, 0, 1)}-#{$outputVal} {
+            padding-#{$side}: #{$outputVal}px;
+        }
+    }
+}

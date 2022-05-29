@@ -1,0 +1,114 @@
+header {
+    opacity: 0;
+    .head-container {
+        position: relative;
+    }
+    
+    .head-main {
+        display: grid;
+        grid-auto-flow: column;
+        align-items: center;
+        .menu {
+            text-align: right;
+            @include mediaQuery($pb-md) {
+                display: none;
+            }
+        }
+    }
+
+    .head-nav {
+        @include centerElement(y);
+        width: calc(100% - spacer(9));
+        margin-left: spacer(9);
+        @include mediaQuery($pb-lg, max) {
+            width: calc(100% - spacer(8));
+            margin-left: spacer(8);
+        }
+
+        @include mediaQuery($pb-md, max) {
+            display: none;
+            z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: none;
+            width: 100vw;
+            height: 100vh;
+            margin-left: 0;
+            @include popupBg;
+        }
+
+        .nav-x, .nav-logo {
+            @include mediaQuery($pb-md) {
+                display: none;
+            }
+        }
+        .nav-x {
+            text-align: right;
+        }
+        .nav-logo {
+            text-align: center;
+        }
+
+        .nav-contents {
+            @include mediaQuery($pb-md) {
+                display: grid;
+                grid-auto-flow: column;
+                align-items: center;
+
+                .items {
+                    display: inline-flex;
+                    gap: 4px;
+                }
+                .button {
+                    text-align: right;
+                }
+            }
+
+            @include mediaQuery($pb-md, max) {
+                @include scrollElement(y);
+                position: absolute;
+                top: spacer(7);
+                left: 0;
+                width: 100vw;
+                height: calc(100vh - spacer(7));
+
+                .items, .button {
+                    text-align: center;
+                }
+                
+                .items {
+                    padding-bottom: spacer(10);
+                    li {
+                        margin-bottom: spacer();
+
+                        a {
+                            position: relative;
+                            &.btn-border-active {
+                                border-color: $white-0;
+                                &:before, &:after {
+                                    content: "";
+                                    position: absolute;
+                                    top: 10px;
+                                    display: inline-block;
+                                    width: 22px;
+                                    height: 2px;
+                                    background-color: $color-blue;
+                                }
+                                &:before {
+                                    left: -22px;
+                                }
+                                &:after {
+                                    right: -22px;
+                                }
+                            }
+                        }
+                    }
+                }
+                .button {
+                    padding-bottom: spacer(2);
+                }
+            }
+        }
+    }
+}
