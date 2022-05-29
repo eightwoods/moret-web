@@ -1,10 +1,10 @@
 // Addresses - tokens
 const tokenAddressMapping = { 137: { 'ETH': '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', 'BTC':'0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6'}, 80001: { 'ETH':'0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa'}};
-const factoryMapping = {'MarketMaker': '', 'Pool': '', 'PoolFactory': ''};
 
 // Addresses - moret ane exchange - to be updated later
 const moretAddress = "0xE1c3dB131d772EdeC15500fB1051e99473DcA517";
 const exchangeAddress = "0xb63F673AC388D17CE202c9599A88efE213f7f6Cb";
+const factoryMapping = { 'MarketMaker': '0x746D1E8a625566813146cD23a4D4d83c7E07AA21', 'Pool': '0x2D5f1A87F688afD9e634EEe31bb97CF2032deD3a', 'PoolGovernor': '0x3d4D090a265983e3F86d5773372c8F051749bBbb' };
 
 // Form
 let optionToken = 'ETH';
