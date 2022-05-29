@@ -14,7 +14,7 @@ export default {
                     const logo = this.globals.elem.querySelector(".logo")
                     const links = this.globals.elem.querySelectorAll(".links .link")
                     const linksChildren = this.globals.elem.querySelectorAll(".links .link li")
-                    const socials = this.globals.elem.querySelectorAll(".social li")
+                    const socials = this.globals.elem.querySelectorAll(".social .btn-social")
                     const legals = this.globals.elem.querySelectorAll(".legals li")
                     const copyright = this.globals.elem.querySelector(".copyright")
 
@@ -22,7 +22,7 @@ export default {
                     tl.from(logo, {opacity: 0, x: 200, delay: 0.2})
                     tl.from(links, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
                     tl.from(linksChildren, {opacity: 0, x: 50, stagger: 0.05}, "-=0.5")
-                    tl.from(socials, {opacity: 0, x: 100, stagger: 0.1}, "-=0.25")
+                    tl.from(socials, {opacity: 0, x: 100, stagger: 0.1}, "-=0.5")
                     tl.from(legals, {opacity: 0, x: 50, stagger: 0.05}, "-=0.5")
                     tl.from(copyright, {opacity: 0, x: 100, stagger: 0.1}, "-=0.25")
 

@@ -17,14 +17,15 @@ $pb-xxs:        321px;
 // -------------------------------
 // ----- Colour ------------------
 // -------------------------------
-$white:         #ffffff;
-$white-50:      rgba(255, 255, 255, 0.5);
-$white-14:      rgba(255, 255, 255, 0.14);
-$white-8:       rgba(255, 255, 255, 0.08);
-$white-6:       rgba(255, 255, 255, 0.06);
-$white-4:       rgba(255, 255, 255, 0.04);
-$white-0:       rgba(255, 255, 255, 0);
-$black:         #000000;
+$white:         #fff;
+$white-50:      rgba($color: $white, $alpha: 0.5);
+$white-14:      rgba($color: $white, $alpha: 0.14);
+$white-8:       rgba($color: $white, $alpha: 0.08);
+$white-6:       rgba($color: $white, $alpha: 0.06);
+$white-4:       rgba($color: $white, $alpha: 0.04);
+$white-0:       rgba($color: $white, $alpha: 0);
+
+$black:         #000;
 $color-bg:      #151B24;
 $color-blue:    #2E81FF;
 $color-green:   #A3FF5B;
@@ -33,6 +34,7 @@ $color-pink:    #FF4E78;
 // -------------------------------
 // ----- Structure ---------------
 // -------------------------------
+$header-height: 104px;
 $max-width:     1440px;
 $min-height:    800px;
 

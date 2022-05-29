@@ -1,6 +1,14 @@
 header {
     opacity: 0;
-    .head-container {
+    z-index: 996;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background-color: $color-bg;
+    border-bottom: 2px solid rgba($color: $black, $alpha: 0.1);
+
+    .head-contents {
         position: relative;
     }
     
@@ -10,7 +18,7 @@ header {
         align-items: center;
         .menu {
             text-align: right;
-            @include mediaQuery($pb-md) {
+            @include mediaQuery($pb-lgmd) {
                 display: none;
             }
         }
@@ -25,7 +33,7 @@ header {
             margin-left: spacer(8);
         }
 
-        @include mediaQuery($pb-md, max) {
+        @include mediaQuery($pb-lgmd, max) {
             display: none;
             z-index: 999;
             position: fixed;
@@ -39,33 +47,51 @@ header {
         }
 
         .nav-x, .nav-logo {
-            @include mediaQuery($pb-md) {
+            @include mediaQuery($pb-lgmd) {
                 display: none;
             }
         }
         .nav-x {
             text-align: right;
+            height: $header-height;
+            .btn-x {
+                margin-top: 22px;
+            }
         }
         .nav-logo {
             text-align: center;
         }
 
         .nav-contents {
-            @include mediaQuery($pb-md) {
+            .social {
+                display: flex;
+                column-gap: 2px;
+                justify-content: center;
+            }
+
+            @include mediaQuery($pb-lgmd) {
                 display: grid;
                 grid-auto-flow: column;
                 align-items: center;
 
                 .items {
-                    display: inline-flex;
+                    display: flex;
                     gap: 4px;
                 }
+
+                .items-right {
+                    display: flex;
+                    column-gap: 26px;
+                    align-items: center;
+                    justify-content: right;
+                }
+
                 .button {
                     text-align: right;
                 }
             }
 
-            @include mediaQuery($pb-md, max) {
+            @include mediaQuery($pb-lgmd, max) {
                 @include scrollElement(y);
                 position: absolute;
                 top: spacer(7);
@@ -105,6 +131,11 @@ header {
                         }
                     }
                 }
+
+                .social {
+                    padding-bottom: spacer();
+                }
+                
                 .button {
                     padding-bottom: spacer(2);
                 }

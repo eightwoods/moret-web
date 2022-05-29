@@ -13,6 +13,7 @@ body {
     // for touch devices
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    margin-top: $header-height;
 }
 
 a {
@@ -23,12 +24,17 @@ a {
         color: $black;
         padding: 10px 26px;
         border-radius: 8px;
+        
         &-white {
             background-color: $white;
         }
         &-blue {
             color: $white;
             background-color: $color-blue;
+        }
+        &-transparent {
+            color: $white;
+            border: 2px solid $white-14;
         }
     }
 
@@ -37,10 +43,12 @@ a {
         border: 2px solid $white-0;
         padding: 3px 18px;
         border-radius: 18px;
+
         &:hover, &-active {
             color: $white;
             border-color: $white-14;
         }
+
         &-active {
             cursor: not allowed;
             pointer-events: none;
@@ -60,8 +68,11 @@ a {
     &.btn-social {
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        background-color: $white-6;
+        
+        &-circle {
+            border-radius: 50%;
+            background-color: $white-6;
+        }
     }
 }
 
@@ -74,7 +85,7 @@ img {
     }
 }
 
-header, main, footer {
+header .head-wrapper, main, footer {
     overflow-x: clip;
     max-width: $max-width;
     margin: 0 auto;

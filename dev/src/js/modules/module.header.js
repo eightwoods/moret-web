@@ -15,15 +15,19 @@ export default {
                     const logo = this.globals.elem.querySelector(".logo")
                     const menu = this.globals.elem.querySelector(".menu")
                     const navItems = this.globals.elem.querySelectorAll(".items li")
+                    const socials = this.globals.elem.querySelectorAll(".social .btn-social")
                     const button = this.globals.elem.querySelector(".button")
 
                     const tl = gsap.timeline()
                     tl.from(logo, {opacity: 0, x: 200, delay: 0.2})
-                    if (window.innerWidth < breakpoint.md) {
+                    if (window.innerWidth < breakpoint.lgmd) {
                         tl.from(menu, {opacity: 0, x: 200}, "-=0.25")
                     } else {
                         tl.from(navItems, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
-                        tl.from(button, {opacity: 0, x: 200}, "-=0.25")
+                        if (socials) {
+                            tl.from(socials, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
+                        }
+                        tl.from(button, {opacity: 0, x: 200}, "-=0.5")
                     }
 
                     observer.unobserve(entry.target)

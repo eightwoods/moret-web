@@ -8,7 +8,9 @@ export default {
         rollupOptions: {
             input: {
                 index: path.resolve(__dirname, "dev/index.html"),
-                about: path.resolve(__dirname, "dev/trader.html")
+                trader: path.resolve(__dirname, "dev/trader.html"),
+                liquidity: path.resolve(__dirname, "dev/liquidity-provider.html"),
+                governance: path.resolve(__dirname, "dev/governance.html")
             }
         }
     }

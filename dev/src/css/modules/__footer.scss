@@ -6,12 +6,12 @@ footer {
 
         .contents {
             @include mediaQuery($pb-lg) {
-                display: inline-flex;
+                display: flex;
                 gap: spacer(4.5);
             }
 
             .links {
-                display: inline-flex;
+                display: flex;
                 flex-wrap: wrap;
                 row-gap: spacer();
                 column-gap: spacer(3.5);
@@ -26,10 +26,8 @@ footer {
             position: absolute;
             top: -10px;
             right: 0;
-            ul {
-                display: inline-flex;
-                gap: 12px;
-            }
+            display: flex;
+            column-gap: 12px;
         }
     }
 
@@ -42,7 +40,7 @@ footer {
 
         .legals {
             ul {
-                display: inline-flex;
+                display: flex;
                 flex-wrap: wrap;
                 gap: 26px;
                 row-gap: spacer(0.5);
