@@ -1,620 +1,438 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="">
-<meta name="author" content="M_Adnan">
-<title>Moret Exchange</title>
-<link rel='shortcut icon' type='image/x-icon' href='./images/moret_icon.ico' />
-
-<!-- Bootstrap Core CSS -->
-<link href="css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Custom CSS -->
-<link href="css/main.css" rel="stylesheet">
-<link href="css/style.css" rel="stylesheet">
-<link href="css/responsive.css" rel="stylesheet">
-<link href="fonts/flaticon.css" rel="stylesheet">
-<link href="fonts/mrrobot/stylesheet.css" rel="stylesheet">
-<link href="css/ionicons.min.css" rel="stylesheet">
-
-<!-- JavaScripts -->
-<script src="js/modernizr.js"></script>
-
-<!-- Online Fonts -->
-<link href="https://fonts.googleapis.com/css?family=Merriweather:300,400,700,900|Montserrat:300,400,500,600,700,800" rel="stylesheet">
-<link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-<!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
-
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moret | Home</title>
+  <script type="module" crossorigin src="/assets/main.a75d60cb.js"></script>
+  <link rel="stylesheet" href="/assets/main.1953cf02.css">
 </head>
 <body>
-
-<!-- LOADER -->
-<div id="loader">
-  <div class="position-center-center">
-    <div class="ldr"></div>
-  </div>
-</div>
-
-<div class="banner">
-  <div class="banner__content">
-    <div class="banner__text">
-      Moret is <string>live</string>. Welcome to join our Telegram and Discord channels!
-    </div>
-    <button class="banner__close">
-      <span class="material-icons">
-        close
-      </span>
-    </button>
-  </div>
-</div>
-
-<!-- Wrap -->
-<div id="wrap">
-
-  <!-- header -->
-  <header class="sticky">
-    <div class="container">
-
-      <!-- Logo -->
-      <div class="logo"> <a href="index.html"><img class="img-responsive" src="images/moret.png" alt="" ></a> </div>
-      <nav class="navbar ownmenu navbar-expand-lg">
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> 
-          <span class="navbar-toggler-icon">
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="nav">
-            <li class="scroll active"><a href="#home">Options</a></li>
-            <li class="connected scroll"> <a href="#volatility">Volatility</a> </li>
-            <li class="connected scroll"> <a href="#pool">Pool</a> </li>
-            <li class="connected scroll"> <a href="#holdings">Holdings</a> </li>
-            <li class="scroll"> <a href="#about">About </a> </li>
-            <!-- <li class="scroll"> <a href="#contact">Contact</a> </li> -->
-            <li> <a href="#" class="btn enableWallet" id="connectButton">Connect to Wallet</a> </li>
-          </ul>
+<header>
+    <div class="head-container p-t-40 p-b-40">
+        <div class="head-main">
+            <div class="logo"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" /></a></div>
+            <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/assets/btn_burgermenu.1006b152.svg" /></a></div>
         </div>
-      </nav>
-    </div>
-    <div class="clearfix"></div>
-  </header>
-
-  <!-- HOME MAIN - NEW OPTIONS  -->
-  <section class="simple-head" data-stellar-background-ratio="0.5" id="home">
-    <!-- Particles -->
-    <div id="particles-js"></div>
-    <div class="position-center-center">
-      <div class="container text-center">
-        <h1 >Trade options on Polygon chain</h1>
-        <!-- <h3 style="color:yellow;font-family:MrRobot" >beta test</h3> -->
-        
-        <div class="connected">
-          <div class="token-menu">
-            <ul class="row">
-              <!-- Token -->
-              <li class="col-md-6">
-                <p>Choose Token</p>
-                <div class="element-tabs" id="tokenSelected" >
-                  <div class="element-tabs__tab ETH with-icon selected"><span class="element-tab__title">ETH</span></div>
-                  <div class="element-tabs__tab WBTC with-icon"><span class="element-tab__title">BTC</span></div>
-                </div>
-                <!--<select name="tokenList" id="tokenSelected" class="form-select form-select-lg mb-3" >
-                  <option value="LINK">LINK</option>
-                  <option value="ETH">ETH</option>
-                  <option value="MATIC">MATIC</option>
-                </select>-->
-              </li>
-
-              <!-- Expiry -->
-              <li class="col-md-6">
-                <p class="hours_ref">Expiry</p>
-                <div class="element-tabs" id="optionExpiry">
-                  <div class="element-tabs__tab day selected shorter"><span class="element-tab__title">1 day</span></div>
-                  <div class="element-tabs__tab week shorter"><span class="element-tab__title">7 days</span></div>
-                  <div class="element-tabs__tab month shorter"><span class="element-tab__title">30 days</span></div>
-                </div>
-                <!--<select name="optionExpiry" id="optionExpiry">
-                    <option value="1d">1 day</option>
-                </select>-->
-              </li>
-            </ul>
-          </div>
-
-          <div class="options-menu">
-            <ul class="row">
-                <!-- Option Type -->
-                <li class="col-md-6">
-                  <p class="hours_ref">Option Type</p>
-                  <div class="element-tabs" id="optionType">
-                    <div class="element-tabs__tab up with-icon selected"><span class="element-tab__title">CALL</span></div>
-                    <div class="element-tabs__tab down with-icon"><span class="element-tab__title">PUT</span></div>
-                  </div>
-                  <!--<select name="optionType" id="optionType">
-                    <option value="Call">Call</option>
-                    <option value="Put">Put</option>
-                  </select>-->
-                </li>
-                <!-- Buy/Sell -->
-                <li class="col-md-6">
-                  <p class="hours_ref">Buy or Sell</p>
-                  <div class="element-tabs" id="optionBuySell">
-                    <div class="element-tabs__tab buy with-icon selected"><span class="element-tab__title">BUY</span></div>
-                    <div class="element-tabs__tab sell with-icon"><span class="element-tab__title">SELL</span></div>
-                  </div>
-                </li>
-            </ul>
-          </div>
-
-          <div class="input-menu">
-            <ul class="row">
-                <!-- Spot -->
-                <li class="col-md-6">
-                  <p class="showSpot">Spot Price</p>
-                  <div class="element-input-box noborder">
-                    <p id="tokenSpot" class="element-input-box__input"></p>
-                  </div>
-                </li>
-                <!-- Strike -->
-                <li class="col-md-6">
-                  <p class="showStrike">Strike</p>
-                  <div class="element-input-box">
-                    <input class="element-input-box__input" type="number" min="0" placeholder="1000" id="optionStrike">
-                    <!--<div class="element-input-box__token ETH">ETH</div>-->
-                  </div>
-                </li>
-                
-            </ul>
-          </div>
-
-          <div class="premium-menu">
-            <ul class="row">
-              <!-- Amount -->
-              <li class="col-md-6">
-                <p class="hours_ref">Token Amount</p>
-                <div class="element-input-box">
-                  <input class="element-input-box__input" type="number" min="0" placeholder="1" id="optionAmount">
-                  <!--<div class="element-input-box__token ETH">ETH</div>-->
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div class="premium-menu">
-            <ul class="row">
-                
-                <!-- Collateral -->
-                <li class="col-md-6">
-                  <p class="showSpot">Collateral (USDC)</p>
-                  <div class="element-input-box noborder">
-                    <p id="option-collateral" class="element-input-box__input"></p>
-                  </div>
-                </li>
-                <!-- Premium -->
-                <li class="col-md-6">
-                  <!-- <p class="showSpot">Premium</p> -->
-                  <div class="checkbox_container">
-                    <div class="checkbox"><input type="checkbox" name="payment_token" id="payment_token" value="" />
-                      <div class="checkbox-inner"><label for="payment_token"></label><span></span></div>
-                      <div class="checkbox__on">USDC</div>
-                      <div class="checkbox__off">VolToken</div>
-                    </div>
-                  </div>
-                  <div class="element-input-box noborder">
-                    <p id="option-premium" class="element-input-box__input"></p>
-                  </div>
-                </li>
-                <!-- Cost -->
-                <!-- <li class="col-md-6">
-                    
-                  <div class="element-input-box noborder">
-                    <p id="option-cost" class="element-input-box__input"></p>
-                  </div>
-                </li> -->
-            </ul>
-          </div>
-
-          <a href="#." class="btn btn-inverse buyOption" id="option-purchase">Purchase</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Volatility -->
-  <section class="connected road-map padding-top-150 padding-bottom-50" id="volatility">
-    <div class="container-fluid">
-      <!-- <section class="connected about light-bg" id="volatility"> -->
-      <!-- Right Background -->
-      <!-- <div class="main-page-section half_left_layout"> -->
-      <!-- <div class="main-half-layout half_right_layout"> </div> -->
-  
-      <!-- Left Content -->
-      <!-- <div class="main-half-layout-container half_right_layout"> -->
-      <div class="container-fluid">
-        <div class="about-us-con">
-          <h3>Volatility</h3>
-          <p>Moret provides a volatility oracle that is based on price feed from chainlink.</p>
-          <!-- <ul class="count-info row"> -->
-        </div>
-        <ul class="edu-list margin-top-50" id="volatility-list">
-          <!-- fill this automatically  -->
-          <!-- <li>
-                            <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
-                            <h5 id="option-payoff-1">0.01 ETH</h5>
-                            <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
-                            <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
-                        </li>
-             -->
-  
-          <!-- <li class="col">
-                <span class="counter" id="1d-vol">5000</span><span>+</span>
-                <p id="1d-vol"></p>
-                <p>1-day volatility</p>
-              </li>
-              <li class="col">
-                <span class="counter" id="1d-vol">5000</span><span>+</span>
-                <p id="7d-vol"></p>
-                <p>7-day volatility</p>
-              </li>
-              <li class="col">
-                <span class="counter" id="1d-vol">5000</span><span>+</span>
-                <p id="30d-vol"></p>
-                <p>30-day volatility</p>
-              </li> -->
-          <!-- <li class="col"> <span class="counter">750</span><span>+</span>
-                <p>Deploying</p>
-              </li> -->
-        </ul>
-        <!-- <a href="#." class="btn">Purchase Directly</a> <a href="#." class="btn btn-inverse">Trade in Uniswap</a> </div> -->
-        <!-- </div> -->
-      </div>
-  </section>
-
-  <!-- Pool Distribution -->
-  <section class="connected distri drk padding-top-150 padding-bottom-150 " id="pool">
-    <div class="container">
-      <!-- <div class="row"> -->
-
-        <!-- Pool  -->
-        <div class="col-lg-9">
-          <h3 id="capital-title">Liquidity Pool</h3>
-          <p>Pool token holders deposit into the pool to provide capital for underwriting options and earning premiums.</p>
-
-          <!-- Capital -->
-          <div class="progress" id="gross-capital">
-            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="150"><span >3,000 <small>50%</small></span> </div>
-          </div>
-
-          
-          <!-- Invest in MP -->
-          <div class="countdown">
-            <h6>Invest in Liquidity Pool </h6>
-            <!-- <p>Earn premiums by underwriting options.</p> -->
-            <div class="countdown-all">
-
-              <!-- Countdown -->
-              <ul class="row">
-                
-                <li class="col-md-3">
-                  <article>
-                    <input type="number" placeholder="1000" id="invest-lp-tokens">
-                    <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
-                  </article>
-                </li>
-                <li class="col-md-3">
-                <article>
-                  <!-- <p class="hours_ref">Add USDC</p> -->
-                  <a href="#." class="btn btn-inverse" id="add-capital">Invest USDC</a>
-                  <!-- <p class="hours_ref" id="invest-mp-unit">LP tokens</p> -->
-                </article>
-                </li>
-                <li class="col-md-3">
-                  <article> 
-                    <p class="days_ref">Average token value</p>
-                    <p class="days_ref" id="lp-average-gross">1</p>
-                  </article>
-                </li>
-                <li class="col-md-3">
-                  <article>
-                    <p>Equivalent LP Tokens</p>
-                    <p class="days_ref" id="invest-lp-cost"></p>
-                  </article>
-                </li>
-              </ul>
-
-              <ul class="row"></ul>
-            
-            <!-- <div class="card-info"> <i class="fab  fa-bitcoin"></i> <i class="fab  fa-cc-discover"></i> <i class="fab  fa-cc-visa"></i> <i class="fab  fa-cc-mastercard"></i> </div> -->
+        <div class="head-nav menuPopup">
+            <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/assets/btn_close.be47e55d.svg" /></a></div>
+            <div class="nav-logo"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" width="118" /></a></div>
+            <div class="nav-contents">
+                <ul class="items size-sm">
+                    <li><a href="page-trader.html" class="btn-border">Trader</a></li>
+                    <li><a href="page-liquidityprovider.html" class="btn-border">Liquidity provider</a></li>
+                    <li><a href="page-governance.html" class="btn-border">Governance</a></li>
+                </ul>
+                <div class="button"><a href="#" class="btn btn-blue">Connect wallet</a></div>
             </div>
-          </div>
-
-          <!-- MP Token holding -->
-          <div class="countdown">
-            <h6>Current Liquidity Pool Tokens</h6>
-            <!-- Countdown-->
-            <ul class="row">
-              <!-- Days -->
-
-              <li class="col-md-3">
-                <article> <span class="days" id="lp-holding">100</span>
-                  <p class="days_ref">LP Tokens</p>
-                </article>
-              </li>
-              <!-- <li class="col-md-3">
-                <article> <span class="days" id="lp-holding-gross">1</span>
-                  <p class="days_ref">Balance</p>
-                </article>
-              </li> -->
-              <li class="col-md-3">
-                <article> <span class="days" id="lp-average-net">1</span>
-                  <p class="days_ref">Net Value</p>
-                </article>
-              </li>
-              <li class="col-md-3">
-              <input type="number" placeholder="1000" id="withdraw-lp"><p class="days_ref">LP Tokens</p></li>
-              <li class="col-md-3">
-                <a href="#." class="btn" id="withdraw-capital">Withdraw</a>
-              </li>
-              
-            
-            </ul>
-            
-          </div>
         </div>
-      <!-- </div> -->
-
-        
     </div>
-  </section>
+</header>
 
-  <!-- HOLDINGS -->
-  <section class="connected road-map padding-top-150 padding-bottom-50" id="holdings">
-    <div class="container-fluid">
-      <h3>Your current active contracts</h3>
-      <p> </p>
-      <!-- Option List -->
-      <ul class="edu-list margin-top-50" id="option-list">
-        <!-- fill this automatically  -->
-        <!-- <li>
-                <span id="option-1">17 Jul 2021 Call 2500 ETH/USD #0.2 </span>
-                <h5 id="option-payoff-1">0.01 ETH</h5>
-                <p  id="option-amount-1">0.05 ETH - Original cost 0.04 ETH</p>
-                <a href="#" class="btn btn-inverse" id="option-exercise-1">Exercise</a>
-            </li> -->
-      </ul>
-    </div>
-  </section>
-
-  <!-- What is Moret -->
-  <section class="why-choose padding-top-150 padding-bottom-150" id="about">
-    <div class="container">
-
-      <!-- Why Choose Us  ROW-->
-      <div class="row">
-        <div class="col-md-7 margin-top-60">
-
-          <!-- Tittle -->
-          <div class="heading margin-bottom-20">
-            <h6 class="margin-bottom-10">Moret Option Exchange</h6>
-            <h4>Option exchange with improved capital efficiency.</h4>
-          </div>
-          <p>An efficient crypto options exchanges is built on running volatility oracle and an automatic market maker.</p>
-          <p> </p>
-          <div class="ultra-ser"> <span> <a href="docs/ABDK_Moret_Solidity_v_2_0.pdf"><span class="name">  Smart contract audited by &nbsp; - &nbsp;</span> <span>ABDK</span></a></span> </div>
-          <!-- <a class="vid-btn margin-top-30 popup-youtube" href="https://www.youtube.com/watch?v=7e90gBu4pas"><i class="fas fa-play-circle"></i> Watch Video <br>
-          <span>How it work</span></a> -->
-          
+<main role="main" class="home">
+    <section class="hero">
+        <div class="header align-center p-b-60">
+            <h1 class="title h1 m-b-16">Trade in the shortest time!</h1>
+            <p class="introcopy size-sm mw-grid-8 white-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+            <p class="m-t-32">
+                <a href="#" class="btn btn-blue"><span>Read more information</span></a>
+            </p>
         </div>
-
-        <div class="col-md-5 text-right">
-          <a href="https://moret-io.medium.com/" class="btn">Articles</a>
-           <a href="https://meridian-moretti.gitbook.io/moret/" class="btn btn-inverse">White Paper</a> </div>
-        <!-- Image -->
-        <!-- <div class="col-md-5 text-right"> <img src="images/chain-img.png" alt="Why Choose Us Image" > </div> -->
-      </div>
-    </div>
-  </section>
-
-    <!-- FAQs -->
-    <!-- <section class="light-bg padding-top-150 padding-bottom-150">
-      <div class="container">
-        <div class="heading text-center">
-          <h2>Frequently asked questions</h2>
-          <p>FAQs </p>
+        <div class="content">
+            <img src="/assets/home_hero.d0019050.png" alt="" class="resp" />
         </div>
-
-        <div class="row">
-          <div class="col-md-6">
-
-            <div class="panel-group accordion" id="accordion">
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" class="collapsed"> What is ICO ?</a> </h4>
-                </div>
-                <div id="collapseOne" class="panel-collapse collapse in">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nibh dolor, efficitur eget pharetra ac, cursus sed sapien. Cras posuere ligula ut blandit varius. </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" class="collapsed"> Why The Best ICO BlockChain</a> </h4>
-                </div>
-                <div id="collapseTwo" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree" class="collapsed"> What is ICO Blockchain</a> </h4>
-                </div>
-                <div id="collapseThree" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapsefour" class="collapsed"> Best Crypto in this world</a> </h4>
-                </div>
-                <div id="collapsefour" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-
-            <div class="panel-group accordion" id="accordion">
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne-1" class="collapsed"> Our Mission</a> </h4>
-                </div>
-                <div id="collapseOne-1" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo-1" class="collapsed"> Our Services</a> </h4>
-                </div>
-                <div id="collapseTwo-1" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree-1" class="collapsed"> Block Chain Into</a> </h4>
-                </div>
-                <div id="collapseThree-1" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#collapsefour-1" class="collapsed"> Crypto Currency FAQS</a> </h4>
-                </div>
-                <div id="collapsefour-1" class="panel-collapse collapse">
-                  <div class="panel-body"> There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section> -->
-
-    <!-- Partners -->
-    <div class="container">
-      <div class="parthner">
-        <h4>Partnered with</h4>
-        <ul>
-          <li><a href="https://app.1inch.io/"><img src="images/1inch.svg" alt=""></a></li>
-          <!-- <li><a href="#."><img src="images/c-mg-2.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-3.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-1.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-2.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-3.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-1.png" alt=""></a></li>
-              <li><a href="#."><img src="images/c-mg-2.png" alt=""></a></li> -->
-        </ul>
-      </div>
-    </div>
-
-
-    <!-- Join our community -->
-    <section class="community-sec padding-top-150 padding-bottom-150" id="contact">
-      <div class="container">
-        <div class="row">
-          <div class="col">
-            <div class="sm-intro">
-              <h2>Join our community</h2>
-              <ul class="socials">
-                <!-- <li><a href="#."><i class="fab fa-facebook-f"></i></a></li> -->
-                <li><a href="https://twitter.com/moret_io"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="https://github.com/eightwoods/moret"><i class="fab fa-github"></i></a></li>
-                <li><a href="https://t.me/moret_options"><i class="fab fa-telegram"></i></a></li>
-                <!-- <li><a href="#."><i class="fab fa-gitter"></i></a></li> -->
-                <!-- <li><a href="#."><i class="fab fa-instagram"></i></a></li> -->
-                <!-- <li><a href="#."><i class="fab fa-linkedin"></i></a></li> -->
-                <!-- <li><a href="#."><i class="fab fa-youtube"></i></a></li> -->
-              </ul>
-            </div>
-          </div>
-          <div class="col">
-            <div class="news-letter">
-              <!-- <h2>Partners</h2> -->
-              <ul class="partners">
-
-              </ul>
-              <!-- <form>
-                <input type="email" placeholder="Enter your email address" required>
-                <button type="submit">SEND</button>
-              </form> -->
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
-  </div>
 
-  <!-- Footer -->
-    
-
-    <!-- Footer -->
-  <footer >
-    <!-- Rights -->
-    <div class="rights">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-            <p>© 2022 Moret. All Rights Reserved. Moret.tech</p>
-          </div>
-          <div class="col-md-6 text-right"> <a href="#">Faqs </a> <a href="#">Terms & Conditions </a> <a href="#">Contact Us</a> </div>
+    <section class="features">
+        <div class="header align-center p-b-60">
+            <h2 class="title h2 m-b-16">Features of Moret</h2>
+            <p class="introcopy size-sm mw-grid-8 white-50">This slides contains the main info in bullet points about Moret including</p>
         </div>
-      </div>
+        <div class="content">
+            <div class="column"><img src="/assets/home_features.d167300f.png" alt="" class="resp" /></div>
+            <div class="column">
+                <div class="listings">
+                    <div class="list">
+                        <p>Decentralized option exchange</p>
+                    </div>
+                    <div class="list">
+                        <p>Volatility tokens</p>
+                    </div>
+                    <div class="list">
+                        <p>Automatic market maker for options facilitating all sides of the market</p>
+                    </div>
+                    <div class="list">
+                        <p>Range of hedging strategies for liquidity pool</p>
+                    </div>
+                    <div class="list">
+                        <p>DeFi 2.0 plus: Governance tokens transferable with liquidity pool</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="option-trading">
+        <div class="header align-center p-b-60">
+            <h2 class="title h2 m-b-16">Option trading</h2>
+            <p class="introcopy size-sm mw-grid-8 white-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+        </div>
+        <div class="content align-center">
+            <img src="/assets/home_trading.03cfeadd.png" alt="" />
+        </div>
+    </section>
+
+    <section class="volatility-tokens">
+        <div class="header align-center p-b-60">
+            <h2 class="title h2 m-b-16">Volatility tokens</h2>
+            <p class="introcopy size-sm mw-grid-8 white-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+        </div>
+        <div class="content">
+            <div class="listings list-block m-b-40">
+                <div class="list">
+                    <p>Values tracking the volatility of crypto prices during different time horizons</p>
+                </div>
+                <div class="list">
+                    <p>Exchange volatility tokens with at-the-money options</p>
+                </div>
+            </div>
+
+            <div class="tokens mw-grid-8">
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_eth.dac179e4.svg" />
+                                <div class="token-total"><span>1</span></div>
+                            </div>
+                            <div class="token-name">ETH 1</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_eth.dac179e4.svg" />
+                                <div class="token-total"><span>7</span></div>
+                            </div>
+                            <div class="token-name">ETH 7</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_eth.dac179e4.svg" />
+                                <div class="token-total"><span>30</span></div>
+                            </div>
+                            <div class="token-name">ETH 30</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_btc.a9039755.svg" />
+                                <div class="token-total"><span>1</span></div>
+                            </div>
+                            <div class="token-name">BTC 1</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_btc.a9039755.svg" />
+                                <div class="token-total"><span>7</span></div>
+                            </div>
+                            <div class="token-name">BTC 7</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="token-item">
+                    <div class="token-btn cursor">
+                        <div class="token-content">
+                            <div class="token-icon">
+                                <img src="/assets/icon_btc.a9039755.svg" />
+                                <div class="token-total"><span>30</span></div>
+                            </div>
+                            <div class="token-name">BTC 30</div>
+                        </div>
+                        <div class="token-arrow">
+                            <span><img src="/assets/arrow.7a8b39ad.svg" /></span>
+                        </div>
+                    </div>
+                    <div class="token-info-container">
+                        <div class="token-info">
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_btc.a9039755.svg" />
+                                        </div>
+                                        <div class="token-name">BTC - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$38,991.80</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="token-content-wrapper">
+                                    <div class="token-content">
+                                        <div class="token-icon">
+                                            <img src="/assets/icon_dash.05bda112.svg" />
+                                        </div>
+                                        <div class="token-name">DASH - USD</div>
+                                    </div>
+                                </div>
+                                <div class="token-price align-right">$95.18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="governance-tokens">
+        <div class="header align-center p-b-60">
+            <h2 class="title h2 m-b-16">DeFi 2.1: Extrapolation of liquidity with Governance tokens</h2>
+            <p class="introcopy size-sm mw-grid-8 white-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+        </div>
+        <div class="content">
+            <div class="listings list-center list-transform-size">
+                <div class="list">
+                    <p><span>Governance tokens issued in rounds of fundraising, with proceeds contributing to all liquidity pools equally as well to development costs.</span></p>
+                </div>
+                <div class="list">
+                    <p><span>Liquidity pool tokens can be exchanged for governance tokens which are vested in all liquidity pools.</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="partners">
+        <div class="header align-center p-b-60">
+            <h2 class="title h2 m-b-16">Partners</h2>
+            <p class="introcopy size-sm mw-grid-8 white-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+        </div>
+        <div class="content">
+            <ul>
+                <li><img src="/assets/partner_openzeppelin.c892364c.svg" alt="Open Zeppelin" /></li>
+                <li><img src="/assets/partner_oracle.28794ba8.svg" alt="Oracle" /></li>
+                <li><img src="/assets/partner_morpheus.16674b8a.svg" alt="Morpheus" /></li>
+                <li><img src="/assets/partner_samsung.01113258.svg" alt="Samsung" /></li>
+                <li><img src="/assets/partner_monday.782d67df.svg" alt="Monday.com" /></li>
+                <li><img src="/assets/partner_segment.17c1054e.svg" alt="Segment" /></li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="row-top">
+        <div class="contents">
+            <div class="logo m-b-52"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" /></a></div>
+            <div class="links m-b-52">
+                <div class="link">
+                    <div class="title size-md m-b-24">The company</div>
+                    <ul>
+                        <li class="m-b-12"><a href="#" class="white-50">About</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Works</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">For the record</a></li>
+                    </ul>
+                </div>
+                <div class="link">
+                    <div class="title size-md m-b-24">Communities</div>
+                    <ul>
+                        <li class="m-b-12"><a href="#" class="white-50">For performers</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Developers</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Investors</a></li>
+                    </ul>
+                </div>
+                <div class="link">
+                    <div class="title size-md m-b-24">Useful links</div>
+                    <ul>
+                        <li class="m-b-12"><a href="#" class="white-50">Help</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Start trading</a></li>
+                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="social">
+            <ul>
+                <li><a href="#" class="btn-social"><img src="/assets/social_discord.c3ddeb16.svg" alt="Discord icon" /></a></li>
+                <li><a href="#" class="btn-social"><img src="/assets/social_twitter.f5735ebd.svg" alt="Twitter icon" /></a></li>
+                <li><a href="#" class="btn-social"><img src="/assets/social_telegram.5b5ab14e.svg" alt="Telegram icon" /></a></li>
+            </ul>
+        </div>
     </div>
-  </footer>
-</div>
-
-<!-- GO TO TOP -->
-	<a href="#" class="cd-top"><i class="ion-chevron-up"></i></a>
-<!-- GO TO TOP End -->
-
-<!-- Script -->
-<script src="js/jquery-1.11.3.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/particles.min.js"></script>
-<script src="js/jquery.counterup.min.js"></script>
-<script src="js/jquery.sticky.js"></script>
-<script src="js/jquery.magnific-popup.min.js"></script>
-<script src="js/main.js"></script>
-<!-- <script src="node_modules/jquery/dist/jquery.js"></script> -->
-
-<!-- Smart Contract -->
-<script type="text/javascript" src="js/web3.min.js"></script>
-<script type="text/javascript" src="js/metamask-onboarding.bundle.js"></script>
-<script type="text/javascript" src="js/banner.js"></script>
-
-<script src="js/metamask.js"></script>
-
-<script src="js/web3.objects.js"></script>
-<!-- <script src="js/moret.volatility.chain.js"></script> -->
-<!-- <script src="js/moret.market.maker.js"></script> -->
-
+    <div class="row-bottom">
+        <div class="legals p-b-32">
+            <ul>
+                <li><a href="#" class="white-50 size-sm">Legal (legal information)</a></li>
+                <li><a href="#" class="white-50 size-sm">Privacy center</a></li>
+                <li><a href="#" class="white-50 size-sm">Privacy policy</a></li>
+                <li><a href="#" class="white-50 size-sm">Cookie settings</a></li>
+                <li><a href="#" class="white-50 size-sm">About ads</a></li>
+            </ul>
+        </div>
+        <div class="copyright size-sm p-b-32">&copy; 2022 Moret. All rights reserved.</div>
+    </div>
+</footer>
 
 </body>
 </html>
