@@ -7,6 +7,9 @@
 - npm install
 - npm add -D sass
 
+## Working folder
+- dev
+
 ## Run
 - npm run dev
 - npm run build

@@ -12,6 +12,7 @@
     "vite": "^2.9.9"
   },
   "dependencies": {
+    "fast-glob": "^3.2.11",
     "gsap": "^3.10.4"
   }
 }
