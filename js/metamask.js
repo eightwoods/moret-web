@@ -63,14 +63,17 @@ const onClickConnect = async () => {
 
     await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
       console.log('chain', chainId);
-      if(chainId==0x89){
+      if(chainId==0x89 || chainId== 0x13881){
         // initialise web3 objects
         initMarketMaker();
+        connectButton.style.backgroundColor = "";
       }
       else{
-        console.log('Non-Polygon chain.');
+        alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
+        console.log('Non-Polygon chain', chainId);
         connectButton.innerHTML = 'Please use Polygon chain!';
         connectButton.disabled = false;
+        connectButton.style.background='#FF0000';
         connectButton.onclick = this;
       }
     })
@@ -87,7 +90,7 @@ const onClickConnect = async () => {
 function handleChainChanged(_chainId){
   window.location.reload();
   console.log('chain',_chainId);
-  if(_chainId!=0x89) // polygon allowed only
+  if(_chainId!=0x89 && _chainId!= 0x13881) // polygon allowed only
   {
     throw 'Non-Polygon chain is selected.';
   }
