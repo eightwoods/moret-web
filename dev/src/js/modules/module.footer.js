@@ -10,7 +10,8 @@ export default {
             entries.forEach((entry) => {
                 if (entry.intersectionRatio) {
                     // console.log("footer")
-                    this.globals.elem.style.opacity = 1;
+                    this.globals.elem.classList.add("show-opacity")
+                    
                     const logo = this.globals.elem.querySelector(".logo")
                     const links = this.globals.elem.querySelectorAll(".links .link")
                     const linksChildren = this.globals.elem.querySelectorAll(".links .link li")

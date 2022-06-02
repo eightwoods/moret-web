@@ -4,7 +4,7 @@ header {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
+    width: 100%;
     background-color: $color-bg;
     border-bottom: 2px solid rgba($color: $black, $alpha: 0.1);
 
@@ -112,7 +112,7 @@ header {
                             position: relative;
                             &.btn-border-active {
                                 border-color: $white-0;
-                                &:before, &:after {
+                                &::before, &::after {
                                     content: "";
                                     position: absolute;
                                     top: 10px;
@@ -121,10 +121,10 @@ header {
                                     height: 2px;
                                     background-color: $color-blue;
                                 }
-                                &:before {
+                                &::before {
                                     left: -22px;
                                 }
-                                &:after {
+                                &::after {
                                     right: -22px;
                                 }
                             }

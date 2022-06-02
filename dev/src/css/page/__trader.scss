@@ -1,0 +1,67 @@
+.trader {
+    .newopt-statistic {
+        display: grid;
+        gap: spacer();
+        @include mediaQuery($pb-xl) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .newopt {
+            .row:first-child {
+                margin-bottom: spacer();
+            }
+
+            .options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .info {
+                @include mediaQuery($pb-xs) {
+                    display: flex;
+                    column-gap: 12px;
+                    align-items: center;
+                }
+
+                .info-col {
+                    &:first-child {
+                        .btn {
+                            text-align: center;
+                            width: 100%;
+                        }
+                        margin-bottom: 12px;
+                        @include mediaQuery($pb-xs) {
+                            .btn {
+                                width: auto;
+                            }
+                            margin-bottom: 0;
+                        }
+                    }
+
+                    &:last-child {
+                        @include mediaQuery($pb-xs) {
+                            width: 100%;
+                        }
+                    }
+                }
+
+                ul {
+                    display: flex;
+                    flex-wrap: wrap;
+                    column-gap: 12px;
+                    @include mediaQuery($pb-xs) {
+                        justify-content: flex-end;
+                    }
+
+                    li {
+                        white-space: nowrap;
+                        span {
+                            color: $white-50;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

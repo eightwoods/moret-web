@@ -101,12 +101,27 @@ $base-font-size: 16px;
     & {
         *zoom: 1;
     }
-    &:before, &:after {
+    &::before, &::after {
         content: "";
         display: table;
     }
-    &:after {
+    &::after {
         clear: both;
+    }
+}
+
+@mixin placeholderColor( $color ) {
+    &::-webkit-input-placeholder {
+        color: $color;
+    }
+    &:-moz-placeholder { /* Firefox 18- */
+        color: $color;  
+    }
+    &::-moz-placeholder { /* Firefox 19+ */
+        color: $color;  
+    }
+    &:-ms-input-placeholder {  
+        color: $color;  
     }
 }
 

@@ -1,0 +1,55 @@
+main.trading {
+    section {
+        $sideNavWidth: 320px;
+
+        @include mediaQuery($pb-lg) {
+            display: flex;
+        }
+        padding-bottom: spacer(5);
+
+        .sidenav {
+            @include mediaQuery($pb-lg) {
+                width: $sideNavWidth;
+                height: 100vh;
+                margin-bottom: 0;
+                border-radius: 0 10px 10px 0;
+            }
+            background-color: $white-4;
+            border-radius: 10px;
+            margin-bottom: spacer(3);
+            padding: 12px;
+
+            .token-list {
+                position: relative;
+                margin-top: 12px;
+                margin-bottom: spacer();
+
+                .token-info {
+                    overflow: hidden;
+                    max-height: 284px;
+                    background-color: $white-2;
+
+                    .info-item {
+                        color: $white-50;
+                        &:last-child {
+                            margin-bottom: spacer(1.5);
+                        }
+                    }
+                }
+
+                .token-viewmore {
+                    position: absolute;
+                    @include centerElement(x);
+                    bottom: -16px;
+                }
+            }
+        }
+
+        .content {
+            @include mediaQuery($pb-lg) {
+                width: calc(100% - #{$sideNavWidth});
+                padding-left: spacer();
+            }
+        }
+    }
+}

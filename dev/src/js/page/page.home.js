@@ -12,7 +12,7 @@ export default {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
                     if (entry.intersectionRatio) {
-                        section.style.opacity = 1;
+                        section.style.opacity = 1
 
                         // headers
                         const title = section.querySelector(".header .title")

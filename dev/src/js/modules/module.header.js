@@ -11,7 +11,8 @@ export default {
             entries.forEach((entry) => {
                 if (entry.intersectionRatio) {
                     // console.log("header")
-                    this.globals.elem.style.opacity = 1;
+                    this.globals.elem.classList.add("show-opacity")
+                    
                     const logo = this.globals.elem.querySelector(".logo")
                     const menu = this.globals.elem.querySelector(".menu")
                     const navItems = this.globals.elem.querySelectorAll(".items li")
