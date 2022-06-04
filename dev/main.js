@@ -7,9 +7,22 @@ const setup = {
         document.body.classList.add("js-enable", getDeviceType(), getMobileOS()) // use for styling
 
         // call objects
+        this.getComponents()
         this.getModules()
         this.getPages()
         this.setEvents()
+    },
+
+    async getComponents() {
+        if (document.querySelectorAll(".toggle-switches").length) {
+            const { default: toggleSwitches } = await import("./src/js/components/component.toggleSwitches")
+            toggleSwitches.init()
+        }
+
+        if (document.querySelectorAll(".tokens").length) {
+            const { default: tokens } = await import("./src/js/components/component.tokens")
+            tokens.init()
+        }
     },
 
     async getModules() {
@@ -26,7 +39,7 @@ const setup = {
 
     async getPages() {
         if (document.querySelector("main.home")) {
-            const { default: homepage } = await import("./src/js/page/page.home")
+            const { default: homepage } = await import("./src/js/pages/page.home")
             homepage.init()
         }
     },

@@ -34,7 +34,7 @@
 
 <main role="main" class="trading">
     <section class="trader">
-        <div class="sidenav tokens">
+        <div class="sidenav">
             <div class="token-main">
                 <div class="token-info">
                     <div class="info-item">
@@ -118,26 +118,28 @@
         </div>
 
         <div class="content">
-            <div class="option-volatility display-flex m-b-24">
-                <div class="toggle-switches ts-bg-white ts-active-1">
+            <div class="option-volatility display-flex m-b-20">
+                <div class="toggle-switches ts-bg-white ts-active1">
                     <div class="ts-item">Option</div>
                     <div class="ts-item">Volatility</div>
                 </div>
             </div>
-            <div class="newopt-statistic">
+            <div class="newopt-statistic m-b-20">
                 <div class="newopt">
-                    <div class="row in-box">
+                    <div class="row in-box m-b-20">
                         <div class="header-title m-b-24">New option</div>
                         <div class="options m-b-24">
-                            <div class="ts-opt1 toggle-switches ts-bg-from-green-to-pink ts-active-1">
-                                <div class="ts-item">Buy</div>
-                                <div class="ts-item">Sell</div>
+                            <div class="toggle-switches-collab ts-bg-green">
+                                <div class="ts-opt1 toggle-switches ts-active1" data-collab="true" data-bg1="ts-bg-green" data-bg2="ts-bg-pink">
+                                    <div class="ts-item">Buy</div>
+                                    <div class="ts-item">Sell</div>
+                                </div>
+                                <div class="ts-opt2 toggle-switches ts-active1">
+                                    <div class="ts-item">Call</div>
+                                    <div class="ts-item">Put</div>
+                                </div>
                             </div>
-                            <div class="ts-opt2 toggle-switches ts-bg-green ts-active-1">
-                                <div class="ts-item">Call</div>
-                                <div class="ts-item">Put</div>
-                            </div>
-                            <div class="ts-opt3 toggle-switches ts-bg-grey ts-active-1">
+                            <div class="ts-opt3 toggle-switches ts-bg-grey ts-active1">
                                 <div class="ts-item">USDC</div>
                                 <div class="ts-item">ETH 1</div>
                             </div>
@@ -163,7 +165,9 @@
                     <div class="header-title m-b-24">Statistic</div>
                 </div>
             </div>
-            <div class="transactions"></div>
+            <div class="transactions in-box">
+                <div class="header-title m-b-24">Transactions</div>
+            </div>
         </div>
     </section>
 </main>

@@ -6,8 +6,6 @@ export default {
     },
 
     init() {
-        this.tokens()
-
         this.globals.elem.querySelectorAll("section").forEach((section, index) => {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
@@ -78,23 +76,6 @@ export default {
             }, { threshold: 0.5 })
 
             observer.observe(section)
-        })
-    },
-
-    tokens() {
-        const tokens = this.globals.elem.querySelectorAll(".tokens .token-item")
-        tokens.forEach((token) => {
-            const btn = token.querySelector(".token-btn")
-            btn.addEventListener("click", () => {
-                // set state
-                if (token.classList.contains("active")) {
-                    token.classList.remove("active")
-                } else {
-                    // reset
-                    tokens.forEach((token) => token.classList.remove("active")) 
-                    token.classList.add("active")
-                }
-            }, false)
         })
     },
 }

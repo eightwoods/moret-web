@@ -100,7 +100,7 @@ header .head-wrapper, main, footer {
     margin: 0 auto;
     padding: 0 spacer();
     @include mediaQuery($pb-lg) {
-        padding: 0 spacer(4);
+        padding: 0 spacer(2);
     }
 }
 
