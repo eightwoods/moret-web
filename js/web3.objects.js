@@ -347,13 +347,13 @@ const initMarketMaker =  async () => {
   // await showMarketCapital(web3, marketContract, exchangeContract, accounts[0]);
 
   inputPoolInvest.addEventListener('focus', async() =>{
-    await showInvestPoolCost(web3, marketContract);
+    await showInvestPoolCost(web3, vaultContract, poolContract);
   })
   investInPool.addEventListener('click', async() => {
-    await addCapital(web3,marketContract, fundingContract );
+    await addToCapital(web3, exchangeContract, vaultContract, fundingContract, poolContract );
   })
   withdrawFromPool.addEventListener('click', async() =>{
-    await withdrawCapital(web3, marketContract);
+    await withdrawFromCapital(web3, exchangeContract, vaultContract, poolContract );
   })
 
   // document.getElementById('invest-mp-unit').innerHTML = optionToken;
@@ -881,7 +881,7 @@ async function refreshCapital(web3, vault, pool){
   var netAvgCapital = await vault.methods.calcCapital(pool._address, true,true).call();
   var grossAvgCapital = await vault.methods.calcCapital(pool._address, false,true).call();
   //  var totalSupply = await market.methods.totalSupply().call();
-  // console.log(web3.utils.fromWei(grossCapital)); 
+  console.log(web3.utils.fromWei(grossCapital), web3.utils.fromWei(netCapital), web3.utils.fromWei(grossAvgCapital), web3.utils.fromWei(netAvgCapital)); 
 
   let mpHolding = await pool.methods.balanceOf(account).call();
   // let mpHoldingEquity = web3.utils.toBN(mpHolding).mul(web3.utils.toBN(grossAvgCapital)).div(web3.utils.toBN(10).pow(web3.utils.toBN(18)));
@@ -899,45 +899,46 @@ async function refreshCapital(web3, vault, pool){
 
 }
 
-async function showInvestPoolCost(web3, market){
-  var mpCost = await market.methods.calcCapital(false ,true).call();
+async function showInvestPoolCost(web3, vault, pool){
+  var mpCost = await vault.methods.calcCapital(pool._address, false ,true).call();
+  // console.log('avg capital', parseFloat(web3.utils.fromWei(web3.utils.toBN(mpCost))));
   var mpAmount = inputPoolInvest.value / parseFloat(web3.utils.fromWei(web3.utils.toBN(mpCost)));
   // web3.utils.fromWei(web3.utils.toWei(web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value))).div(web3.utils.toBN(mpCost)));
   investLPCost.innerHTML =mpAmount.toFixed(4);
 }
 
-async function addCapital(web3, exchange, vault, funding, pool){
+async function addToCapital(web3, exchange, vault, funding, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
-  console.log('addCapital', account);
+  console.log('add capital', account);
 
   var fundingTokenDecimals = await funding.methods.decimals().call();
   var investAmount = web3.utils.toBN(web3.utils.toWei(inputPoolInvest.value,'ether')).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(fundingTokenDecimals))));
   await approveMaxAmmount(web3, funding, account, exchange._address, investAmount);
 
   var gasPriceAvg = await web3.eth.getGasPrice();
-  var gasEstimated = await exchange.methods.addCapital(pool, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
+  var gasEstimated = await exchange.methods.addCapital(pool._address, investAmount).estimateGas({from: account, gasPrice: gasPriceAvg});
   gasEstimated = parseInt(gasEstimated * 1.5)
   var gasPriceAvg = parseInt(gasPriceAvg*1.2)
-  await exchange.methods.addCapital(pool, investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+  await exchange.methods.addCapital(pool._address, investAmount).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
   refreshCapital(web3, vault, pool);
 }
 
-async function withdrawCapital(web3, exchange, vault, funding, pool){
+async function withdrawFromCapital(web3, exchange, vault, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
   var account = web3.utils.toChecksumAddress(accountsOnEnable[0]);
-  console.log('withdrawCapital', account, Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value));
+  console.log('withdraw capital', account, Number(lpTokenHeld.innerHTML), Number(inputPoolWithdraw.value));
   
   if(Number(lpTokenHeld.innerHTML)>= Number(inputPoolWithdraw.value))
   {
-    var mpWithdraw = web3.utils.toWei(inputPoolWithdraw.value);
+    var mpWithdraw = web3.utils.toBN(web3.utils.toWei(inputPoolWithdraw.value));
     await approveMaxAmmount(web3, pool, account, exchange._address, mpWithdraw);
 
     var gasPriceAvg = await web3.eth.getGasPrice();
-    var gasEstimated = await exchange.methods.withdrawCapital(pool, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
+    var gasEstimated = await exchange.methods.withdrawCapital(pool._address, mpWithdraw).estimateGas({from: account, gasPrice: gasPriceAvg});
     gasEstimated = parseInt(gasEstimated * 1.5)
     var gasPriceAvg = parseInt(gasPriceAvg*1.2)
-    await exchange.methods.withdrawCapital(pool, mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
+    await exchange.methods.withdrawCapital(pool._address, mpWithdraw).send({from: account, gas: gasEstimated, gasPrice: gasPriceAvg});
     refreshCapital(web3, vault, pool);
   }
 }
