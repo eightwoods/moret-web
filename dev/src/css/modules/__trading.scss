@@ -19,6 +19,14 @@ main.trading {
             margin-bottom: spacer(3);
             padding: 12px;
 
+            .token-main {
+                .token-info {
+                    .info-item {
+                        color: $white;
+                    }
+                }
+            }
+
             .token-list {
                 position: relative;
                 margin-top: 12px;
@@ -30,7 +38,6 @@ main.trading {
                     background-color: $white-2;
 
                     .info-item {
-                        color: $white-50;
                         &:last-child {
                             margin-bottom: spacer(1.5);
                         }

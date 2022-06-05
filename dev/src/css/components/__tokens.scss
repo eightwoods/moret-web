@@ -44,6 +44,7 @@
 .token-btn {
     z-index: 5;
     position: relative;
+    
     .token-arrow {
         @include centerElement(y);
         right: spacer();
@@ -73,6 +74,7 @@
         column-gap: spacer();
         vertical-align: top;
         width: 100%;
+        color: $white-50;
 
         margin-bottom: spacer(1.5);
         &:last-child {

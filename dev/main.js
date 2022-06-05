@@ -14,6 +14,11 @@ const setup = {
     },
 
     async getComponents() {
+        if (document.querySelectorAll(".dropdown-select").length) {
+            const { default: dropdownSelect } = await import("./src/js/components/component.dropdowSelect")
+            dropdownSelect.init()
+        }
+
         if (document.querySelectorAll(".toggle-switches").length) {
             const { default: toggleSwitches } = await import("./src/js/components/component.toggleSwitches")
             toggleSwitches.init()
