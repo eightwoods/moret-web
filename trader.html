@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
-  <script type="module" crossorigin src="/assets/main.d2b4c0ed.js"></script>
-  <link rel="stylesheet" href="/assets/main.6542898b.css">
+  <script type="module" crossorigin src="/assets/main.9577f65c.js"></script>
+  <link rel="stylesheet" href="/assets/main.fc313d3f.css">
 </head>
 <body>
 <header>
@@ -132,35 +132,79 @@
                         <div class="header-title m-b-24">New option</div>
                         <div class="options m-b-24">
                             <div class="toggle-switches-collab ts-bg-green">
-                                <div class="ts-opt1 toggle-switches ts-active1" data-collab="true" data-bg1="ts-bg-green" data-bg2="ts-bg-pink">
+                                <div class="opt-buysell toggle-switches ts-active1" data-collab="true" data-bg1="ts-bg-green" data-bg2="ts-bg-pink">
                                     <div class="ts-item">Buy</div>
                                     <div class="ts-item">Sell</div>
                                 </div>
-                                <div class="ts-opt2 toggle-switches ts-active1">
+                                <div class="opt-callput toggle-switches ts-active1">
                                     <div class="ts-item">Call</div>
                                     <div class="ts-item">Put</div>
                                 </div>
                             </div>
-                            <div class="ts-opt3 toggle-switches ts-bg-grey ts-active1">
+                            <div class="opt-extra toggle-switches ts-bg-grey ts-active1">
                                 <div class="ts-item">USDC</div>
                                 <div class="ts-item">ETH 1</div>
+                            </div>
+                            <div class="opt-strike dropdown-select">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Strike: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <ul>
+                                            <li class="info-active">2700 | 20% OTM</li>
+                                            <li>2600 | 10% OTM</li>
+                                            <li>2500 | ATM</li>
+                                            <li>2400 | 10% ITM</li>
+                                            <li>2300 | 20% ITM</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="opt-amount in-border white-50">Amount: <span class="white-100 amount-value">1</span></div>
+                            <div class="opt-expiry dropdown-select">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Expiry: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <ul>
+                                            <li class="info-active">1 Day | 86% IV</li>
+                                            <li>7 Day | 80% IV</li>
+                                            <li>30 Day | 90% IV</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="info">
                             <div class="info-col">
                                 <a href="#" class="btn btn-blue">Trade</a>
                             </div>
-                            <div class="info-col">
+                            <div class="info-col white-50">
                                 <ul>
-                                    <li><span>Volatility:</span> 80%</li>
-                                    <li><span>Premium:</span> 20</li>
-                                    <li><span>Calculated:</span> 2700</li>
+                                    <li>Volatility: <span class="white-100 info-value">80%</span></li>
+                                    <li>Premium: <span class="white-100 info-value">20</span></li>
+                                    <li>Calculated: <span class="white-100 info-value">2700</span></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div class="row in-box">
-                        <div class="liquidity-pool"></div>
+                        <div class="liquidity-pool percentage-bar" data-init-value="30">
+                            <div class="pb-main">
+                                <div class="pb-price-from">$0</div>
+                                <div class="pb-progress">
+                                    <div class="pb-progressbar"></div>
+                                </div>
+                                <div class="pb-price-end">$200K</div>
+                            </div>
+                            <div class="pb-text size-sm word-nowrap">
+                                <span class="pb-text-value">0%</span> of liquidity pool utilized
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="statistic in-box">
