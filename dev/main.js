@@ -19,6 +19,16 @@ const setup = {
             dropdownSelect.init()
         }
 
+        if (document.querySelectorAll(".percentage-bar").length) {
+            const { default: percentageBar } = await import("./src/js/components/component.percentageBar")
+            percentageBar.init()
+        }
+
+        if (document.querySelectorAll(".tables").length) {
+            const { default: tables } = await import("./src/js/components/component.tables")
+            tables.init()
+        }
+
         if (document.querySelectorAll(".toggle-switches").length) {
             const { default: toggleSwitches } = await import("./src/js/components/component.toggleSwitches")
             toggleSwitches.init()
