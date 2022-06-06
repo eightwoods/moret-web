@@ -56,5 +56,14 @@
                 }
             }
         }
+
+        .statistic {
+            .tradingview-widget-wrapper {
+                height: 320px;
+                @include mediaQuery($pb-xl) {
+                    height: calc(100% - 60px);
+                }
+            }
+        }
     }
 }
