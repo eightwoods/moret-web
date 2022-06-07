@@ -24,9 +24,9 @@ const setup = {
             percentageBar.init()
         }
 
-        if (document.querySelectorAll(".tables").length) {
-            const { default: tables } = await import("./src/js/components/component.tables")
-            tables.init()
+        if (document.querySelectorAll(".comp-tables").length) {
+            const { default: compTables } = await import("./src/js/components/component.tables")
+            compTables.init()
         }
 
         if (document.querySelectorAll(".toggle-switches").length) {

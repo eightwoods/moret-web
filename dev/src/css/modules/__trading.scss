@@ -10,7 +10,7 @@ main.trading {
         .sidenav {
             @include mediaQuery($pb-lg) {
                 width: $sideNavWidth;
-                height: 100vh;
+                // height: 100vh;
                 margin-bottom: 0;
                 border-radius: 0 10px 10px 0;
             }
