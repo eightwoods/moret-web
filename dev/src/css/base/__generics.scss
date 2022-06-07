@@ -166,9 +166,8 @@ section {
 }
 
 .show {
-    &-display {
-        display: block;
-    }
+    display: block;
+
     &-visibility {
         visibility: visible;
     }
@@ -178,9 +177,8 @@ section {
 }
 
 .hide {
-    &-display {
-        display: none;
-    }
+    display: none;
+    
     &-visibility {
         visibility: hidden;
     }
@@ -202,8 +200,8 @@ section {
 }
 
 .display {
-    &-block {
-        display: block;
+    &-grid {
+        display: grid;
     }
     &-flex {
         display: flex;

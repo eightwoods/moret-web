@@ -1,0 +1,92 @@
+.comp-tables {
+    position: relative;
+
+    .table-container {
+        overflow: hidden;
+        position: relative;
+
+        table {
+            width: 100%;
+
+            th, td {
+                text-align: center;
+                padding: spacer() spacer(1.5);
+            }
+
+            thead {
+                position: relative;
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: $white-4;
+                    border-radius: 8px;
+                }
+            }
+
+            tbody {
+                tr {
+                    &:hover {
+                        background-color: $white-2;
+                    }
+                    td {
+                        color: $white-50;
+                    }
+                }
+            }
+        }
+    }
+
+    .table-arrowleft, .table-arrowright {
+        display: none;
+    }
+
+    .table-viewmore {
+        position: absolute;
+        @include centerElement(x);
+        bottom: -28px;
+    }
+
+    &[data-has-scroll="true"] {
+        .table-container {
+            @include scrollElement(x);
+        }
+
+        body.mobile &, body.tablet & {
+            &::before {
+                content: "\2190  SWIPE \2192";
+                @include fontSize(10px);
+                position: absolute;
+                top: -20px;
+                right: 0;
+            }
+        }
+
+        .table-arrowleft, .table-arrowright {
+            display: block;
+            cursor: pointer;
+            position: absolute;
+            top: -40px;
+            width: 28px;
+            height: 28px;
+            background-color: $white-8;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .table-arrowleft {
+            right: 40px;
+            background-image: url("/src/img/arrow_horizontal.svg");
+            transform: rotate(180deg);
+        }
+
+        .table-arrowright {
+            right: 0;
+            background-image: url("/src/img/arrow_horizontal.svg");
+        }
+    }
+}
