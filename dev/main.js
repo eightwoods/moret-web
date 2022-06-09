@@ -50,6 +50,11 @@ const setup = {
             const { default: footer } = await import("./src/js/modules/module.footer")
             footer.init()
         }
+
+        if (document.querySelector(".trading")) {
+            const { default: trading } = await import("./src/js/modules/module.trading")
+            trading.init()
+        }
     },
 
     async getPages() {

@@ -34,7 +34,7 @@ export default {
                     observer.unobserve(entry.target)
                 }
             })
-        }, { threshold: 0.5 })
+        }, { threshold: 0.25 })
 
         observer.observe(this.globals.elem)
         this.setEvents()

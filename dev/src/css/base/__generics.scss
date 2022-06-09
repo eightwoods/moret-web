@@ -167,6 +167,9 @@ section {
 
 .show {
     display: block;
+    &-important {
+        display: block !important;
+    }
 
     &-visibility {
         visibility: visible;
@@ -178,6 +181,9 @@ section {
 
 .hide {
     display: none;
+    &-important {
+        display: none !important;
+    }
     
     &-visibility {
         visibility: hidden;
