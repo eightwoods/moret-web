@@ -94,17 +94,18 @@ header {
             @include mediaQuery($pb-lgmd, max) {
                 @include scrollElement(y);
                 position: absolute;
-                top: spacer(7);
+                top: spacer(9);
                 left: 0;
                 width: 100vw;
-                height: calc(100vh - spacer(7));
+                height: calc(100vh - spacer(9));
 
                 .items, .button {
                     text-align: center;
                 }
                 
                 .items {
-                    padding-bottom: spacer(10);
+                    padding-bottom: spacer(7);
+
                     li {
                         margin-bottom: spacer();
 
