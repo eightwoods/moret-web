@@ -4,7 +4,8 @@ import { noScroll } from "../helpers/utils"
 export default {
     init() {
         const connectWallet = document.querySelector(".js-connectWallet")
-        connectWallet.addEventListener("click", () => {
+        connectWallet.addEventListener("click", (e) => {
+            e.preventDefault()
             const arrNames = ["Metamask", "Walletconnect", "Coinbase"]
             this.overlayPopup("Connect Wallet", this.createList(arrNames, "connectwallets"))
         }, false)
