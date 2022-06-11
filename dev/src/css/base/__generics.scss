@@ -249,7 +249,7 @@ input {
     // Hide arrows from input number
     // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button, 
-    ::-webkit-inner-spin-button {
+    &::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
