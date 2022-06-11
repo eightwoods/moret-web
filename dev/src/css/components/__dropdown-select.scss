@@ -57,6 +57,14 @@
             opacity: 0;
             transition: max-height 1s, top 0.5s, opacity 0.5s;
 
+            input {
+                text-align: center;
+                background-color: $white-8;
+                border: 0;
+                padding: 10px 0;
+                margin-bottom: 10px;
+            }
+
             ul {
                 text-align: center;
                 li {

@@ -75,3 +75,16 @@ $spacerSides: (top, bottom, left, right);
         }
     }
 }
+
+// -------------------------------
+// ----- z-index -----------------
+// -------------------------------
+$zIndexMax: 10;
+$zIndexOffset: 5;
+@for $i from 1 to ($zIndexMax + 1) {
+    $outputVal: $i * $zIndexOffset;
+    .z-index-#{$outputVal} {
+        z-index: #{$outputVal};
+        position: relative;
+    }
+}

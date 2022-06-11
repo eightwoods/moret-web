@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
-  <script type="module" crossorigin src="/assets/main.73422f6a.js"></script>
-  <link rel="stylesheet" href="/assets/main.6353b019.css">
+  <script type="module" crossorigin src="/assets/main.7d18ecf6.js"></script>
+  <link rel="stylesheet" href="/assets/main.0cabc12e.css">
 </head>
 <body>
 <header>
@@ -128,7 +128,7 @@
             </div>
             <div class="newopt-statistic m-b-20">
                 <div class="newopt">
-                    <div class="row in-box m-b-20 animate-panel">
+                    <div class="row in-box z-index-20 m-b-20 animate-panel">
                         <div class="header-title m-b-24">New option</div>
                         <div class="options m-b-24">
                             <div class="toggle-switches-collab ts-bg-green">
@@ -152,8 +152,8 @@
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
+                                        <input type="number" name="info-amount" value="2700" onKeyPress="if(this.value.length==10) return false;" />
                                         <ul>
-                                            <li class="info-active">2700 | 20% OTM</li>
                                             <li>2600 | 10% OTM</li>
                                             <li>2500 | ATM</li>
                                             <li>2400 | 10% ITM</li>
@@ -162,7 +162,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="opt-amount in-border white-50">Amount: <span class="white-100 amount-value">1</span></div>
+                            <div class="opt-amount in-border white-50">
+                                Amount:&nbsp;<input type="number" name="opt-amount" value="1" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
                             <div class="opt-expiry dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
                                     <div class="ds-col word-nowrap">Expiry: <span class="white-100 ds-value1">0</span></div>
@@ -232,7 +234,7 @@
                                     "toolbar_bg": "#f1f3f6",
                                     "hide_legend": true,
                                     "enable_publishing": false,
-                                    "hide_top_toolbar": false,
+                                    "hide_top_toolbar": true,
                                     "hide_side_toolbar": true,
                                     "allow_symbol_change": false,
                                     "container_id": "tradingview_35e1e"
