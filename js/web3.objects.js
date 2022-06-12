@@ -2,8 +2,10 @@
 const tokenAddressMapping = { 0x89: { 'ETH': '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', 'BTC':'0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6'}, 0x13881: { 'ETH':'0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa'}};
 
 // Addresses - moret ane exchange - to be updated later
-const moretAddress = "0x386322f0a82d8F82958e6a78AF1Ee6b0Dcc5bAaB";
-const exchangeAddress = "0x65d3bF1E994a76Dd512039EF3dF1d111f7B07f4f";
+const moretAddress = {
+  0x89: "0xE78688d2C013354003a248A1665a93564a1d9957", 0x13881: "0x386322f0a82d8F82958e6a78AF1Ee6b0Dcc5bAaB"};
+const exchangeAddress = {
+  0x89: "0xdc42fB23e523a8E419781d3c63C79D5405830104", 0x13881: "0x65d3bF1E994a76Dd512039EF3dF1d111f7B07f4f"};
 const factoryMapping = { 'MarketMaker': '0x93aBec5Ad8995b88d1ec0427a89BBCc72DbE3B00', 'Pool': '0x479a1AEA9b3295C55A54a7a36100b57018E2249B', 'PoolGovernor': '0xa9410b00422c4dF094bac4a83A582053f6cE1Ee1' };
 
 // const numbers
@@ -271,13 +273,16 @@ const initMarketMaker =  async () => {
     calcPremium();
   })
 
-  moretContract = await getContract(web3, './contracts/Moret.json', moretAddress);
+  await ethereum.request({ method: 'eth_chainId' }).then((_chainId) => {
+    chainId = parseInt(_chainId);
+  })
+  moretContract = await getContract(web3, './contracts/Moret.json', moretAddress[chainId]);
   console.log('moretContract', moretContract._address);
   const brokerAddress = await moretContract.methods.broker().call();
   brokerContract = await getContract(web3, './contracts/MoretBroker.json', brokerAddress);
   const vaultAddressInBroker = await brokerContract.methods.vault().call();
 
-  exchangeContract = await getContract(web3, "./contracts/Exchange.json", exchangeAddress);
+  exchangeContract = await getContract(web3, "./contracts/Exchange.json", exchangeAddress[chainId]);
   console.log('exchangeContract', exchangeContract._address);
   const vaultAddress = await exchangeContract.methods.vault().call();
   if(vaultAddress!=vaultAddressInBroker){
