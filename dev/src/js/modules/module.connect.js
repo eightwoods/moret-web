@@ -1,5 +1,6 @@
 import { gsap } from "gsap"
 import { noScroll } from "../helpers/utils"
+// import { onClickConnect } from "../web3/metamask"
 
 export default {
     init() {
@@ -17,7 +18,17 @@ export default {
         for (const txtVal of arrValues) {
             const listItem = document.createElement("li")
             listItem.appendChild(document.createTextNode(txtVal))
+            listItem.className = txtVal.toLowerCase()
             listContainer.appendChild(listItem)
+
+            listItem.addEventListener("click", () => {
+                if (listItem.classList.contains("metamask")) {
+                    console.log("metamask")
+                    this.connectMetaMask(listItem)
+                } else {
+                    console.log("others...")
+                }
+            }, false)
         }
 
         return listContainer
@@ -59,4 +70,58 @@ export default {
         // transition
         gsap.from(opBox, {opacity: 0, scale: 0.5})
     },
+
+    async connectMetaMask(btn) {
+        btn.innerHTML = 'Requesting';
+        btn.disabled = true;
+
+        try {
+
+            // Will open the MetaMask UI
+            // You should disable this button while the request is pending!
+            await window.ethereum.request({ method: "eth_requestAccounts" })
+            .then((result) => {
+            // The result varies by by RPC method.
+            // For example, this method will return a transaction hash hexadecimal string on success.
+            console.log('result', result)
+            
+            btn.innerHTML = 'Connected';
+            btn.disabled = true;
+
+            // show all sections
+            [].forEach.call(document.querySelectorAll('.connected'), function (el) {
+                el.style.cssText = 'display:inline-block !important';
+            });
+            })
+            .catch((error) => {
+            // If the request fails, the Promise will reject with an error.
+            console.log('promise error', error)
+            throw error
+            });
+
+            await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
+            console.log('chain', chainId);
+            if(chainId==0x89 || chainId== 0x13881){
+                // initialise web3 objects
+                initMarketMaker();
+                btn.style.backgroundColor = "";
+            }
+            else{
+                alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
+                console.log('Non-Polygon chain', chainId);
+                // btn.innerHTML = 'Please use Polygon chain!';
+                // btn.disabled = false;
+                // btn.style.background='#FF0000';
+                // btn.onclick = this;
+            }
+            })
+
+        } catch (error) {
+            console.log('error', error);
+
+            btn.innerHTML = 'Connect to Wallet';
+            btn.disabled = false;
+            // btn.onclick = this;
+        }
+    }
 }
