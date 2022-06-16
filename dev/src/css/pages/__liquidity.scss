@@ -1,0 +1,26 @@
+.liquidity {
+    .pool-info {
+        .buttons, .buttons .col:last-child {
+            display: flex;
+            gap: 12px;
+            @include mediaQuery($pb-sm, max) {
+                flex-wrap: wrap;
+            }
+        }
+
+        .buttons .col:last-child {
+            @include mediaQuery($pb-sm) {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    }
+
+    .active-hottubs {
+        // 
+    }
+
+    .active-vote {
+        // 
+    }
+}

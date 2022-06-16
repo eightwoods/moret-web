@@ -52,3 +52,34 @@
     border: 2px solid $white-14;
     border-radius: 8px;
 }
+
+.icon {
+    position: relative;
+
+    &-account, &-refresh {
+        &::before {
+            content: "";
+            @include centerElement(y);
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &-account {
+        padding-left: 50px;
+        &::before {
+            left: 20px;
+            background-image: url("/src/img/icon_account.svg");
+            background-repeat: no-repeat;
+        }
+    }
+
+    &-refresh {
+        padding-right: 50px;
+        &::before {
+            right: 20px;
+            background-image: url("/src/img/icon_refresh.svg");
+            background-repeat: no-repeat;
+        }
+    }
+}

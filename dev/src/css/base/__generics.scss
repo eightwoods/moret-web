@@ -34,14 +34,30 @@ a {
             background-color: $color-blue;
         }
 
+        &-green {
+            background-color: $color-green;
+        }
+
+        &-pink {
+            color: $white;
+            background-color: $color-pink;
+        }
+
         &-transparent {
             color: $white;
             border: 2px solid $white-14;
+            padding-top: 8px;
+            padding-bottom: 8px;
         }
 
-        &-viewmore, &-plus {
+        &-viewmore {
             padding: 6px 18px;
             border-radius: 16px;
+        }
+
+        &-title {
+            padding: 6px 18px;
+            border-radius: 20px;
         }
     }
 
@@ -211,6 +227,9 @@ section {
     }
     &-flex {
         display: flex;
+    }
+    &-inline {
+        display: inline-block;
     }
 }
 

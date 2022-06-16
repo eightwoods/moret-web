@@ -81,13 +81,13 @@ header {
 
                 .items-right {
                     display: flex;
-                    column-gap: 26px;
+                    column-gap: 16px;
                     align-items: center;
                     justify-content: right;
-                }
 
-                .button {
-                    text-align: right;
+                    &-column-gap-lg {
+                        column-gap: 26px;
+                    }
                 }
             }
 
@@ -98,17 +98,13 @@ header {
                 left: 0;
                 width: 100vw;
                 height: calc(100vh - spacer(9));
-
-                .items, .button {
-                    text-align: center;
-                }
                 
                 .items {
+                    text-align: center;
                     padding-bottom: spacer(7);
-
+                    
                     li {
                         margin-bottom: spacer();
-
                         a {
                             position: relative;
                             &.btn-border-active {
@@ -133,12 +129,16 @@ header {
                     }
                 }
 
-                .social {
-                    padding-bottom: spacer();
+                .items-right {
+                    text-align: center;
                 }
-                
+
+                .social, .notbtn-account {
+                    margin-bottom: spacer();
+                }
+
                 .button {
-                    padding-bottom: spacer(2);
+                    margin-bottom: spacer(2);
                 }
             }
         }
