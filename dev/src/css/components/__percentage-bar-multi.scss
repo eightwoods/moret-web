@@ -1,0 +1,91 @@
+.percentage-bar-multi {
+    max-width: 500px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+
+    .pbm-progress {
+        position: relative;
+        width: 100%;
+        height: 6px;
+        background-color: $white-14;
+
+        .pbm-against, .pbm-for, .pbm-progressbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 6px;
+        }
+
+        .pbm-progressbar {
+            width: 100%;
+        }
+
+        .pbm-value {
+            position: absolute;
+            text-align: center;
+            white-space: nowrap;
+            padding: 4px 10px;
+            transition: right 1s;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.2;
+                border-radius: 6px;
+            }
+        }
+
+        .pbm-against {
+            width: 0%;
+            .pbm-progressbar {
+                background-color: $color-pink;
+            }
+            .pbm-value {
+                width: 120px;
+                top: -35px;
+                right: -120px;
+                color: $color-pink;
+                &::before {
+                    background-color: $color-pink;
+                    border-bottom-left-radius: 0;
+                }
+                &-50plus {
+                    right: 0;
+                    &::before {
+                        border-bottom-left-radius: 6px;
+                        border-bottom-right-radius: 0;
+                    }
+                }
+            }
+        }
+
+        .pbm-for {
+            width: 0%;
+            .pbm-progressbar {
+                background-color: $color-green;
+            }
+            .pbm-value {
+                width: 90px;
+                top: 12px;
+                right: -90px;
+                color: $color-green;
+                &::before {
+                    background-color: $color-green;
+                    border-top-left-radius: 0;
+                }
+                &-50plus {
+                    right: 0;
+                    &::before {
+                        border-top-left-radius: 6px;
+                        border-top-right-radius: 0;
+                    }
+                }
+            }
+        }
+    }
+}

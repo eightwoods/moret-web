@@ -1,3 +1,4 @@
+import "swiper/css"
 import "./main.scss"
 
 import { getDeviceType, getMobileOS } from "./src/js/helpers/utils"
@@ -22,6 +23,11 @@ const setup = {
         if (document.querySelectorAll(".percentage-bar").length) {
             const { default: percentageBar } = await import("./src/js/components/component.percentageBar")
             percentageBar.init()
+        }
+
+        if (document.querySelectorAll(".percentage-bar-multi").length) {
+            const { default: percentageBarMulti } = await import("./src/js/components/component.percentageBarMulti")
+            percentageBarMulti.init()
         }
 
         if (document.querySelectorAll(".comp-tables").length) {
@@ -66,6 +72,11 @@ const setup = {
         if (document.querySelector("main.home")) {
             const { default: homepage } = await import("./src/js/pages/page.home")
             homepage.init()
+        }
+
+        if (document.querySelector(".liquidity")) {
+            const { default: liquidity } = await import("./src/js/pages/page.liquidity")
+            liquidity.init()
         }
     },
 
