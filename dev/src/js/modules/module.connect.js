@@ -83,10 +83,20 @@ export default {
             .then((result) => {
             // The result varies by by RPC method.
             // For example, this method will return a transaction hash hexadecimal string on success.
-            console.log('result', result)
-            
-            btn.innerHTML = 'Connected';
-            btn.disabled = true;
+                console.log('result', result)
+                // const opPanel = document.getElementsByClassName("overlay-popup");
+                const opBox = document.getElementsByClassName("op-box");
+
+                gsap.to(opBox, {
+                    opacity: 0, scale: 0.5, duration: 0.35, onComplete: function () {
+                        // var opPanel = document.querySelectorAll('overlay-popup');
+                        // (opPanel[opPanel.length - 1]).remove();
+                    }
+                })
+
+                const connectBtn = document.getElementsByClassName("js-connectWallet");
+                connectBtn.innerHTML = 'Disconnect';
+                // btn.disabled = true;
 
             // show all sections
             [].forEach.call(document.querySelectorAll('.connected'), function (el) {
@@ -103,7 +113,7 @@ export default {
             console.log('chain', chainId);
             if(chainId==0x89 || chainId== 0x13881){
                 // initialise web3 objects
-                initMarketMaker();
+                // initMarketMaker();
                 btn.style.backgroundColor = "";
             }
             else{
