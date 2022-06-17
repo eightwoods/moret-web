@@ -41,6 +41,14 @@
     }
 }
 
+.btn-plus-subcopy {
+    display: flex;
+    column-gap: 20px;
+    row-gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .in-box {
     background-color: $white-4;
     border-radius: 10px;

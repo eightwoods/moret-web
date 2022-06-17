@@ -64,13 +64,14 @@
     .active-vote {
         .vote-content {
             display: grid;
-            gap: 12px;
+            column-gap: 12px;
+            row-gap: 30px;
             
             @include mediaQuery($pb-md) {
                 display: flex;
                 align-items: flex-end;
 
-                .vcont-col {
+                .cont-col {
                     &:first-child {
                         width: 100%;
                     }

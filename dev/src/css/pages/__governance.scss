@@ -1,0 +1,53 @@
+.governance {
+    .active-vote {
+        .vote-content {
+            .buttons, .buttons .col:last-child {
+                display: flex;
+                gap: 12px;
+            }
+
+            .buttons {
+                @include mediaQuery($pb-sm, max) {
+                    flex-wrap: wrap;
+                }
+            }
+
+            .buttons .col:last-child {
+                @include mediaQuery($pb-sm) {
+                    width: 100%;
+                    justify-content: flex-end;
+                }
+            }
+        }
+    }
+
+    .proposals {
+        .proposals-content {
+            display: grid;
+            column-gap: 12px;
+            row-gap: 30px;
+            
+            @include mediaQuery($pb-md) {
+                display: flex;
+                align-items: flex-end;
+
+                .cont-col {
+                    &:first-child {
+                        width: 100%;
+                    }
+                    &:last-child {
+                        text-align: right;
+                    }
+                }
+            }
+
+            .info {
+                display: flex;
+                column-gap: 40px;
+                row-gap: 12px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+        }
+    }
+}
