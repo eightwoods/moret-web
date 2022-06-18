@@ -10,6 +10,20 @@ export default {
     },
 
     async init() {
+        const web3 = new Web3(window.ethereum)
+
+        console.log(web3)
+
+        const moretContract = await this.getContract(web3, '/src/json/Moret.json', "0x8f529633a6736E348a4F97E8E050C3EEd78C3C0a");
+
+        // for (var tokenKey in tokenAddressMapping[chainId]) {
+        let tokenAddress = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; //tokenAddressMapping[chainId][tokenKey];
+        let oracleAddress = await moretContract.methods.getVolatilityChain(tokenAddress).call();
+        let oracle = await this.getContract(web3, '/src/json/VolatilityChain.json', oracleAddress);
+        let tokenPrice = await oracle.methods.queryPrice().call();
+        console.log(tokenPrice);
+        // }
+
         this.sideNav()
         this.sideNavTest()
         this.animatePanels()
@@ -157,4 +171,19 @@ export default {
             observer.observe(panel)
         })
     },
+
+    async getContract(web3, path, address) {
+        // const data = await $.getJSON(path);
+        const response = await fetch(path);
+        const data = await response.json();
+        console.log(data.abi)
+        // const netId = await web3.eth.net.getId();
+        // const deployedNetwork = data.networks[netId];
+
+        const contract = new web3.eth.Contract(
+            data.abi,
+            address
+        );
+        return contract;
+    }
 }
