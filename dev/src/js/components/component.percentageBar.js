@@ -4,12 +4,21 @@ export default {
     globals: {
         elem: document.querySelectorAll(".percentage-bar"),
         easing: "none",
-        duration: 1
+        duration: 1.5
     },
 
     init() {
         this.globals.elem.forEach((percentageBar) => {
-            this.progressBar(percentageBar, percentageBar.dataset.initValue)
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.intersectionRatio) {
+                        this.progressBar(percentageBar, percentageBar.dataset.initValue)
+                        observer.unobserve(entry.target)
+                    }
+                })
+            }, { threshold: 0.5 })
+
+            observer.observe(percentageBar)
         })
     },
 

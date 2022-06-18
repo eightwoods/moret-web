@@ -48,6 +48,24 @@
         }
     }
 
+    &.ts-active3 {
+        &::after {
+            left: 66.6666666%;
+        }
+        .ts-item:nth-child(3) {
+            color: $black;
+        }
+    }
+
+    &.ts-active4 {
+        &::after {
+            left: 75%;
+        }
+        .ts-item:nth-child(4) {
+            color: $black;
+        }
+    }
+
     &.ts-bg {
         &-white {
             &::after {
@@ -76,6 +94,33 @@
                 .ts-item {
                     color: $white;
                 }
+            }
+        }
+    }
+
+    &[data-toggle-total="3"] {
+        &::after {
+            width: 33.3333333%;
+        }
+        &.ts-active2 {
+            &::after {
+                left: 33.3333333%;
+            }
+        }
+    }
+
+    &[data-toggle-total="4"] {
+        &::after {
+            width: 25%;
+        }
+        &.ts-active2 {
+            &::after {
+                left: 25%;
+            }
+        }
+        &.ts-active3 {
+            &::after {
+                left: 50%;
             }
         }
     }

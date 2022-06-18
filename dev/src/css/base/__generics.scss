@@ -34,14 +34,30 @@ a {
             background-color: $color-blue;
         }
 
+        &-green {
+            background-color: $color-green;
+        }
+
+        &-pink {
+            color: $white;
+            background-color: $color-pink;
+        }
+
         &-transparent {
             color: $white;
             border: 2px solid $white-14;
+            padding-top: 8px;
+            padding-bottom: 8px;
         }
 
-        &-viewmore, &-plus {
+        &-viewmore {
             padding: 6px 18px;
             border-radius: 16px;
+        }
+
+        &-title {
+            padding: 6px 18px;
+            border-radius: 20px;
         }
     }
 
@@ -212,6 +228,9 @@ section {
     &-flex {
         display: flex;
     }
+    &-inline {
+        display: inline-block;
+    }
 }
 
 .word {
@@ -259,6 +278,17 @@ input {
     }
 }
 
+fieldset {
+    border: 2px solid $white-14;
+    border-radius: 12px;
+    padding: spacer();
+    padding-top: 10px;
+    legend {
+        @include fontSize(14px);
+        padding: 0 8px;
+    }
+}
+
 .input {
     &-search {
         position: relative;
@@ -289,4 +319,29 @@ input {
             }
         }
     }
+}
+
+.swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.swiper-button-next, .swiper-button-prev {
+    display: block;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    background-color: $white-8;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 50%;
+}
+
+.swiper-button-prev {
+    background-image: url("/src/img/arrow_horizontal.svg");
+    transform: rotate(180deg);
+}
+
+.swiper-button-next {
+    background-image: url("/src/img/arrow_horizontal.svg");
 }

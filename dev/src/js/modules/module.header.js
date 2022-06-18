@@ -17,6 +17,7 @@ export default {
                     const menu = this.globals.elem.querySelector(".menu")
                     const navItems = this.globals.elem.querySelectorAll(".items li")
                     const socials = this.globals.elem.querySelectorAll(".social .btn-social")
+                    const iconAccount = this.globals.elem.querySelector(".icon-account")
                     const button = this.globals.elem.querySelector(".button")
 
                     const tl = gsap.timeline()
@@ -28,7 +29,10 @@ export default {
                         if (socials) {
                             tl.from(socials, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
                         }
-                        tl.from(button, {opacity: 0, x: 200}, "-=0.5")
+                        if (iconAccount) {
+                            tl.from(iconAccount, {opacity: 0, x: 200}, "-=0.25")
+                        }
+                        tl.from(button, {opacity: 0, x: 200}, "-=0.25")
                     }
 
                     observer.unobserve(entry.target)
