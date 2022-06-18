@@ -75,6 +75,7 @@ main.trading {
                         background-color: $white-2;
 
                         .info-item {
+                            cursor: pointer;
                             &:last-child {
                                 // margin-bottom: spacer(0.5);
                             }

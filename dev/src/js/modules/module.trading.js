@@ -1,42 +1,15 @@
 import { gsap } from "gsap"
-// import Web3 from "web3"
 
 export default {
     globals: {
         elem: document.querySelector(".trading"),
         sideNavItems: [
-            {token: "ETH", exhange: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"},
-            {token: "BTC", exhange: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"},
+            {id: 1, token: "ETH", exhange: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"},
+            {id: 2, token: "BTC", exhange: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"},
         ]
     },
 
     async init() {
-        // const Web3 = require("web3")
-        // const web3 = new Web3(window.ethereum || "http://localhost:3000")
-        // Modern dapp browsers...
-        // if (window.ethereum) {
-        //     App.web3Provider = window.ethereum;
-        //     try {
-        //         // Request account access
-        //         await window.ethereum.enable();
-        //     } catch (error) {
-        //         // User denied account access...
-        //         console.error("User denied account access")
-        //     }
-        // }
-        // // Legacy dapp browsers...
-        // else if (window.web3) {
-        //     App.web3Provider = window.web3.currentProvider;
-        // }
-        // // If no injected web3 instance is detected, fall back to Ganache
-        // else {
-        //     App.web3Provider = new Web3.providers.HttpProvider('http://localhost:3000');
-        // }
-        
-        // const web3 = new Web3(App.web3Provider);
-
-        console.log(web3)
-
         this.sideNav()
         this.sideNavTest()
         this.animatePanels()
@@ -78,14 +51,14 @@ export default {
 
         JSON.parse(localStorage.getItem(localStorageName)).forEach((token, index) => {
             if (index < 1) {
-                this.sideNavItem(mainInfo, token)
+                this.sideNavItem(mainInfo, token, false)
             } else {
                 this.sideNavItem(contentInfo, token)
             }
         })
     },
 
-    sideNavItem(parentElem, data) {
+    sideNavItem(parentElem, data, isContent = true) {
         const infoItem = document.createElement("div")
         infoItem.className = "info-item"
         parentElem.appendChild(infoItem)
@@ -114,6 +87,12 @@ export default {
         const tokenPrice = document.createElement("div")
         tokenPrice.className = "token-price align-right"
         infoItem.appendChild(tokenPrice)
+
+        if (isContent) {
+            infoItem.addEventListener("click", () => {
+                console.log(data.id)
+            })
+        }
     },
 
     sideNavTest() {
