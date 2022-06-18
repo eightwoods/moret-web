@@ -4,12 +4,8 @@ import { noScroll } from "../helpers/utils"
 
 export default {
     init() {
-        const connectWallet = document.querySelector(".js-connectWallet")
-        connectWallet.addEventListener("click", (e) => {
-            e.preventDefault()
-            const arrNames = ["Metamask", "Walletconnect", "Coinbase"]
-            this.overlayPopup("Connect Wallet", this.createList(arrNames, "connectwallets"))
-        }, false)
+        this.accountsConnect()
+        this.accountsChanged()
     },
 
     createList(arrValues, className) {
@@ -56,10 +52,7 @@ export default {
         opClose.className = "op-close cursor"
         opBox.appendChild(opClose)
         opClose.addEventListener("click", () => {
-            noScroll(false)
-            gsap.to(opBox, {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
-                opPanel.remove()
-            }})
+            this.closeOverlayPopup()
         }, false)
 
         const opContent = document.createElement("div")
@@ -71,67 +64,94 @@ export default {
         gsap.from(opBox, {opacity: 0, scale: 0.5})
     },
 
-    async connectMetaMask(btn) {
-        btn.innerHTML = 'Requesting';
-        btn.disabled = true;
+    closeOverlayPopup() {
+        noScroll(false)
+        gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
+            document.querySelector(".overlay-popup").remove()
+        }})
+    },
+
+    async connectMetaMask(button) {
+        button.innerHTML = "Requesting...";
 
         try {
-
-            // Will open the MetaMask UI
-            // You should disable this button while the request is pending!
             await window.ethereum.request({ method: "eth_requestAccounts" })
             .then((result) => {
-            // The result varies by by RPC method.
-            // For example, this method will return a transaction hash hexadecimal string on success.
-                console.log('result', result)
-                // const opPanel = document.getElementsByClassName("overlay-popup");
-                const opBox = document.getElementsByClassName("op-box");
-
-                gsap.to(opBox, {
-                    opacity: 0, scale: 0.5, duration: 0.35, onComplete: function () {
-                        // var opPanel = document.querySelectorAll('overlay-popup');
-                        // (opPanel[opPanel.length - 1]).remove();
-                    }
-                })
-
-                const connectBtn = document.getElementsByClassName("js-connectWallet");
-                connectBtn.innerHTML = 'Disconnect';
-                // btn.disabled = true;
-
-            // show all sections
-            [].forEach.call(document.querySelectorAll('.connected'), function (el) {
-                el.style.cssText = 'display:inline-block !important';
-            });
+                console.log("result", result)
+                // success
+                this.closeOverlayPopup()
+                this.accountsConnect()
             })
             .catch((error) => {
-            // If the request fails, the Promise will reject with an error.
-            console.log('promise error', error)
-            throw error
+                console.log("eth_requestAccounts error", error)
+                throw error
             });
 
-            await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
-            console.log('chain', chainId);
-            if(chainId==0x89 || chainId== 0x13881){
-                // initialise web3 objects
-                // initMarketMaker();
-                btn.style.backgroundColor = "";
-            }
-            else{
-                alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
-                console.log('Non-Polygon chain', chainId);
-                // btn.innerHTML = 'Please use Polygon chain!';
-                // btn.disabled = false;
-                // btn.style.background='#FF0000';
-                // btn.onclick = this;
-            }
-            })
-
+            // await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
+            //     console.log('chain', chainId);
+            //     if(chainId==0x89 || chainId== 0x13881){
+            //         // initialise web3 objects
+            //         // initMarketMaker();
+            //         btn.style.backgroundColor = "";
+            //     }
+            //     else{
+            //         alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
+            //         console.log('Non-Polygon chain', chainId);
+            //         // btn.innerHTML = 'Please use Polygon chain!';
+            //         // btn.disabled = false;
+            //         // btn.style.background='#FF0000';
+            //         // btn.onclick = this;
+            //     }
+            // })
         } catch (error) {
-            console.log('error', error);
-
-            btn.innerHTML = 'Connect to Wallet';
-            btn.disabled = false;
-            // btn.onclick = this;
+            console.log("error", error);
         }
-    }
+    },
+
+    accountsConnect() {
+        ethereum.request({method: 'eth_accounts'})
+        .then((accounts) => {
+            const connectionButton = document.querySelector(".connection-button")
+            if (connectionButton) {
+                if (accounts.length > 0) {
+                    // console.log("current account", accounts)
+                    connectionButton.textContent = ""
+
+                    const strAccounts = String(accounts)
+                    const account = document.createElement("div")
+                    account.className = "in-border white-50 icon icon-account"
+                    account.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
+                    connectionButton.appendChild(account)
+                    
+                } else {
+                    // console.log("Please connect to MetaMask!")
+                    const buttonContainer = document.createElement("div")
+                    buttonContainer.className = "button"
+                    connectionButton.appendChild(buttonContainer)
+
+                    const button = document.createElement("a")
+                    button.setAttribute("href", "#")
+                    button.className = "btn btn-blue js-connectWallet"
+                    button.textContent = "Connect wallet"
+                    buttonContainer.appendChild(button)
+                    
+                    button.addEventListener("click", (e) => {
+                        e.preventDefault()
+                        const arrNames = ["Metamask", "Walletconnect", "Coinbase"]
+                        this.overlayPopup("Connect Wallet", this.createList(arrNames, "connectwallets"))
+                    }, false)
+                }
+            }
+        })
+        .catch((error)=>{
+            console.log("eth_accounts error", error)
+            throw error
+        })
+    },
+
+    accountsChanged() {
+        ethereum.on("accountsChanged", () => {
+            location.reload()
+        })
+    },
 }

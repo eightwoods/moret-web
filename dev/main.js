@@ -47,7 +47,7 @@ const setup = {
     },
 
     async getModules() {
-        if (document.querySelector(".js-connectWallet")) {
+        if (document.querySelector(".connection-button")) {
             const { default: connect } = await import("./src/js/modules/module.connect")
             connect.init()
         }

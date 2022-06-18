@@ -32,7 +32,9 @@ export default {
                         if (iconAccount) {
                             tl.from(iconAccount, {opacity: 0, x: 200}, "-=0.25")
                         }
-                        tl.from(button, {opacity: 0, x: 200}, "-=0.25")
+                        if (button) {
+                            tl.from(button, {opacity: 0, x: 200}, "-=0.25")
+                        }
                     }
 
                     observer.unobserve(entry.target)

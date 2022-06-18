@@ -48,7 +48,7 @@ export default {
                     if (!inputFocus) {
                         btn.parentElement.classList.remove("active")
                     }
-                }, 100)
+                }, 500)
             }, false)
 
             // infos

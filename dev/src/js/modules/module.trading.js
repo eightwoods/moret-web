@@ -1,16 +1,122 @@
 import { gsap } from "gsap"
+// import Web3 from "web3"
 
 export default {
     globals: {
         elem: document.querySelector(".trading"),
+        sideNavItems: [
+            {token: "ETH", exhange: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"},
+            {token: "BTC", exhange: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"},
+        ]
     },
 
-    init() {
+    async init() {
+        // const Web3 = require("web3")
+        // const web3 = new Web3(window.ethereum || "http://localhost:3000")
+        // Modern dapp browsers...
+        // if (window.ethereum) {
+        //     App.web3Provider = window.ethereum;
+        //     try {
+        //         // Request account access
+        //         await window.ethereum.enable();
+        //     } catch (error) {
+        //         // User denied account access...
+        //         console.error("User denied account access")
+        //     }
+        // }
+        // // Legacy dapp browsers...
+        // else if (window.web3) {
+        //     App.web3Provider = window.web3.currentProvider;
+        // }
+        // // If no injected web3 instance is detected, fall back to Ganache
+        // else {
+        //     App.web3Provider = new Web3.providers.HttpProvider('http://localhost:3000');
+        // }
+        
+        // const web3 = new Web3(App.web3Provider);
+
+        console.log(web3)
+
         this.sideNav()
+        this.sideNavTest()
         this.animatePanels()
     },
 
     sideNav() {
+        const localStorageName = "SideNavTokens"
+        if (!localStorage.getItem(localStorageName)) {
+            localStorage.setItem(localStorageName, JSON.stringify(this.globals.sideNavItems))
+        }
+
+        const sidenav = this.globals.elem.querySelector(".sidenav")
+
+        // main
+        const tokenMain = document.createElement("div")
+        tokenMain.className = "token-main"
+        sidenav.appendChild(tokenMain)
+
+        const mainInfo = document.createElement("div")
+        mainInfo.className = "token-info"
+        tokenMain.appendChild(mainInfo)
+
+        const mainArrow = document.createElement("div")
+        mainArrow.className = "token-arrow"
+        tokenMain.appendChild(mainArrow)
+
+        // contents
+        const tokenContents = document.createElement("div")
+        tokenContents.className = "token-contents"
+        sidenav.appendChild(tokenContents)
+
+        const contentList = document.createElement("div")
+        contentList.className = "token-list"
+        tokenContents.appendChild(contentList)
+
+        const contentInfo = document.createElement("div")
+        contentInfo.className = "token-info"
+        contentList.appendChild(contentInfo)
+
+        JSON.parse(localStorage.getItem(localStorageName)).forEach((token, index) => {
+            if (index < 1) {
+                this.sideNavItem(mainInfo, token)
+            } else {
+                this.sideNavItem(contentInfo, token)
+            }
+        })
+    },
+
+    sideNavItem(parentElem, data) {
+        const infoItem = document.createElement("div")
+        infoItem.className = "info-item"
+        parentElem.appendChild(infoItem)
+
+        const tokenWrapper = document.createElement("div")
+        tokenWrapper.className = "token-content-wrapper"
+        infoItem.appendChild(tokenWrapper)
+
+        const tokenContent = document.createElement("div")
+        tokenContent.className = "token-content"
+        tokenWrapper.appendChild(tokenContent)
+
+        const tokenIcon = document.createElement("div")
+        tokenIcon.className = "token-icon"
+        tokenContent.appendChild(tokenIcon)
+
+        const tokenIconImg = document.createElement("img")
+        tokenIconImg.src = `/src/img/icon_${data.token.toLowerCase()}.svg`
+        tokenIcon.appendChild(tokenIconImg)
+
+        const tokenName = document.createElement("div")
+        tokenName.className = "token-name"
+        tokenName.textContent = `${data.token} - ${data.exhange}`
+        tokenContent.appendChild(tokenName)
+
+        const tokenPrice = document.createElement("div")
+        tokenPrice.className = "token-price align-right"
+        infoItem.appendChild(tokenPrice)
+    },
+
+    sideNavTest() {
         const sidenav = this.globals.elem.querySelector(".sidenav")
         const tokenArrow = sidenav.querySelector(".token-arrow")
         const tokenList = sidenav.querySelector(".token-list")
