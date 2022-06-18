@@ -87,6 +87,10 @@ const onClickConnect = async () => {
   }
 };
 
+function checkConnection() {
+  window.ethereum.request({ method: 'eth_accounts' }).then(handleAccountsChanged).catch(console.error);
+}
+
 function handleChainChanged(_chainId){
   window.location.reload();
   console.log('chain',_chainId);

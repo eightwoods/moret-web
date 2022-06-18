@@ -65,7 +65,7 @@ const volTenors = [1, 7 , 30];
 
 // Pool
 const inputPoolInvest = document.getElementById('invest-lp-tokens');
-const investInPool = document.getElementById('add-capital');
+const investInPool = dfocument.getElementById('add-capital');
 const inputPoolWithdraw = document.getElementById('withdraw-lp');
 const withdrawFromPool = document.getElementById('withdraw-capital');
 
@@ -869,6 +869,17 @@ async function addNewPool(web3, token_address){
 
 }
 
+
+async function refreshPrice(web3) {
+  const moretContract = await getContract(web3, './contracts/Moret.json', moretAddress);
+  
+  for (var tokenKey in tokenAddressMapping[chainId]) {
+    let tokenAddress = tokenAddressMapping[chainId][tokenKey];
+    let oracleAddress = await moretContract.methods.getVolatilityChain(tokenAddress).call();
+    let oracle = await getContract(web3, './contracts/VolatilityChain.json', oracleAddress);
+    let tokenPrice = await oracle.methods.queryPrice().call();
+  }
+}
 
 async function refreshCapital(web3, vault, pool){
   var accountsOnEnable = await ethereum.request({method:'eth_requestAccounts'});
