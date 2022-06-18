@@ -44,6 +44,11 @@ const setup = {
             const { default: tokens } = await import("./src/js/components/component.tokens")
             tokens.init()
         }
+
+        if (document.querySelectorAll("#tradingview_graph").length) {
+            const { default: graph } = await import("./src/js/components/component.tradingViewGraph")
+            graph.init()
+        }
     },
 
     async getModules() {
