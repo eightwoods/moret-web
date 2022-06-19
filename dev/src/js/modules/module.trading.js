@@ -90,7 +90,8 @@ export default {
         tokenContent.appendChild(tokenIcon)
 
         const tokenIconImg = document.createElement("img")
-        tokenIconImg.src = `/src/img/icon_${data.token.toLowerCase()}.svg`
+        const imgUrl = new URL(`/src/img/icon_${data.token.toLowerCase()}.svg`, import.meta.url)
+        tokenIconImg.src = imgUrl
         tokenIcon.appendChild(tokenIconImg)
 
         const tokenName = document.createElement("div")
