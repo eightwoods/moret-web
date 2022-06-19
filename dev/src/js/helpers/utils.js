@@ -50,3 +50,5 @@ export const computedStyle = (elem) => (window.getComputedStyle ? getComputedSty
 export const getUrlVars = () => new URLSearchParams(window.location.search)
 
 export const getUrlParam = (param) => getUrlVars().get(param)
+
+export const getJsonFile = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
