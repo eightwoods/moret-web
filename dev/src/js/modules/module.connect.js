@@ -86,24 +86,8 @@ export default {
                 console.log("eth_requestAccounts error", error)
                 throw error
             })
-
-            // await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
-            //     console.log('chain', chainId);
-            //     if(chainId==0x89 || chainId== 0x13881){
-            //         // initialise web3 objects
-            //         // initMarketMaker();
-            //     }
-            //     else{
-            //         alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
-            //         console.log('Non-Polygon chain', chainId);
-            //         // btn.innerHTML = 'Please use Polygon chain!';
-            //         // btn.disabled = false;
-            //         // btn.style.background='#FF0000';
-            //         // btn.onclick = this;
-            //     }
-            // })
         } catch (error) {
-            console.log("error", error);
+            console.log("error", error)
         }
     },
 
@@ -153,19 +137,13 @@ export default {
             // location.reload()
 
             ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
-                console.log('chain', chainId);
+                console.log('chain', chainId)
                 if(chainId==0x89 || chainId== 0x13881){
-                    // initialise web3 objects
-                    // initMarketMaker();
-                    console.log('yes', chainId);
+                    console.log('yes', chainId)
                 }
                 else{
-                    alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
-                    console.log('Non-Polygon chain', chainId);
-                    // btn.innerHTML = 'Please use Polygon chain!';
-                    // btn.disabled = false;
-                    // btn.style.background='#FF0000';
-                    // btn.onclick = this;
+                    alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.")
+                    console.log('Non-Polygon chain', chainId)
                 }
             })
 

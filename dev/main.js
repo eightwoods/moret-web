@@ -81,9 +81,19 @@ const setup = {
             homepage.init()
         }
 
+        if (document.querySelector(".governance")) {
+            const { default: governance } = await import("./src/js/pages/page.governance")
+            governance.init()
+        }
+
         if (document.querySelector(".liquidity")) {
             const { default: liquidity } = await import("./src/js/pages/page.liquidity")
             liquidity.init()
+        }
+
+        if (document.querySelector(".trader")) {
+            const { default: trader } = await import("./src/js/pages/page.trader")
+            trader.init()
         }
     },
 

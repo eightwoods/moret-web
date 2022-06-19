@@ -53,6 +53,7 @@ export default {
             }
         })
 
+        this.sideNavRefreshPrice(sidenav)
         this.sideNavLimiteView(sidenav)
     },
 
@@ -99,26 +100,9 @@ export default {
 
         const tokenPrice = document.createElement("div")
         tokenPrice.className = "token-price align-right"
+        tokenPrice.setAttribute("data-address", data.address)
         tokenPrice.textContent = await getPrice(data.address)
         infoItem.appendChild(tokenPrice)
-
-        // token price - refresh/clear
-        let refreshId = null
-        const refreshTokenPrice = () => {
-            refreshId = setInterval(async () => {
-                tokenPrice.textContent = await getPrice(data.address)
-            }, 5000)
-        }
-        const clearTokenPrice = () => {
-            clearInterval(refreshId)
-            refreshId = null
-        }
-        refreshTokenPrice()
-        
-        // token price - remove/resume
-        document.addEventListener("visibilitychange", () => {
-            document.hidden ? clearTokenPrice() : refreshTokenPrice()
-        })
 
         if (isContent) {
             infoItem.addEventListener("click", () => {
@@ -127,6 +111,29 @@ export default {
                 this.sideNav()
             })
         }
+    },
+
+    sideNavRefreshPrice(sidenav) {
+        // removed from sideNavItem() to avoid multiple intervals base from the number of tokens
+        // refresh/clear
+        let refreshId = null
+        const refreshTokenPrice = () => {
+            refreshId = setInterval(() => {
+                sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
+                    tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                })
+            }, 15000)
+        }
+        const clearTokenPrice = () => {
+            clearInterval(refreshId)
+            refreshId = null
+        }
+        refreshTokenPrice()
+        
+        // tab visibility remove/resume
+        document.addEventListener("visibilitychange", () => {
+            document.hidden ? clearTokenPrice() : refreshTokenPrice()
+        })
     },
 
     sideNavLimiteView(sidenav) {
