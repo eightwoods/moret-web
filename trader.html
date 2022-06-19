@@ -5,8 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
-  <script type="module" crossorigin src="/assets/main.0b70984d.js"></script>
-  <link rel="stylesheet" href="/assets/main.51f9b426.css">
+    <script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <script type="module" crossorigin src="/assets/main.601bbad0.js"></script>
+  <link rel="stylesheet" href="/assets/main.030640eb.css">
 </head>
 <body>
 <header>
@@ -25,9 +26,7 @@
                         <li><a href="liquidity-provider.html" class="btn-border">Liquidity provider</a></li>
                         <li><a href="governance.html" class="btn-border">Governance</a></li>
                     </ul>
-                    <div class="items-right">
-                        <div class="button"><a href="#" class="btn btn-blue js-connectWallet">Connect wallet</a></div>
-                    </div>
+                    <div class="items-right connection-button"></div>
                 </div>
             </div>
         </div>
@@ -36,89 +35,7 @@
 
 <main role="main" class="trading">
     <section class="trader">
-        <div class="sidenav animate-panel">
-            <div class="token-main">
-                <div class="token-info">
-                    <div class="info-item">
-                        <div class="token-content-wrapper">
-                            <div class="token-content">
-                                <div class="token-icon">
-                                    <img src="/assets/icon_eth.dac179e4.svg" />
-                                </div>
-                                <div class="token-name">ETH - USD</div>
-                            </div>
-                        </div>
-                        <div class="token-price align-right">$2,614.31</div>
-                    </div>
-                </div>
-                <div class="token-arrow"></div>
-            </div>
-            <div class="token-contents">
-                <div class="token-list">
-                    <div class="token-info">
-                        <div class="input-search">
-                            <input type="search" name="s" placeholder="Search" class="size-sm" />
-                        </div>
-                        <div class="info-item">
-                            <div class="token-content-wrapper">
-                                <div class="token-content">
-                                    <div class="token-icon">
-                                        <img src="/assets/icon_btc.a9039755.svg" />
-                                    </div>
-                                    <div class="token-name">BTC - USD</div>
-                                </div>
-                            </div>
-                            <div class="token-price align-right">$38,991.80</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="token-content-wrapper">
-                                <div class="token-content">
-                                    <div class="token-icon">
-                                        <img src="/assets/icon_dash.05bda112.svg" />
-                                    </div>
-                                    <div class="token-name">DASH - USD</div>
-                                </div>
-                            </div>
-                            <div class="token-price align-right">$95.18</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="token-content-wrapper">
-                                <div class="token-content">
-                                    <div class="token-icon">
-                                        <img src="/assets/icon_bch.05e082f5.svg" />
-                                    </div>
-                                    <div class="token-name">BCH - USD</div>
-                                </div>
-                            </div>
-                            <div class="token-price align-right">$286.40</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="token-content-wrapper">
-                                <div class="token-content">
-                                    <div class="token-icon">
-                                        <img src="/assets/icon_btc.a9039755.svg" />
-                                    </div>
-                                    <div class="token-name">BTC - USD</div>
-                                </div>
-                            </div>
-                            <div class="token-price align-right">$38,991.80</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="token-content-wrapper">
-                                <div class="token-content">
-                                    <div class="token-icon">
-                                        <img src="/assets/icon_dash.05bda112.svg" />
-                                    </div>
-                                    <div class="token-name">DASH - USD</div>
-                                </div>
-                            </div>
-                            <div class="token-price align-right">$95.18</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <div class="sidenav animate-panel"></div>
         <div class="content">
             <div class="option-volatility display-flex m-b-20 animate-panel">
                 <div class="toggle-switches ts-bg-white ts-active1">
@@ -126,6 +43,7 @@
                     <div class="ts-item">Volatility</div>
                 </div>
             </div>
+
             <div class="newopt-statistic m-b-20">
                 <div class="newopt">
                     <div class="row in-box z-index-20 m-b-20 animate-panel">
@@ -211,39 +129,10 @@
                 </div>
                 <div class="statistic in-box animate-panel">
                     <div class="header-title m-b-24">Statistic</div>
-                    <div class="tradingview-widget-wrapper">
-                        <div class="tradingview-widget-container">
-                            <div id="tradingview_35e1e"></div>
-                            <div class="tradingview-widget-copyright">
-                                <a href="https://www.tradingview.com/symbols/ETHUSDC/?exchange=BINANCE" rel="noopener" target="_blank">
-                                    <span class="blue-text">ETHUSDC Chart</span>
-                                </a> by TradingView
-                            </div>
-                            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                            <script type="text/javascript">
-                                new TradingView.widget({
-                                    // "autosize": true,
-                                    "width": "100%",
-                                    "height": "100%",
-                                    "symbol": "BINANCE:ETHUSDC",
-                                    "interval": "D",
-                                    "timezone": "Etc/UTC",
-                                    "theme": "dark",
-                                    "style": "1",
-                                    "locale": "en",
-                                    "toolbar_bg": "#f1f3f6",
-                                    "hide_legend": true,
-                                    "enable_publishing": false,
-                                    "hide_top_toolbar": true,
-                                    "hide_side_toolbar": true,
-                                    "allow_symbol_change": false,
-                                    "container_id": "tradingview_35e1e"
-                                });
-                            </script>
-                        </div>
-                    </div>
+                    <div class="tradingview-widget-wrapper"></div>
                 </div>
             </div>
+            
             <div class="transactions in-box animate-panel">
                 <div class="header-title m-b-24">Transactions</div>
                 <div class="comp-tables">

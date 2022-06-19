@@ -51,6 +51,11 @@ const setup = {
             const { default: tokens } = await import("./src/js/components/component.tokens")
             tokens.init()
         }
+
+        if (document.querySelector(".tradingview-widget-wrapper")) {
+            const { default: tradingviewWidget } = await import("./src/js/components/component.tradingviewWidget")
+            tradingviewWidget.init()
+        }
     },
 
     async getModules() {

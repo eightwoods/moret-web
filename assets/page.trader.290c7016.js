@@ -1,0 +1,1 @@
+var t={globals:{elem:document.querySelector(".trader")},init(){new MutationObserver(r=>{console.log("sidenav has changed!")}).observe(this.globals.elem.querySelector(".sidenav"),{childList:!0,characterData:!0})}};export{t as default};
