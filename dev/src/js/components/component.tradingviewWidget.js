@@ -22,7 +22,7 @@ export default {
             this.globals.elem.appendChild(twContainer)
 
             const twGraph = document.createElement("div")
-            twGraph.id = "tradingview_35e1e"
+            twGraph.id = "tradingview_graph"
             twContainer.appendChild(twGraph)
 
             const twCopyright = document.createElement("div")
@@ -48,7 +48,7 @@ export default {
                 "hide_top_toolbar": true,
                 "hide_side_toolbar": true,
                 "allow_symbol_change": false,
-                "container_id": "tradingview_35e1e"
+                "container_id": "tradingview_graph"
             })
         }, 500)
     },
