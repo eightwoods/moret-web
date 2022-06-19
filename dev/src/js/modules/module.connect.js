@@ -72,7 +72,7 @@ export default {
     },
 
     async connectMetaMask(button) {
-        button.innerHTML = "Requesting...";
+        button.textContent = "Requesting..."
 
         try {
             await window.ethereum.request({ method: "eth_requestAccounts" })
@@ -85,14 +85,13 @@ export default {
             .catch((error) => {
                 console.log("eth_requestAccounts error", error)
                 throw error
-            });
+            })
 
             // await ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
             //     console.log('chain', chainId);
             //     if(chainId==0x89 || chainId== 0x13881){
             //         // initialise web3 objects
             //         // initMarketMaker();
-            //         btn.style.backgroundColor = "";
             //     }
             //     else{
             //         alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
@@ -149,9 +148,27 @@ export default {
         })
     },
 
-    accountsChanged() {
+    async accountsChanged() {
         ethereum.on("accountsChanged", () => {
-            location.reload()
+            // location.reload()
+
+            ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
+                console.log('chain', chainId);
+                if(chainId==0x89 || chainId== 0x13881){
+                    // initialise web3 objects
+                    // initMarketMaker();
+                    console.log('yes', chainId);
+                }
+                else{
+                    alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.");
+                    console.log('Non-Polygon chain', chainId);
+                    // btn.innerHTML = 'Please use Polygon chain!';
+                    // btn.disabled = false;
+                    // btn.style.background='#FF0000';
+                    // btn.onclick = this;
+                }
+            })
+
         })
     },
 }

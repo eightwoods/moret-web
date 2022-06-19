@@ -1,12 +1,19 @@
 import "swiper/css"
 import "./main.scss"
 
+import { tokens, tokenActive } from "./src/js/helpers/constant"
 import { getDeviceType, getMobileOS } from "./src/js/helpers/utils"
 
 const setup = {
     init() {
-        document.body.classList.add("js-enable", getDeviceType(), getMobileOS()) // use for styling
-
+        // use for styling
+        document.body.classList.add("js-enable", getDeviceType(), getMobileOS())
+        
+        // set default active token
+        if (!localStorage.getItem(tokenActive)) {
+            localStorage.setItem(tokenActive, JSON.stringify(tokens[0]))
+        }
+        
         // call objects
         this.getComponents()
         this.getModules()

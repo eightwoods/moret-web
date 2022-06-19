@@ -1,41 +1,20 @@
 import { gsap } from "gsap"
+import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
+import { web3, getPrice } from "../helpers/web3"
 
 export default {
     globals: {
         elem: document.querySelector(".trading"),
-        sideNavItems: [
-            {id: 1, token: "ETH", exhange: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"},
-            {id: 2, token: "BTC", exhange: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"},
-        ]
     },
 
-    async init() {
-        const web3 = new Web3(window.ethereum)
-
-        console.log(web3)
-
-        const moretContract = await this.getContract(web3, '/src/json/Moret.json', "0x8f529633a6736E348a4F97E8E050C3EEd78C3C0a");
-
-        // for (var tokenKey in tokenAddressMapping[chainId]) {
-        let tokenAddress = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; //tokenAddressMapping[chainId][tokenKey];
-        let oracleAddress = await moretContract.methods.getVolatilityChain(tokenAddress).call();
-        let oracle = await this.getContract(web3, '/src/json/VolatilityChain.json', oracleAddress);
-        let tokenPrice = await oracle.methods.queryPrice().call();
-        console.log(tokenPrice);
-        // }
-
+    init() {
         this.sideNav()
-        this.sideNavTest()
-        this.animatePanels()
+        this.animateEachPanel()
     },
 
     sideNav() {
-        const localStorageName = "SideNavTokens"
-        if (!localStorage.getItem(localStorageName)) {
-            localStorage.setItem(localStorageName, JSON.stringify(this.globals.sideNavItems))
-        }
-
         const sidenav = this.globals.elem.querySelector(".sidenav")
+        sidenav.textContent = ""
 
         // main
         const tokenMain = document.createElement("div")
@@ -63,19 +42,39 @@ export default {
         contentInfo.className = "token-info"
         contentList.appendChild(contentInfo)
 
-        JSON.parse(localStorage.getItem(localStorageName)).forEach((token, index) => {
-            if (index < 1) {
-                this.sideNavItem(mainInfo, token, false)
-            } else {
+        // search panel for future use
+        // this.sideNavSearch(contentInfo)
+
+        this.sideNavItem(mainInfo, {token: tokenName(), price: tokenPrice(), address: tokenAddress()}, false)
+        tokens.forEach((token, index) => {
+            // if (token.address !== tokenAddress()) {
+            if (token.token !== tokenName()) {
                 this.sideNavItem(contentInfo, token)
             }
         })
+
+        this.sideNavLimiteView(sidenav)
     },
 
-    sideNavItem(parentElem, data, isContent = true) {
+    sideNavSearch(elParent) {
+        const contentSearch = document.createElement("div")
+        contentSearch.className = "input-search"
+        elParent.appendChild(contentSearch)
+
+        const contentSearchInput = document.createElement("input")
+        contentSearchInput.setAttribute("type", "search")
+        contentSearchInput.setAttribute("name", "s")
+        contentSearchInput.setAttribute("placeholder", "Search")
+        contentSearchInput.className = "size-sm"
+        contentSearch.appendChild(contentSearchInput)
+
+        // set events here!
+    },
+
+    async sideNavItem(elParent, data, isContent = true) {
         const infoItem = document.createElement("div")
         infoItem.className = "info-item"
-        parentElem.appendChild(infoItem)
+        elParent.appendChild(infoItem)
 
         const tokenWrapper = document.createElement("div")
         tokenWrapper.className = "token-content-wrapper"
@@ -95,22 +94,42 @@ export default {
 
         const tokenName = document.createElement("div")
         tokenName.className = "token-name"
-        tokenName.textContent = `${data.token} - ${data.exhange}`
+        tokenName.textContent = `${data.token} - ${data.price}`
         tokenContent.appendChild(tokenName)
 
         const tokenPrice = document.createElement("div")
         tokenPrice.className = "token-price align-right"
+        tokenPrice.textContent = await getPrice(data.address)
         infoItem.appendChild(tokenPrice)
+
+        // token price - refresh/clear
+        let refreshId = null
+        const refreshTokenPrice = () => {
+            refreshId = setInterval(async () => {
+                tokenPrice.textContent = await getPrice(data.address)
+            }, 5000)
+        }
+        const clearTokenPrice = () => {
+            clearInterval(refreshId)
+            refreshId = null
+        }
+        refreshTokenPrice()
+        
+        // token price - remove/resume
+        document.addEventListener("visibilitychange", () => {
+            document.hidden ? clearTokenPrice() : refreshTokenPrice()
+        })
 
         if (isContent) {
             infoItem.addEventListener("click", () => {
-                console.log(data.id)
+                localStorage.removeItem(tokenActive)
+                localStorage.setItem(tokenActive, JSON.stringify(data))
+                this.sideNav()
             })
         }
     },
 
-    sideNavTest() {
-        const sidenav = this.globals.elem.querySelector(".sidenav")
+    sideNavLimiteView(sidenav) {
         const tokenArrow = sidenav.querySelector(".token-arrow")
         const tokenList = sidenav.querySelector(".token-list")
         const infoItems = tokenList.querySelectorAll(".info-item")
@@ -152,7 +171,7 @@ export default {
         }
     },
 
-    animatePanels() {
+    animateEachPanel() {
         // automate transistion base on classname
         this.globals.elem.querySelectorAll(".animate-panel").forEach((panel, index) => {
             const observer = new IntersectionObserver((entries) => {
@@ -171,19 +190,4 @@ export default {
             observer.observe(panel)
         })
     },
-
-    async getContract(web3, path, address) {
-        // const data = await $.getJSON(path);
-        const response = await fetch(path);
-        const data = await response.json();
-        console.log(data.abi)
-        // const netId = await web3.eth.net.getId();
-        // const deployedNetwork = data.networks[netId];
-
-        const contract = new web3.eth.Contract(
-            data.abi,
-            address
-        );
-        return contract;
-    }
 }
