@@ -120,7 +120,6 @@ export default {
         let refreshId = null
         const refreshTokenPrice = () => {
             refreshId = setInterval(() => {
-                console.log("refresh")
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
                     tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
                 })

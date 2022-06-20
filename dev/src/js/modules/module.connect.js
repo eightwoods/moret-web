@@ -7,7 +7,7 @@ export default {
         this.accountsConnect()
         this.accountsChanged()
         this.chainChanged()
-        this.accountsValidation()
+        this.isPolygonNetwork()
     },
 
     createList(arrValues, containerClass) {
@@ -121,7 +121,7 @@ export default {
 
                     const strAccounts = String(accounts)
                     const account = document.createElement("div")
-                    account.className = "in-border white-50 icon icon-account"
+                    account.className = "in-border white-50 icon icon-account active-account"
                     account.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
                     connectionButton.appendChild(account)
                     
@@ -155,10 +155,12 @@ export default {
         // detect Metamask account change
         window.ethereum.on("accountsChanged", (accounts) => {
             // console.log("accountsChanged", accounts)
-            // if connected
-            this.accountsValidation()
-            // if disconnected
-            if (accounts.length < 1) {
+            this.isPolygonNetwork()
+            
+            if (accounts.length > 0) {
+                const strAccounts = String(accounts)
+                document.querySelector("header .active-account").textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
+            } else {
                 location.reload()
             }
         })
@@ -168,11 +170,11 @@ export default {
         // detect Chain account change
         window.ethereum.on("chainChanged", (chainId) => {
             // console.log("chainChanged", chainId)
-            this.accountsValidation()
+            this.isPolygonNetwork()
         })
     },
 
-    async accountsValidation() {
+    async isPolygonNetwork() {
         const accounts = await web3.eth.getAccounts()
         // validate only when connected
         if (accounts.length > 0) {
