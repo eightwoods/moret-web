@@ -1,5 +1,6 @@
 import { gsap } from "gsap"
 import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
+import { getImageUrl } from "../helpers/utils"
 import { web3, getPrice } from "../helpers/web3"
 
 export default {
@@ -90,8 +91,7 @@ export default {
         tokenContent.appendChild(tokenIcon)
 
         const tokenIconImg = document.createElement("img")
-        const imgUrl = new URL(`/src/img/icon_${data.token.toLowerCase()}.svg`, import.meta.url)
-        tokenIconImg.src = imgUrl
+        tokenIconImg.src = getImageUrl(`icon_${data.token.toLowerCase()}.svg`)
         tokenIcon.appendChild(tokenIconImg)
 
         const tokenName = document.createElement("div")
@@ -120,6 +120,7 @@ export default {
         let refreshId = null
         const refreshTokenPrice = () => {
             refreshId = setInterval(() => {
+                console.log("refresh")
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
                     tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
                 })

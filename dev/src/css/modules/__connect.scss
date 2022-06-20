@@ -32,6 +32,7 @@
         }
 
         .op-close {
+            z-index: 10;
             position: absolute;
             top: spacer();
             right: 8px;
@@ -55,18 +56,50 @@
                 background-repeat: no-repeat;
                 background-position: right 18px center;
 
-                &:nth-child(1) {
+                &.metamask {
                     background-image: url("/src/img/connect_metamask.svg");
                 }
-                &:nth-child(2) {
+                
+                &.walletconnect {
+                    pointer-events: none;
                     background-image: url("/src/img/connect_walletconnect.svg");
                 }
-                &:nth-child(3) {
+                
+                &.coinbase {
+                    pointer-events: none;
                     background-image: url("/src/img/connect_coinbase.svg");
                 }
 
                 &:last-child {
                     margin-bottom: 0;
+                }
+            }
+        }
+
+        .notpolygon {
+            li {
+                &.np-icon {
+                    position: relative;
+                    height: 60px;
+                    &::before {
+                        content: "";
+                        @include centerElement(x);
+                        top: 0;
+                        width: 60px;
+                        height: 60px;
+                        background-color: $color-pink;
+                        opacity: 0.2;
+                        border-radius: 50%;
+                    }
+                    background-image: url("/src/img/icon_info.svg");
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+
+                &.np-text {
+                    color: $color-pink;
+                    text-align: center;
+                    padding-top: spacer();
                 }
             }
         }

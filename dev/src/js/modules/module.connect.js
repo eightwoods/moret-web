@@ -1,36 +1,48 @@
 import { gsap } from "gsap"
 import { noScroll } from "../helpers/utils"
-// import { onClickConnect } from "../web3/metamask"
+import { web3 } from "../helpers/web3"
 
 export default {
     init() {
         this.accountsConnect()
         this.accountsChanged()
+        this.chainChanged()
+        this.accountsValidation()
     },
 
-    createList(arrValues, className) {
+    createList(arrValues, containerClass) {
         const listContainer = document.createElement("ul")
-        listContainer.className = className
+        listContainer.className = containerClass
+        
         for (const txtVal of arrValues) {
             const listItem = document.createElement("li")
-            listItem.appendChild(document.createTextNode(txtVal))
-            listItem.className = txtVal.toLowerCase()
+            listItem.textContent = txtVal.name
+            if (txtVal.class) {
+                listItem.className = txtVal.class
+            } else {
+                listItem.className = txtVal.name.toLowerCase()
+            }
             listContainer.appendChild(listItem)
 
-            listItem.addEventListener("click", () => {
-                if (listItem.classList.contains("metamask")) {
-                    console.log("metamask")
-                    this.connectMetaMask(listItem)
-                } else {
-                    console.log("others...")
-                }
-            }, false)
+            // events specific for connectwallets
+            if (containerClass === "connectwallets") {
+                listItem.addEventListener("click", (e) => {
+                    switch (e.target.className) {
+                        case "metamask":
+                            this.connectMetaMask(listItem)
+                            break;
+                        case "walletconnect": break;
+                        case "coinbase": break;
+                        default:
+                    }
+                }, false)
+            }
         }
 
         return listContainer
     },
 
-    overlayPopup(title = null, data = null) {
+    overlayPopup(title = null, data = null, btnClose = false) {
         noScroll()
 
         const opPanel = document.createElement("div")
@@ -49,7 +61,11 @@ export default {
         }
 
         const opClose = document.createElement("div")
-        opClose.className = "op-close cursor"
+        if (btnClose) {
+            opClose.className = "op-close hide"
+        } else {
+            opClose.className = "op-close cursor"
+        }
         opBox.appendChild(opClose)
         opClose.addEventListener("click", () => {
             this.closeOverlayPopup()
@@ -65,10 +81,13 @@ export default {
     },
 
     closeOverlayPopup() {
-        noScroll(false)
-        gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
-            document.querySelector(".overlay-popup").remove()
-        }})
+        const overlayPopup = document.querySelector(".overlay-popup")
+        if (overlayPopup) {
+            noScroll(false)
+            gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
+                overlayPopup.remove()
+            }})
+        }
     },
 
     async connectMetaMask(button) {
@@ -77,7 +96,7 @@ export default {
         try {
             await window.ethereum.request({ method: "eth_requestAccounts" })
             .then((result) => {
-                console.log("result", result)
+                // console.log("result", result)
                 // success
                 this.closeOverlayPopup()
                 this.accountsConnect()
@@ -120,7 +139,7 @@ export default {
                     
                     button.addEventListener("click", (e) => {
                         e.preventDefault()
-                        const arrNames = ["Metamask", "Walletconnect", "Coinbase"]
+                        const arrNames = [{name: "Metamask"}, {name: "Walletconnect"}, {name: "Coinbase"}]
                         this.overlayPopup("Connect Wallet", this.createList(arrNames, "connectwallets"))
                     }, false)
                 }
@@ -132,21 +151,44 @@ export default {
         })
     },
 
-    async accountsChanged() {
-        ethereum.on("accountsChanged", () => {
-            // location.reload()
-
-            ethereum.request({method: 'eth_chainId'}).then((chainId)=>{
-                console.log('chain', chainId)
-                if(chainId==0x89 || chainId== 0x13881){
-                    console.log('yes', chainId)
-                }
-                else{
-                    alert("You are not using Polygon chain. Please switch to Polygon network on your wallet.")
-                    console.log('Non-Polygon chain', chainId)
-                }
-            })
-
+    accountsChanged() {
+        // detect Metamask account change
+        window.ethereum.on("accountsChanged", (accounts) => {
+            // console.log("accountsChanged", accounts)
+            // if connected
+            this.accountsValidation()
+            // if disconnected
+            if (accounts.length < 1) {
+                location.reload()
+            }
         })
+    },
+
+    chainChanged() {
+        // detect Chain account change
+        window.ethereum.on("chainChanged", (chainId) => {
+            // console.log("chainChanged", chainId)
+            this.accountsValidation()
+        })
+    },
+
+    async accountsValidation() {
+        const accounts = await web3.eth.getAccounts()
+        // validate only when connected
+        if (accounts.length > 0) {
+
+            // https://chainlist.org/
+            const chainId = await web3.eth.getChainId()
+
+            if (Number(chainId) === 137) { // currently only Polygon Mainnet
+                this.closeOverlayPopup()
+            } else {
+                const arrNames = [
+                    {name: "", class: "np-icon"}, 
+                    {name: "This is not a “Polygon” blockchain!", class: "np-text size-lgmd"}
+                ]
+                this.overlayPopup(null, this.createList(arrNames, "notpolygon"), true)
+            }
+        }
     },
 }

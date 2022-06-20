@@ -51,4 +51,6 @@ export const getUrlVars = () => new URLSearchParams(window.location.search)
 
 export const getUrlParam = (param) => getUrlVars().get(param)
 
-export const getJsonFile = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
+export const getImageUrl = (filename) => new URL(`/src/img/${filename}`, import.meta.url).href
+
+export const getJsonUrl = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
