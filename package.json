@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "big.js": "^6.2.0",
+    "greeks": "^1.0.0",
     "gsap": "^3.10.4",
     "swiper": "^8.2.4"
   }

@@ -1,7 +1,7 @@
 import { gsap } from "gsap"
 import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
 import { getImageUrl } from "../helpers/utils"
-import { web3, getPrice } from "../helpers/web3"
+import { web3, getPrice, getStrikes, calcMoneyness, calcIV, getVolTokenName, calcOptionPrice, getCapital } from "../helpers/web3"
 
 export default {
     globals: {
@@ -122,6 +122,12 @@ export default {
             refreshId = setInterval(() => {
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
                     tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                    // let strikes = await getStrikes(tokenPrice.dataset.address)
+                    // let iv = await calcIV(tokenPrice.dataset.address, 7)
+                    // let volTokenName = await getVolTokenName(tokenPrice.dataset.address, 7)
+                    // let optionCost = await calcOptionPrice(tokenPrice.dataset.address, true, true, 0, 1100, 0.0001, 1)
+                    let capital = await getCapital(tokenPrice.dataset.address)
+                    console.log(capital)
                 })
             }, 15000)
         }
