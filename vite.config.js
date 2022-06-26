@@ -13,6 +13,11 @@ export default {
             input: fg.sync(path.resolve(__dirname, "dev", "*.html")),
         }
     },
+    resolve: {
+        alias: {
+            web3: 'web3/dist/web3.min.js',
+        },
+    },
     plugins: [
         del({ targets: "assets/*" }),
         copy({

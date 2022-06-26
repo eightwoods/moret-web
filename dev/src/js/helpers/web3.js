@@ -1,7 +1,8 @@
 import Big from "big.js"
-import { tokenAddress } from "./constant"
+import Web3 from "web3"
+// import { tokenAddress } from "./constant"
 import { getJsonUrl, moretAddress, exchangeAddress, maxAmount } from "./utils"
-import { getDelta, getGamma, getVega, getTheta } from 'greeks'
+import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
 export const web3 = new Web3(window.ethereum)
 

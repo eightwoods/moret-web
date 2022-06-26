@@ -1,1 +1,0 @@
-var l={globals:{elem:document.querySelectorAll(".tokens")},init(){this.globals.elem.forEach(s=>{const t=s.querySelectorAll(".token-item");t.forEach(e=>{e.querySelector(".token-btn").addEventListener("click",()=>{e.classList.contains("active")?e.classList.remove("active"):(t.forEach(o=>o.classList.remove("active")),e.classList.add("active"))},!1)})})}};export{l as default};
