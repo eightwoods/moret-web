@@ -29,7 +29,8 @@ export const getPrice = async (tokenAddress) => {
 }
 
 // 2. refresh strikes
-export const getStrikes = async (tokenAddress) =>{
+// isCall is true if Call is chosen, otherwise false
+export const getStrikes = async (tokenAddress, isCall) =>{
     const oracle = await getPriceOracle(tokenAddress)
     const tokenPrice = await oracle.methods.queryPrice().call()
     const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice));
@@ -39,12 +40,14 @@ export const getStrikes = async (tokenAddress) =>{
     var strikeDict = {}
     for (let i = 0; i < strikeMoneyness.length; i++) {
         let strike = Math.round((tokenPriceNumber * strikeMoneyness[i]) / minInterval) * minInterval
-        strikeDict[strikeMoneyness[i]] = strike
+        let strikeMoneyness = await calcMoneyness(tokenAddress, strike, isCall)
+        strikeDict[strike] = await strike.toFixed(0) + " | " + strikeMoneyness
     }
     return strikeDict
 }
 
-// 3. calculate moneyness: strike is the floating number from strike field; isCall is true if Call is chosen, otherwise false
+// 3. calculate moneyness: strike is the floating number from strike field; 
+// isCall is true if Call is chosen, otherwise false
 export const calcMoneyness = async(tokenAddress, strike, isCall) =>{
     const oracle = await getPriceOracle(tokenAddress)
     const tokenPrice = await oracle.methods.queryPrice().call()
@@ -68,7 +71,7 @@ export const calcIV = async (tokenAddress, expiry) =>{
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     const timeToExpiry = expiry / 365
     const volatility = await oracle.methods.queryVol(tenor).call()
-    return (parseFloat(web3.utils.fromWei(volatility)) / Math.sqrt(timeToExpiry)).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+    return (parseFloat(web3.utils.fromWei(volatility)) / Math.sqrt(timeToExpiry)).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " RV"
 }
 
 // 5. refresh vol token name: it returns the name of volatility token and blank '' string if the vol token does not exist, in which case please remove the vol token from the selector
@@ -93,46 +96,68 @@ export const getVolTokenName = async(tokenAddress, expiry)=>{
 // strike is in integer
 // amount is in float
 // expiry is in number of days
-export const calcOptionPrice = async(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) =>{
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
-    const tenor = Math.floor(expiry * 86400)
-    const allPools = await getAllPools(tokenAddress)
-    var bestPool = (0).toString(16)
-    var premium, collateral, price, vol
+// outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
+export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymentMethod, strike, amount, expiry, outputReceipt) =>{
+    try{
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+        const tenor = Math.floor(expiry * 86400)
+        const allPools = await getAllPools(tokenAddress)
+        var bestPool = (0).toString(16)
+        var premium, collateral
+        var vol = 0
+        var price = 0
 
-    for(let i =0;i< allPools.length; i++){
-        const poolAddress = allPools[i]
-        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, web3.utils.toWei(strike.toString(),'ether'), web3.utils.toWei(amount.toString(),'ether'), isCall? 0: 1, isBuy? 0: 1, false).call()
-        const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
-        if (parseInt(bestPool, 16)==0){
-            premium = quotedPremium
-            collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-            price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-            vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-            bestPool = poolAddress
+        for(let i =0;i< allPools.length; i++){
+            const poolAddress = allPools[i]
+            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, web3.utils.toWei(strike.toString(),'ether'), web3.utils.toWei(amount.toString(),'ether'), isCall? 0: 1, isBuy? 0: 1, false).call()
+            const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+            if (parseInt(bestPool, 16)==0){
+                premium = quotedPremium
+                collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                bestPool = poolAddress
+            }
+            else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
+                premium = quotedPremium
+                collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                bestPool = poolAddress
+            }
         }
-        else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
-            premium = quotedPremium
-            collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-            price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-            vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-            bestPool = poolAddress
+
+        if(vol==0 || price ==0)
+        {
+            throw 'There is no available liquidity pool.'
+        }
+
+        var premiumToken = "USDC"
+        var collateralToken = "USDC"
+        if (paymentMethod == 0){ 
+            // do nothing
+        }
+        else if (paymentMethod == 1){
+            premium = premium / price
+            collateral = collateral / price
+            premiumToken = collateralToken = token
+        }
+        else if (paymentMethod == 2){
+            premium = premium / vol 
+            premiumToken = await getVolTokenName(tokenAddress, expiry)
+            // note that if vol token is used to pay premium, USDC will be used as collateral
+        }
+
+        if (outputReceipt){
+            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(2) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
+        }
+        else{
+            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(2) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
         }
     }
-
-    if (paymentMethod == 0){ 
-        // do nothing
-    }
-    else if (paymentMethod == 1){
-        premium = premium / price
-        collateral = collateral / price
-    }
-    else if (paymentMethod == 2){
-        premium = premium / vol 
-        // note that if vol token is used to pay premium, USDC will be used as collateral
-    }
-
-    return [premium, collateral, vol, bestPool]
+    catch(err){
+        return err.message
+    }    
 }
 
 export const getAllPools = async (tokenAddress) => {
@@ -159,20 +184,25 @@ export const getCapital = async (tokenAddress) => {
         grossCapitalTotal = grossCapitalTotal + parseFloat(web3.utils.fromWei(grossCapital))
         netCapitalTotal = netCapitalTotal + parseFloat(web3.utils.fromWei(netCapital))
     }
-    return [grossCapitalTotal, Math.max(0, 1 - netCapitalTotal/grossCapitalTotal)]
+    const utilization = Math.max(0, 1 - netCapitalTotal / grossCapitalTotal)
+    return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
 }
 
-// 8. execute option trade 
-export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
-    // 1sat step: check if allowance exists for the amount of premium and collateral.
+// 8a. function to approve max amount if needed
+// isBuy is true if Buy is selected, otherwise false
+// isCall is true if Call is selected, false if Put is selected
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
+// strike is in integer
+// amount is in float
+// expiry is in number of days
+export const approveOptionSpending = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
     const optionCost = await calcOptionPrice(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry)
-    const poolAddress = web3.utils.toChecksumAddress(optionCost[3]) 
     const fundingAddress = await moretContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
     var paymentTokenAddress = paymentMethod == 0 ? fundingAddress : tokenAddress
-    if (paymentMethod == 2) {    
+    if (paymentMethod == 2) {
         try {
             paymentTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
         }
@@ -185,20 +215,11 @@ export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMet
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-    await approveMaxAmmount(paymentToken, account, exchangeAddress(), optionCost[0])
-    await approveMaxAmmount(fundingToken, account, exchangeAddress(), optionCost[1])
-
-    // 2nd step: to execute the option contract
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
-    var gasPriceCurrent = await web3.eth.getGasPrice();
-    var gasEstimated = await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall? 0: 1, isBuy? 0: 1).estimateGas({ from: account, gasPrice: gasPriceCurrent });
-    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
-    var nonceNew = await web3.eth.getTransactionCount(account);
-    await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew });
+    await approveMaxAmount(paymentToken, account, exchangeAddress(), optionCost[0])
+    await approveMaxAmount(fundingToken, account, exchangeAddress(), optionCost[1])
 }
 
-// function to approve max amount if needed
-export const approveMaxAmmount = async(erc20Token, account, spenderAddress, spendAmount) => {
+export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call();
     // console.log(approvedAmount, spendAmount);
     if (spendAmount.gt(web3.utils.toBN(approvedAmount))) {
@@ -210,6 +231,29 @@ export const approveMaxAmmount = async(erc20Token, account, spenderAddress, spen
         console.log('cost approved', erc20Token._address, spenderAddress, maxAmount());
     }
 }
+
+// 8b. execute option trade 
+// isBuy is true if Buy is selected, otherwise false
+// isCall is true if Call is selected, false if Put is selected
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
+// strike is in integer
+// amount is in float
+// expiry is in number of days
+export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+    const optionCost = await calcOptionPrice(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const poolAddress = web3.utils.toChecksumAddress(optionCost[3]) 
+    const tenor = Math.floor(expiry * 86400) // convert to seconds
+    
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+    await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        return "https://polygonscan.com/tx/" + hash;
+    })
+}
+
 
 // 9. read historical transactions: fromBlockNumber is integer of starting block number, can be zero
 export const getPastTransactions = async (tokenAddress, fromBlockNumber) =>{
@@ -254,7 +298,7 @@ export const getPastTransactions = async (tokenAddress, fromBlockNumber) =>{
 // amount is in float number of USDC if isBuy is true, it is number of vol token if isBuy is false
 // expiry is in number of days
 // return 1) amount of vol token if isBuy is true, or amount of USDC if is Buy is false, and 2) the pool address for best pricing
-export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry) => {
+export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry, outputReceipt) => {
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
     const oracle = await getPriceOracle(tokenAddress)
     const tenor = Math.floor(expiry * 86400)
@@ -267,6 +311,7 @@ export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry
         try {
             const volTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
             const volToken = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
+            const volTokenSymbol = await volToken.methods.symbol().call()
 
             var optionAmount = isBuy ? (tradeAmount / parseFloat(web3.utils.fromWei(oracleVol)) * Math.sqrt(timeToExpiry) / 0.4) : (tradeAmount / 0.4)
             var bestPool = (0).toString(16)
@@ -294,6 +339,19 @@ export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry
                     }
                 }
             }
+            if (outputReceipt){
+
+            }
+            else{
+                if(isBuy){
+                    return "Implied Volatility: " + quotedVol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " Exchange for Volatility Tokens: " + amount.toFixed(2) + volTokenSymbol
+                }
+                else{
+                    return "Implied Volatility: " + quotedVol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " Exchange for USDC: " + amount.toFixed(2)
+                }
+                
+            }
+            
         }
         catch (err) {
             console.log('no vol token exists for ' + expiry.toString())
@@ -302,8 +360,6 @@ export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry
     else{
         console.log('There is no pools ready for quoting vols');
     }
-
-    return amount, bestPool
 }
 
 export const getVolTradingPools = async (tokenAddress) => {
