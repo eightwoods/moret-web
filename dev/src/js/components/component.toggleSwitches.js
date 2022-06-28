@@ -14,22 +14,20 @@ export default {
     },
 
     toggle2Switches(toggleSwitch) {
+        // initial state
+        this.setActiveItem(toggleSwitch)
+
         // this trigger the same element to toggle (similar to touch devices)
         toggleSwitch.addEventListener("click", () => {
-            const tsActive1 = "ts-active1"
-            const tsActive2 = "ts-active2"
-
-            if (toggleSwitch.classList.contains(tsActive1)) {
-                toggleSwitch.classList.add(tsActive2)
-                toggleSwitch.classList.remove(tsActive1)
+            if (toggleSwitch.classList.contains("ts-active1")) {
+                this.setActiveItem(toggleSwitch, 2)
             } else {
-                toggleSwitch.classList.add(tsActive1)
-                toggleSwitch.classList.remove(tsActive2)
+                this.setActiveItem(toggleSwitch, 1)
             }
 
-            // toggle switch collab base on data attribute
+            // toggle switch collab (bg color) base on data attribute
             if (toggleSwitch.dataset.collab) {
-                if (toggleSwitch.classList.contains(tsActive1)) {
+                if (toggleSwitch.classList.contains("ts-active1")) {
                     toggleSwitch.parentElement.classList.add(toggleSwitch.dataset.bg1)
                     toggleSwitch.parentElement.classList.remove(toggleSwitch.dataset.bg2)
                 } else {
@@ -41,12 +39,43 @@ export default {
     },
 
     toggleMoreSwitches(toggleSwitch) {
+        // initial state
+        this.setActiveItem(toggleSwitch)
+
+        // trigger from individual item
         const tsItems = toggleSwitch.querySelectorAll(".ts-item")
         tsItems.forEach((item, index) => {
             item.addEventListener("click", () => {
-                toggleSwitch.classList.remove("ts-active1", "ts-active2", "ts-active3", "ts-active4")
-                toggleSwitch.classList.add(`ts-active${index + 1}`)
+                this.setActiveItem(toggleSwitch, index + 1)
             })
         })
+    },
+
+    setActiveItem(toggleSwitch, activeIndex = 1) {
+        // parent
+        toggleSwitch.classList.remove("ts-active1", "ts-active2", "ts-active3", "ts-active4")
+        toggleSwitch.classList.add(`ts-active${activeIndex}`)
+
+        // items
+        const tsItems = toggleSwitch.querySelectorAll(".ts-item")
+        tsItems.forEach((item, index) => {
+            if (activeIndex === (index + 1)) {
+                item.classList.add("ts-item-active")
+            } else {
+                item.classList.remove("ts-item-active")
+            }
+        })
+    },
+
+    getActiveItem(toggleSwitch) {
+        let activeItem = null
+        const tsItems = toggleSwitch.querySelectorAll(".ts-item")
+        tsItems.forEach((item) => {
+            if (item.classList.contains("ts-item-active")) {
+                activeItem = item.textContent
+            }
+        })
+
+        return activeItem
     },
 }

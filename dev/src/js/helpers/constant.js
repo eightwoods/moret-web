@@ -1,6 +1,8 @@
-export const moretAddress = "0x386322f0a82d8F82958e6a78AF1Ee6b0Dcc5bAaB"
+export const moretAddress = "0xf291C9E3CC62c6D2b194381eFb64e3bdc724C0a3"
 
-export const exchangeAddress = "0x65d3bF1E994a76Dd512039EF3dF1d111f7B07f4f"
+export const exchangeAddress = "0xB62E86364672EA3F942b09D448cCc264243a8ED7"
+
+export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 export const tokenActive = "tokenActive"
 

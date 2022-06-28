@@ -54,9 +54,3 @@ export const getUrlParam = (param) => getUrlVars().get(param)
 export const getImageUrl = (filename) => new URL(`/src/img/${filename}`, import.meta.url).href
 
 export const getJsonUrl = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
-
-export const moretAddress = () => "0xf291C9E3CC62c6D2b194381eFb64e3bdc724C0a3"
-
-export const exchangeAddress = () => "0xB62E86364672EA3F942b09D448cCc264243a8ED7"
-
-export const maxAmount = () => '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';

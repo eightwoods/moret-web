@@ -1,27 +1,27 @@
 import Big from "big.js"
-import Web3 from "web3"
-// import { tokenAddress } from "./constant"
-import { getJsonUrl, moretAddress, exchangeAddress, maxAmount } from "./utils"
+import { moretAddress, exchangeAddress, maxAmount, tokenAddress } from "./constant"
+import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
 export const web3 = new Web3(window.ethereum)
 
-export const getContract = async (web3, path, address) => {
+export const getContract = async(web3, path, address) => {
     const response = await fetch(path)
     const data = await response.json()
-
+    
     return new web3.eth.Contract(data.abi, address)
 }
 
 // 1. quote prices
-export const getPriceOracle = async(tokenAddress) =>{
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+export const getPriceOracle = async(tokenAddress) => {
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const oracleAddress = await moretContract.methods.getVolatilityChain(String(tokenAddress)).call()
     const oracle = await getContract(web3, getJsonUrl("VolatilityChain.json"), oracleAddress)
+
     return oracle
 }
 
-export const getPrice = async (tokenAddress) => {
+export const getPrice = async(tokenAddress) => {
     const oracle = await getPriceOracle(tokenAddress)
     const tokenPrice = await oracle.methods.queryPrice().call()
 
@@ -30,43 +30,65 @@ export const getPrice = async (tokenAddress) => {
 
 // 2. refresh strikes
 // isCall is true if Call is chosen, otherwise false
-export const getStrikes = async (tokenAddress, isCall) =>{
-    const oracle = await getPriceOracle(tokenAddress)
+export const getStrikes = async(isCall) => {
+    const oracle = await getPriceOracle(tokenAddress())
     const tokenPrice = await oracle.methods.queryPrice().call()
-    const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice));
-
+    const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice))
+    
     const strikeMoneyness = [0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.3, 1.4]
     const minInterval = 50
-    var strikeDict = {}
-    for (let i = 0; i < strikeMoneyness.length; i++) {
-        let strike = Math.round((tokenPriceNumber * strikeMoneyness[i]) / minInterval) * minInterval
-        let strikeMoneyness = await calcMoneyness(tokenAddress, strike, isCall)
-        strikeDict[strike] = await strike.toFixed(0) + " | " + strikeMoneyness
-    }
+    let strikeDict = {}
+    // for (let i = 0; i < strikeMoneyness.length; i++) {
+    //     let strike = Math.round((tokenPriceNumber * strikeMoneyness[i]) / minInterval) * minInterval
+    //     let strikeMoneyness = await calcMoneyness(tokenAddress, strike, isCall)
+    //     strikeDict[strike] = await strike.toFixed(0) + " | " + strikeMoneyness
+    // }
+
+    strikeMoneyness.forEach(async(strikeMoney, index) => {
+        let strike = Big(tokenPriceNumber)
+        .times(strikeMoney)
+        .div(minInterval)
+        .round()
+        .times(minInterval)
+        .toNumber()
+
+        let strikeMoneynessVal = await calcMoneyness(strike, isCall)
+        strikeDict[strike] = `${strike} | ${strikeMoneynessVal}`
+    })
+    
     return strikeDict
 }
 
 // 3. calculate moneyness: strike is the floating number from strike field; 
 // isCall is true if Call is chosen, otherwise false
-export const calcMoneyness = async(tokenAddress, strike, isCall) =>{
-    const oracle = await getPriceOracle(tokenAddress)
+export const calcMoneyness = async(strike, isCall) => {
+    const oracle = await getPriceOracle(tokenAddress())
     const tokenPrice = await oracle.methods.queryPrice().call()
-    const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice))
-    const moneyness = Math.round(strike / tokenPriceNumber * 100)
+    // const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice))
+    // const moneyness = Math.round(strike / tokenPriceNumber * 100)
+    // if(moneyness == 100){
+    //     return 'ATM'
+    // }
+    // else if (moneyness > 100){
+    //     return (moneyness - 100).toString() + (isCall? '% ITM': '% OTM')
+    // }
+    // else {
+    //     return (100 - moneyness).toString() + (isCall ? '% OTM' : '% ITM')
+    // }
 
-    if(moneyness == 100){
-        return 'ATM'
-    }
-    else if (moneyness > 100){
-        return (moneyness - 100).toString() + (isCall? '% ITM': '% OTM')
-    }
-    else {
-        return (100 - moneyness).toString() + (isCall ? '% OTM' : '% ITM')
+    const tokenPriceNumber = Big(web3.utils.fromWei(tokenPrice)).toNumber()
+    const moneyness = Big(strike).div(tokenPriceNumber).times(100).round().toNumber()
+    if (moneyness === 100) {
+        return "ATM"
+    } else if (moneyness > 100) {
+        return `${(moneyness - 100).toString()}${isCall ? "% ITM" : "% OTM"}`
+    } else {
+        return `${(100 - moneyness).toString()}${isCall ? "% OTM" : "% ITM"}`
     }
 }
 
 // 4. calculate iv for each strike: expiry is the option expiry in number of days
-export const calcIV = async (tokenAddress, expiry) =>{
+export const calcIV = async(tokenAddress, expiry) => {
     const oracle = await getPriceOracle(tokenAddress)
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     const timeToExpiry = expiry / 365
@@ -76,7 +98,7 @@ export const calcIV = async (tokenAddress, expiry) =>{
 
 // 5. refresh vol token name: it returns the name of volatility token and blank '' string if the vol token does not exist, in which case please remove the vol token from the selector
 export const getVolTokenName = async(tokenAddress, expiry)=>{
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     try{
         const volTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
@@ -99,7 +121,7 @@ export const getVolTokenName = async(tokenAddress, expiry)=>{
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
 export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymentMethod, strike, amount, expiry, outputReceipt) =>{
     try{
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
         const tenor = Math.floor(expiry * 86400)
         const allPools = await getAllPools(tokenAddress)
         var bestPool = (0).toString(16)
@@ -161,7 +183,7 @@ export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymen
 }
 
 export const getAllPools = async (tokenAddress) => {
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
     const allPools = await brokerContract.methods.getAllPools(tokenAddress).call()
@@ -170,7 +192,7 @@ export const getAllPools = async (tokenAddress) => {
 
 // 7. refresh total gross capital and utility in decimals
 export const getCapital = async (tokenAddress) => {
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
@@ -196,7 +218,7 @@ export const getCapital = async (tokenAddress) => {
 // amount is in float
 // expiry is in number of days
 export const approveOptionSpending = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const optionCost = await calcOptionPrice(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry)
     const fundingAddress = await moretContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
@@ -215,8 +237,8 @@ export const approveOptionSpending = async (tokenAddress, isBuy, isCall, payment
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-    await approveMaxAmount(paymentToken, account, exchangeAddress(), optionCost[0])
-    await approveMaxAmount(fundingToken, account, exchangeAddress(), optionCost[1])
+    await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost[0])
+    await approveMaxAmount(fundingToken, account, exchangeAddress, optionCost[1])
 }
 
 export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
@@ -224,11 +246,11 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
     // console.log(approvedAmount, spendAmount);
     if (spendAmount.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice();
-        var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount()).estimateGas({ from: account, gasPrice: gasPriceApproval });
+        var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval });
         gasEstimatedApproval = Number(web3.utils.toBN(gasEstimatedApproval).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
         var nonceNewAproval = await web3.eth.getTransactionCount(account);
-        await erc20Token.methods.approve(spenderAddress, maxAmount()).send({ from: account, gas: gasEstimatedApproval, gasPrice: gasPriceApproval, nonce: nonceNewAproval });
-        console.log('cost approved', erc20Token._address, spenderAddress, maxAmount());
+        await erc20Token.methods.approve(spenderAddress, maxAmount).send({ from: account, gas: gasEstimatedApproval, gasPrice: gasPriceApproval, nonce: nonceNewAproval });
+        console.log('cost approved', erc20Token._address, spenderAddress, maxAmount);
     }
 }
 
@@ -244,7 +266,7 @@ export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMet
     const poolAddress = web3.utils.toChecksumAddress(optionCost[3]) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     var gasPriceCurrent = await web3.eth.getGasPrice();
     var gasEstimated = await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent });
     gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
@@ -257,7 +279,7 @@ export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMet
 
 // 9. read historical transactions: fromBlockNumber is integer of starting block number, can be zero
 export const getPastTransactions = async (tokenAddress, fromBlockNumber) =>{
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const vaultAddress = await exchangeContract.methods.vault().call
     const vaultContract = await getCapital(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     const accounts = await web3.eth.getAccounts();
@@ -299,7 +321,7 @@ export const getPastTransactions = async (tokenAddress, fromBlockNumber) =>{
 // expiry is in number of days
 // return 1) amount of vol token if isBuy is true, or amount of USDC if is Buy is false, and 2) the pool address for best pricing
 export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry, outputReceipt) => {
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress())
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const oracle = await getPriceOracle(tokenAddress)
     const tenor = Math.floor(expiry * 86400)
     const timeToExpiry = expiry / 365
@@ -307,7 +329,7 @@ export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry
     const tokenPrice = await oracle.methods.queryPrice().call()
     const allPools = await getVolTradingPools(tokenAddress)
     if(allPools.length > 0){
-        const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+        const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
         try {
             const volTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
             const volToken = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
@@ -363,7 +385,7 @@ export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry
 }
 
 export const getVolTradingPools = async (tokenAddress) => {
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress())
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
     const allPools = await brokerContract.methods.getAllPools(tokenAddress).call()

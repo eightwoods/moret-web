@@ -126,10 +126,10 @@ export default {
                     // let iv = await calcIV(tokenPrice.dataset.address, 7)
                     // let volTokenName = await getVolTokenName(tokenPrice.dataset.address, 7)
                     // let optionCost = await calcOptionPrice(tokenPrice.dataset.address, true, true, 0, 1100, 0.0001, 1)
-                    let capital = await getCapital(tokenPrice.dataset.address)
-                    console.log(capital)
+                    // let capital = await getCapital(tokenPrice.dataset.address)
+                    // console.log(strikes)
                 })
-            }, 15000)
+            }, 5000)
         }
         const clearTokenPrice = () => {
             clearInterval(refreshId)

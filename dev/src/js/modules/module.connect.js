@@ -157,9 +157,10 @@ export default {
             // console.log("accountsChanged", accounts)
             this.isPolygonNetwork()
             
-            if (accounts.length > 0) {
+            const elemActiveAccount = document.querySelector("header .active-account")
+            if (accounts.length > 0 && elemActiveAccount) {
                 const strAccounts = String(accounts)
-                document.querySelector("header .active-account").textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
+                elemActiveAccount.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
             } else {
                 location.reload()
             }
