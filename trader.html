@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
     <script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-  <script type="module" crossorigin src="/assets/main.beffe511.js"></script>
-  <link rel="stylesheet" href="/assets/main.ca8ff4c9.css">
+  <script type="module" crossorigin src="/assets/main.bc7e1bdb.js"></script>
+  <link rel="stylesheet" href="/assets/main.b77c0da6.css">
 </head>
 <body>
 <header>
@@ -59,9 +59,9 @@
                                     <div class="ts-item">Put</div>
                                 </div>
                             </div>
-                            <div class="opt-extra toggle-switches ts-bg-grey ts-active1">
+                            <div class="opt-token toggle-switches ts-bg-grey ts-active1">
                                 <div class="ts-item">USDC</div>
-                                <div class="ts-item">ETH 1</div>
+                                <div class="ts-item ts-token">-</div>
                             </div>
                             <div class="opt-strike dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
@@ -70,13 +70,8 @@
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
-                                        <input type="number" name="info-amount" value="2700" onKeyPress="if(this.value.length==10) return false;" />
-                                        <ul>
-                                            <li>2600 | 10% OTM</li>
-                                            <li>2500 | ATM</li>
-                                            <li>2400 | 10% ITM</li>
-                                            <li>2300 | 20% ITM</li>
-                                        </ul>
+                                        <input type="number" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" />
+                                        <ul class="info-list"></ul>
                                     </div>
                                 </div>
                             </div>
@@ -90,30 +85,26 @@
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
-                                        <ul>
-                                            <li class="info-active">1 Day | 86% IV</li>
-                                            <li>7 Day | 80% IV</li>
-                                            <li>30 Day | 90% IV</li>
-                                        </ul>
+                                        <ul class="info-list"></ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="info">
+                        <div class="opt-price info">
                             <div class="info-col">
                                 <a href="#" class="btn btn-blue">Trade</a>
                             </div>
                             <div class="info-col white-50">
                                 <ul>
-                                    <li>Volatility: <span class="white-100 info-value">80%</span></li>
-                                    <li>Premium: <span class="white-100 info-value">20</span></li>
-                                    <li>Calculated: <span class="white-100 info-value">2700</span></li>
+                                    <li>Implied Volatility: <span class="white-100 info-volatility">0%</span></li>
+                                    <li>Premium: <span class="white-100 info-premium">0</span></li>
+                                    <li>Collateral: <span class="white-100 info-collateral">0</span></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div class="row in-box animate-panel">
-                        <div class="liquidity-pool percentage-bar" data-init-value="55">
+                        <div class="liquidity-pool percentage-bar" data-init-value="0">
                             <div class="pb-main">
                                 <div class="pb-price-from">$0</div>
                                 <div class="pb-progress">

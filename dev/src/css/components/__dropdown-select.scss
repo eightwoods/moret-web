@@ -58,6 +58,7 @@
             transition: max-height 1s, top 0.5s, opacity 0.5s;
 
             input {
+                @include placeholderColor($white-14);
                 text-align: center;
                 background-color: $white-8;
                 border: 0;

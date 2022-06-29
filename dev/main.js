@@ -23,7 +23,7 @@ const setup = {
 
     async getComponents() {
         if (document.querySelectorAll(".dropdown-select").length) {
-            const { default: dropdownSelect } = await import("./src/js/components/component.dropdowSelect")
+            const { default: dropdownSelect } = await import("./src/js/components/component.dropdownSelect")
             dropdownSelect.init()
         }
 

@@ -1,5 +1,5 @@
 import { gsap } from "gsap"
-import { noScroll } from "../helpers/utils"
+import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
 import { web3 } from "../helpers/web3"
 
 export default {
@@ -10,86 +10,6 @@ export default {
         this.isPolygonNetwork()
     },
 
-    createList(arrValues, containerClass) {
-        const listContainer = document.createElement("ul")
-        listContainer.className = containerClass
-        
-        for (const txtVal of arrValues) {
-            const listItem = document.createElement("li")
-            listItem.textContent = txtVal.name
-            if (txtVal.class) {
-                listItem.className = txtVal.class
-            } else {
-                listItem.className = txtVal.name.toLowerCase()
-            }
-            listContainer.appendChild(listItem)
-
-            // events specific for connectwallets
-            if (containerClass === "connectwallets") {
-                listItem.addEventListener("click", (e) => {
-                    switch (e.target.className) {
-                        case "metamask":
-                            this.connectMetaMask(listItem)
-                            break;
-                        case "walletconnect": break;
-                        case "coinbase": break;
-                        default:
-                    }
-                }, false)
-            }
-        }
-
-        return listContainer
-    },
-
-    overlayPopup(title = null, data = null, btnClose = false) {
-        noScroll()
-
-        const opPanel = document.createElement("div")
-        opPanel.className = "overlay-popup"
-        document.body.appendChild(opPanel)
-
-        const opBox = document.createElement("div")
-        opBox.className = "op-box"
-        opPanel.appendChild(opBox)
-
-        if (title) {
-            const opTitle = document.createElement("div")
-            opTitle.className = "op-title header-title m-b-24"
-            opTitle.textContent = title
-            opBox.appendChild(opTitle)
-        }
-
-        const opClose = document.createElement("div")
-        if (btnClose) {
-            opClose.className = "op-close hide"
-        } else {
-            opClose.className = "op-close cursor"
-        }
-        opBox.appendChild(opClose)
-        opClose.addEventListener("click", () => {
-            this.closeOverlayPopup()
-        }, false)
-
-        const opContent = document.createElement("div")
-        opContent.className = "op-content"
-        opContent.appendChild(data)
-        opBox.appendChild(opContent)
-
-        // transition
-        gsap.from(opBox, {opacity: 0, scale: 0.5})
-    },
-
-    closeOverlayPopup() {
-        const overlayPopup = document.querySelector(".overlay-popup")
-        if (overlayPopup) {
-            noScroll(false)
-            gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
-                overlayPopup.remove()
-            }})
-        }
-    },
-
     async connectMetaMask(button) {
         button.textContent = "Requesting..."
 
@@ -98,7 +18,7 @@ export default {
             .then((result) => {
                 // console.log("result", result)
                 // success
-                this.closeOverlayPopup()
+                closeOverlayPopup()
                 this.accountsConnect()
             })
             .catch((error) => {
@@ -140,7 +60,21 @@ export default {
                     button.addEventListener("click", (e) => {
                         e.preventDefault()
                         const arrNames = [{name: "Metamask"}, {name: "Walletconnect"}, {name: "Coinbase"}]
-                        this.overlayPopup("Connect Wallet", this.createList(arrNames, "connectwallets"))
+                        showOverlayPopup("Connect Wallet", createList(arrNames, "connectwallets"))
+                        // events
+                        const btnItems = document.querySelectorAll(".overlay-popup .connectwallets li")
+                        btnItems.forEach((btn) => {
+                            btn.addEventListener("click", (e) => {
+                                switch (e.target.className) {
+                                    case "metamask":
+                                        this.connectMetaMask(btn)
+                                        break;
+                                    case "walletconnect": break;
+                                    case "coinbase": break;
+                                    default:
+                                }
+                            }, false)
+                        })
                     }, false)
                 }
             }
@@ -184,13 +118,13 @@ export default {
             const chainId = await web3.eth.getChainId()
 
             if (Number(chainId) === 137) { // currently only Polygon Mainnet
-                this.closeOverlayPopup()
+                closeOverlayPopup()
             } else {
                 const arrNames = [
                     {name: "", class: "np-icon"}, 
                     {name: "This is not a “Polygon” blockchain!", class: "np-text size-lgmd"}
                 ]
-                this.overlayPopup(null, this.createList(arrNames, "notpolygon"), true)
+                showOverlayPopup(null, createList(arrNames, "notpolygon"), true)
             }
         }
     },

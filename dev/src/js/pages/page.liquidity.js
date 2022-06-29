@@ -6,10 +6,10 @@ export default {
     },
 
     init() {
-        const observer = new MutationObserver((mutations) => {
-            console.log("sidenav has changed!")
+        const sidenavObserver = new MutationObserver((mutations) => {
+            console.log("sidenav has changed from Liquidity!")
         })
-        observer.observe(this.globals.elem.querySelector(".sidenav"), {childList: true, characterData: true})
+        sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), {childList: true, attributes: false, characterData: false})
         
         this.setSwiper()
     },

@@ -1,3 +1,5 @@
+import { gsap } from "gsap"
+
 export const breakpoint = {
     xl:   1200,
     lg:   1024,
@@ -54,3 +56,78 @@ export const getUrlParam = (param) => getUrlVars().get(param)
 export const getImageUrl = (filename) => new URL(`/src/img/${filename}`, import.meta.url).href
 
 export const getJsonUrl = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
+
+export const createList = (arrValues, containerClass) => {
+    const listContainer = document.createElement("ul")
+    listContainer.className = containerClass
+    
+    for (const txtVal of arrValues) {
+        const listItem = document.createElement("li")
+
+        listItem.textContent = txtVal.name
+        if (txtVal.class) {
+            listItem.className = txtVal.class
+        } else {
+            listItem.className = txtVal.name.toLowerCase()
+        }
+
+        if (txtVal.span) {
+            const span = document.createElement("span")
+            span.textContent = txtVal.span
+            listItem.appendChild(span)
+        }
+
+        listContainer.appendChild(listItem)
+    }
+
+    return listContainer
+}
+
+export const showOverlayPopup = (title = null, data = null, btnClose = false) => {
+    noScroll()
+
+    // set elements
+    const opPanel = document.createElement("div")
+    opPanel.className = "overlay-popup"
+    document.body.appendChild(opPanel)
+
+    const opBox = document.createElement("div")
+    opBox.className = "op-box"
+    opPanel.appendChild(opBox)
+
+    if (title) {
+        const opTitle = document.createElement("div")
+        opTitle.className = "op-title header-title m-b-24"
+        opTitle.textContent = title
+        opBox.appendChild(opTitle)
+    }
+
+    const opClose = document.createElement("div")
+    if (btnClose) {
+        opClose.className = "op-close hide"
+    } else {
+        opClose.className = "op-close cursor"
+    }
+    opBox.appendChild(opClose)
+    opClose.addEventListener("click", () => {
+        closeOverlayPopup()
+    }, false)
+
+    const opContent = document.createElement("div")
+    opContent.className = "op-content"
+    opContent.appendChild(data)
+    opBox.appendChild(opContent)
+
+    // transition
+    gsap.from(opBox, {opacity: 0, scale: 0.5})
+}
+
+export const closeOverlayPopup = () => {
+    const overlayPopup = document.querySelector(".overlay-popup")
+    if (overlayPopup) {
+        noScroll(false)
+        gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
+            overlayPopup.remove()
+        }})
+    }
+}

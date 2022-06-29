@@ -13,16 +13,18 @@ export const getContract = async(web3, path, address) => {
 }
 
 // 1. quote prices
-export const getPriceOracle = async(tokenAddress) => {
+export const getPriceOracle = async(tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const oracleAddress = await moretContract.methods.getVolatilityChain(String(tokenAddress)).call()
+    const oracleAddress = await moretContract.methods.getVolatilityChain(String(objTokenAddr)).call()
     const oracle = await getContract(web3, getJsonUrl("VolatilityChain.json"), oracleAddress)
 
     return oracle
 }
 
-export const getPrice = async(tokenAddress) => {
-    const oracle = await getPriceOracle(tokenAddress)
+export const getPrice = async(tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const oracle = await getPriceOracle(objTokenAddr)
     const tokenPrice = await oracle.methods.queryPrice().call()
 
     return `$${Big(web3.utils.fromWei(tokenPrice)).round(2).toNumber()}`
@@ -30,21 +32,16 @@ export const getPrice = async(tokenAddress) => {
 
 // 2. refresh strikes
 // isCall is true if Call is chosen, otherwise false
-export const getStrikes = async(isCall) => {
-    const oracle = await getPriceOracle(tokenAddress())
+export const getStrikes = async(tokenAddr = null, isCall) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const oracle = await getPriceOracle(objTokenAddr)
     const tokenPrice = await oracle.methods.queryPrice().call()
-    const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice))
-    
+    const tokenPriceNumber = Big(web3.utils.fromWei(tokenPrice)).toNumber()
     const strikeMoneyness = [0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.3, 1.4]
     const minInterval = 50
-    let strikeDict = {}
-    // for (let i = 0; i < strikeMoneyness.length; i++) {
-    //     let strike = Math.round((tokenPriceNumber * strikeMoneyness[i]) / minInterval) * minInterval
-    //     let strikeMoneyness = await calcMoneyness(tokenAddress, strike, isCall)
-    //     strikeDict[strike] = await strike.toFixed(0) + " | " + strikeMoneyness
-    // }
+    const strikeDict = []
 
-    strikeMoneyness.forEach(async(strikeMoney, index) => {
+    for (let strikeMoney of strikeMoneyness) {
         let strike = Big(tokenPriceNumber)
         .times(strikeMoney)
         .div(minInterval)
@@ -52,32 +49,22 @@ export const getStrikes = async(isCall) => {
         .times(minInterval)
         .toNumber()
 
-        let strikeMoneynessVal = await calcMoneyness(strike, isCall)
-        strikeDict[strike] = `${strike} | ${strikeMoneynessVal}`
-    })
-    
+        let strikeMoneynessVal = await calcMoneyness(objTokenAddr, strike, isCall)
+        strikeDict.push(`${strike} | ${strikeMoneynessVal}`)
+    }
+
     return strikeDict
 }
 
 // 3. calculate moneyness: strike is the floating number from strike field; 
 // isCall is true if Call is chosen, otherwise false
-export const calcMoneyness = async(strike, isCall) => {
-    const oracle = await getPriceOracle(tokenAddress())
+export const calcMoneyness = async(tokenAddr = null, strike, isCall) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const oracle = await getPriceOracle(objTokenAddr)
     const tokenPrice = await oracle.methods.queryPrice().call()
-    // const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice))
-    // const moneyness = Math.round(strike / tokenPriceNumber * 100)
-    // if(moneyness == 100){
-    //     return 'ATM'
-    // }
-    // else if (moneyness > 100){
-    //     return (moneyness - 100).toString() + (isCall? '% ITM': '% OTM')
-    // }
-    // else {
-    //     return (100 - moneyness).toString() + (isCall ? '% OTM' : '% ITM')
-    // }
-
     const tokenPriceNumber = Big(web3.utils.fromWei(tokenPrice)).toNumber()
     const moneyness = Big(strike).div(tokenPriceNumber).times(100).round().toNumber()
+
     if (moneyness === 100) {
         return "ATM"
     } else if (moneyness > 100) {
@@ -88,29 +75,46 @@ export const calcMoneyness = async(strike, isCall) => {
 }
 
 // 4. calculate iv for each strike: expiry is the option expiry in number of days
-export const calcIV = async(tokenAddress, expiry) => {
-    const oracle = await getPriceOracle(tokenAddress)
-    const tenor = Math.floor(expiry * 86400) // convert to seconds
-    const timeToExpiry = expiry / 365
-    const volatility = await oracle.methods.queryVol(tenor).call()
-    return (parseFloat(web3.utils.fromWei(volatility)) / Math.sqrt(timeToExpiry)).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " RV"
+export const calcIV = async(tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const oracle = await getPriceOracle(objTokenAddr)
+    const expirationDays = [1, 7, 30]
+    let expirations = []
+
+    for (let expiry of expirationDays) {
+        const tenor = Big(expiry).times(86400).round().toNumber() // convert to seconds
+        const timeToExpiry = Big(expiry).div(365)
+        const volatility = await oracle.methods.queryVol(tenor).call()
+        const calcValue = `${Big(web3.utils.fromWei(volatility))
+                        .div(timeToExpiry.sqrt())
+                        .toNumber()
+                        .toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0})} RV`
+
+        const gtDay = Big(expiry).eq(1) ? "" : "s"
+
+        expirations.push(`${expiry} Day${gtDay} | ${calcValue}`)
+    }
+    
+    return expirations    
 }
 
 // 5. refresh vol token name: it returns the name of volatility token and blank '' string if the vol token does not exist, in which case please remove the vol token from the selector
-export const getVolTokenName = async(tokenAddress, expiry)=>{
+export const getVolTokenName = async(tokenAddr = null, expiry) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const tenor = Math.floor(expiry * 86400) // convert to seconds
-    try{
-        const volTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
+    const tenor = Big(expiry).times(86400).round().toNumber() // convert to seconds
+    
+    try {
+        const volTokenAddress = await moretContract.methods.getVolatilityToken(objTokenAddr, tenor).call()
         const volToken = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
         const volTokenName = await volToken.methods.symbol().call()
         return volTokenName
-    }
-    catch(err){
-        return ''
+    } catch(err) {
+        return ""
     }
 }
-
+// ----- currently refactor methods above !!! -----
+//
 // 6. calculate option prices (including vol, premium and collateral) depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
 // isCall is true if Call is selected, false if Put is selected
@@ -119,11 +123,12 @@ export const getVolTokenName = async(tokenAddress, expiry)=>{
 // amount is in float
 // expiry is in number of days
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
-export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymentMethod, strike, amount, expiry, outputReceipt) =>{
-    try{
+export const calcOptionPrice = async(tokenAddr = null, token, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+    try {
+        const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
         const tenor = Math.floor(expiry * 86400)
-        const allPools = await getAllPools(tokenAddress)
+        const allPools = await getAllPools(objTokenAddr)
         var bestPool = (0).toString(16)
         var premium, collateral
         var vol = 0
@@ -133,6 +138,7 @@ export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymen
             const poolAddress = allPools[i]
             const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, web3.utils.toWei(strike.toString(),'ether'), web3.utils.toWei(amount.toString(),'ether'), isCall? 0: 1, isBuy? 0: 1, false).call()
             const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+
             if (parseInt(bestPool, 16)==0){
                 premium = quotedPremium
                 collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
@@ -166,37 +172,43 @@ export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymen
         }
         else if (paymentMethod == 2){
             premium = premium / vol 
-            premiumToken = await getVolTokenName(tokenAddress, expiry)
+            premiumToken = await getVolTokenName(objTokenAddr, expiry)
             // note that if vol token is used to pay premium, USDC will be used as collateral
         }
 
-        if (outputReceipt){
-            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(2) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
+        // if (outputReceipt){
+        //     return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(5) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
+        // }
+        // else{
+        //     return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(5) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
+        // }
+        return {
+            "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
+            "premium": `${Big(premium).round(5)}${premiumToken}`,
+            "collateral": `${Big(collateral).round(2)}${collateralToken}`
         }
-        else{
-            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(2) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
-        }
-    }
-    catch(err){
+    } catch(err) {
         return err.message
     }    
 }
 
-export const getAllPools = async (tokenAddress) => {
+export const getAllPools = async (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const allPools = await brokerContract.methods.getAllPools(tokenAddress).call()
+    const allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
     return allPools
 }
 
 // 7. refresh total gross capital and utility in decimals
-export const getCapital = async (tokenAddress) => {
+export const getCapital = async (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
-    const allPools = await getAllPools(tokenAddress)
+    const allPools = await getAllPools(objTokenAddr)
     var grossCapitalTotal = 0
     var netCapitalTotal = 0
     for (let i = 0; i < allPools.length; i++) {
@@ -207,7 +219,11 @@ export const getCapital = async (tokenAddress) => {
         netCapitalTotal = netCapitalTotal + parseFloat(web3.utils.fromWei(netCapital))
     }
     const utilization = Math.max(0, 1 - netCapitalTotal / grossCapitalTotal)
-    return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
+    // return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
+    return {
+        "gross": `$${(grossCapitalTotal / 1000)}K`,
+        "perc": utilization.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0})
+    }
 }
 
 // 8a. function to approve max amount if needed

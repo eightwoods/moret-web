@@ -122,14 +122,8 @@ export default {
             refreshId = setInterval(() => {
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
                     tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
-                    // let strikes = await getStrikes(tokenPrice.dataset.address)
-                    // let iv = await calcIV(tokenPrice.dataset.address, 7)
-                    // let volTokenName = await getVolTokenName(tokenPrice.dataset.address, 7)
-                    // let optionCost = await calcOptionPrice(tokenPrice.dataset.address, true, true, 0, 1100, 0.0001, 1)
-                    // let capital = await getCapital(tokenPrice.dataset.address)
-                    // console.log(strikes)
                 })
-            }, 5000)
+            }, 15000)
         }
         const clearTokenPrice = () => {
             clearInterval(refreshId)

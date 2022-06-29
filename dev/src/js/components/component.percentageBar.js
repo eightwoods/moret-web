@@ -23,14 +23,16 @@ export default {
     },
 
     progressBar(elem, value) {
-        const progressBar = elem.querySelector(".pb-progressbar")
-        gsap.to(progressBar, {
-            width: `${value}%`,
-            ease: this.globals.easing,
-            duration: this.globals.duration
-        })
+        if (value > 0) {
+            const progressBar = elem.querySelector(".pb-progressbar")
+            gsap.to(progressBar, {
+                width: `${value}%`,
+                ease: this.globals.easing,
+                duration: this.globals.duration
+            })
 
-        this.countPercent(elem, value)
+            this.countPercent(elem, value)
+        }
     },
 
     countPercent(elem, value) {

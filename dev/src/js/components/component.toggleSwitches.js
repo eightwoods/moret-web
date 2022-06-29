@@ -51,6 +51,10 @@ export default {
         })
     },
 
+    resetItems(toggleSwitch) {
+        this.setActiveItem(toggleSwitch)
+    },
+
     setActiveItem(toggleSwitch, activeIndex = 1) {
         // parent
         toggleSwitch.classList.remove("ts-active1", "ts-active2", "ts-active3", "ts-active4")

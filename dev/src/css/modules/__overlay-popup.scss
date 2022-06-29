@@ -103,5 +103,20 @@
                 }
             }
         }
+
+        .tradeoverview {
+            li {
+                color: $white-50;
+                margin-bottom: 10px;
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                span {
+                    color: $white;
+                    margin-left: 8px;
+                }
+            }
+        }
     }
 }
