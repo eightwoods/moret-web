@@ -148,10 +148,10 @@ export const calcOptionPrice = async (tokenAddress, token, isBuy, isCall, paymen
         }
 
         if (outputReceipt){
-            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(2) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
+            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(5) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
         }
         else{
-            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(2) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
+            return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(5) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
         }
     }
     catch(err){

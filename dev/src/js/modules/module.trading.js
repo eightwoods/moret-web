@@ -125,9 +125,9 @@ export default {
                     // let strikes = await getStrikes(tokenPrice.dataset.address)
                     // let iv = await calcIV(tokenPrice.dataset.address, 7)
                     // let volTokenName = await getVolTokenName(tokenPrice.dataset.address, 7)
-                    // let optionCost = await calcOptionPrice(tokenPrice.dataset.address, true, true, 0, 1100, 0.0001, 1)
-                    let capital = await getCapital(tokenPrice.dataset.address)
-                    console.log(capital)
+                    let optionCost = await calcOptionPrice(tokenPrice.dataset.address, tokenPrice.dataset.token, true, true, 0, 1100, 0.00001, 1)
+                    // let capital = await getCapital(tokenPrice.dataset.address)
+                    console.log(optionCost)
                 })
             }, 15000)
         }

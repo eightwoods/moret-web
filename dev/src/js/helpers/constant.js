@@ -1,6 +1,6 @@
-export const moretAddress = "0x386322f0a82d8F82958e6a78AF1Ee6b0Dcc5bAaB"
+export const moretAddress = "0xea93Be5c9808a783c2F0Ee8cD7964124Cbaa2d54"
 
-export const exchangeAddress = "0x65d3bF1E994a76Dd512039EF3dF1d111f7B07f4f"
+export const exchangeAddress = "0xB65F777Ca71C3a4f956cd7D6ad187E4D8906B43D"
 
 export const tokenActive = "tokenActive"
 
