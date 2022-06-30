@@ -18,17 +18,34 @@ export default {
         this.setTrade()
 
         // observe sidenav
-        const sidenavObserver = new MutationObserver(async(mutations) => {
+        const sidenavObserver = new MutationObserver((mutations) => {
             console.log("sidenav has changed from Trader!")
-            componentTradingviewWidget.createGraph()
-            this.optToken()
-            this.optStrike()
-            this.optPrice()
-            this.liquidityPool()
 
+            for (let mutation of mutations) {
+                if (mutation.type === "attributes") {
+                    switch (mutation.attributeName) {
+                        case "sidenav-activechange":
+                            componentTradingviewWidget.createGraph()
+                            this.optToken()
+                            this.optStrike()
+                            this.optPrice()
+                            this.liquidityPool()
+                            break
+                        case "sidenav-refreshprice":
+                            this.optPrice()
+                            break
+                        default:
+                    }
+                }
+            }
+            
             this.globals.initObserver = false
         })
-        sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), {childList: true, attributes: false, characterData: false})
+        sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), {
+            childList: true, 
+            attributes: true, 
+            attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
+        })
         
         // observe toggle switches call/put
         const optcallputObserver = new MutationObserver((mutations) => {
@@ -63,6 +80,9 @@ export default {
     },
 
     async optPrice(objInsert2elem = null) {
+
+        console.log("optPrice()")
+
         const isBuy = componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy" ? true : false
         const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call" ? true : false
 
@@ -124,25 +144,6 @@ export default {
                 "premium": document.querySelector(".overlay-popup .to-premium span"),
                 "collateral": document.querySelector(".overlay-popup .to-collateral span")
             })
-        })
-    },
-
-    refresh() {
-        let refreshId = null
-        const refreshMethod = () => {
-            refreshId = setInterval(() => {
-                this.optPrice()
-            }, 5000)
-        }
-        const clearMethod = () => {
-            clearInterval(refreshId)
-            refreshId = null
-        }
-        refreshMethod()
-        
-        // tab visibility remove/resume
-        document.addEventListener("visibilitychange", () => {
-            document.hidden ? clearMethod() : refreshMethod()
         })
     },
 }

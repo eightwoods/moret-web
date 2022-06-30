@@ -6,16 +6,21 @@ import { web3, getPrice, getStrikes, calcMoneyness, calcIV, getVolTokenName, cal
 export default {
     globals: {
         elem: document.querySelector(".trading"),
+        refreshDuration: 15000,
     },
 
     init() {
-        this.sideNav()
+        const sidenav = this.globals.elem.querySelector(".sidenav")
+        this.sideNav(sidenav)
+        this.sideNavRefreshPrice(sidenav)
+        this.sideNavLimiteView(sidenav)
         this.animateEachPanel()
     },
 
-    sideNav() {
-        const sidenav = this.globals.elem.querySelector(".sidenav")
+    sideNav(sidenav) {
         sidenav.textContent = ""
+        // for MutationObserver use
+        sidenav.setAttribute("sidenav-activechange", "")
 
         // main
         const tokenMain = document.createElement("div")
@@ -48,14 +53,10 @@ export default {
 
         this.sideNavItem(mainInfo, {token: tokenName(), price: tokenPrice(), address: tokenAddress()}, false)
         tokens.forEach((token, index) => {
-            // if (token.address !== tokenAddress()) {
-            if (token.token !== tokenName()) {
+            if (token.address !== tokenAddress()) {
                 this.sideNavItem(contentInfo, token)
             }
         })
-
-        this.sideNavRefreshPrice(sidenav)
-        this.sideNavLimiteView(sidenav)
     },
 
     sideNavSearch(elParent) {
@@ -109,7 +110,7 @@ export default {
             infoItem.addEventListener("click", () => {
                 localStorage.removeItem(tokenActive)
                 localStorage.setItem(tokenActive, JSON.stringify(data))
-                this.sideNav()
+                this.sideNav(this.globals.elem.querySelector(".sidenav"))
             })
         }
     },
@@ -120,10 +121,13 @@ export default {
         let refreshId = null
         const refreshTokenPrice = () => {
             refreshId = setInterval(() => {
+                // for MutationObserver use
+                sidenav.setAttribute("sidenav-refreshprice", "")
+                // insert tokens price
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
                     tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
                 })
-            }, 15000)
+            }, this.globals.refreshDuration)
         }
         const clearTokenPrice = () => {
             clearInterval(refreshId)
