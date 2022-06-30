@@ -14,7 +14,7 @@ export default {
         }
     },
     plugins: [
-        // del({ targets: "assets/*" }),
+        del({ targets: "assets/*" }),
         copy({
             targets: [
                 { src: "dev/src/json/*.json", dest: "json" }
