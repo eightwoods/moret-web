@@ -63,6 +63,9 @@ export default {
     },
 
     async optPrice(objInsert2elem = null) {
+        const isBuy = componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy" ? true : false
+        const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call" ? true : false
+
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve({
@@ -73,9 +76,6 @@ export default {
         })
         .then(async(res) => { 
             // console.log(res)
-            const isBuy = componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy" ? true : false
-            const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call" ? true : false
-
             const optPrice = await calcOptionPrice(null, tokenName(), isBuy, isCall, 0, res.strike, 0.00001, res.expiry)
             if (objInsert2elem) {
                 objInsert2elem.volatility.textContent = optPrice.volatility
