@@ -8,7 +8,7 @@
 - npm add -D sass
 
 ## From Repo
-- git clone <https>
+- git clone ...
 - npm install
 
 ## Working folder
