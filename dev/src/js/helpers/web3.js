@@ -123,7 +123,7 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 // amount is in float
 // expiry is in number of days
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
-export const calcOptionPrice = async(tokenAddr = null, token, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
     try {
         const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
@@ -182,10 +182,14 @@ export const calcOptionPrice = async(tokenAddr = null, token, isBuy, isCall, pay
         // else{
         //     return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(5) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
         // }
-        return {
-            "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
-            "premium": `${Big(premium).round(5)}${premiumToken}`,
-            "collateral": `${Big(collateral).round(2)}${collateralToken}`
+        if (token) {
+            return {
+                "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
+                "premium": `${Big(premium).round(5)}${premiumToken}`,
+                "collateral": `${Big(collateral).round(2)}${collateralToken}`
+            }
+        } else {
+            //...
         }
     } catch(err) {
         return err.message
@@ -233,16 +237,17 @@ export const getCapital = async (tokenAddr = null) => {
 // strike is in integer
 // amount is in float
 // expiry is in number of days
-export const approveOptionSpending = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const optionCost = await calcOptionPrice(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
     const fundingAddress = await moretContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
-    var paymentTokenAddress = paymentMethod == 0 ? fundingAddress : tokenAddress
+    var paymentTokenAddress = paymentMethod == 0 ? fundingAddress : objTokenAddr
     if (paymentMethod == 2) {
         try {
-            paymentTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
+            paymentTokenAddress = await moretContract.methods.getVolatilityToken(objTokenAddr, tenor).call()
         }
         catch (err) {
             console.log('no vol token exists for ' + expiry.toString())
@@ -277,8 +282,9 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
 // strike is in integer
 // amount is in float
 // expiry is in number of days
-export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
-    const optionCost = await calcOptionPrice(tokenAddress, isBuy, isCall, paymentMethod, strike, amount, expiry)
+export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
     const poolAddress = web3.utils.toChecksumAddress(optionCost[3]) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     
@@ -294,17 +300,18 @@ export const executeOptionTrade = async (tokenAddress, isBuy, isCall, paymentMet
 
 
 // 9. read historical transactions: fromBlockNumber is integer of starting block number, can be zero
-export const getPastTransactions = async (tokenAddress, fromBlockNumber) =>{
+export const getPastTransactions = async (tokenAddr = null, fromBlockNumber) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const vaultAddress = await exchangeContract.methods.vault().call
     const vaultContract = await getCapital(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     const accounts = await web3.eth.getAccounts();
 
     var optionTable = {}
-    const oracle = await getPriceOracle(tokenAddress)
+    const oracle = await getPriceOracle(objTokenAddr)
     const tokenPrice = await oracle.methods.queryPrice().call()
     const tokenPriceNumber = parseFloat(web3.utils.fromWei(tokenPrice));
-    exchangeContract.getPastEvents('NewOption', { filter: { _purchaser: accounts[0], _underlying: tokenAddress }, fromBlock: fromBlockNumber, toBlock: 'latest' }, async function (error, events) { 
+    exchangeContract.getPastEvents('NewOption', { filter: { _purchaser: accounts[0], _underlying: objTokenAddr }, fromBlock: fromBlockNumber, toBlock: 'latest' }, async function (error, events) { 
         for(let i = 0;i< events.length; i++){
             const optionId = events[i].returnValues._optionId
             const option = await vaultContract.methods.getOption(optionId).call()

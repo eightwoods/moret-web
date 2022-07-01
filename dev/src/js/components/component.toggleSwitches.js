@@ -5,10 +5,14 @@ export default {
 
     init() {
         this.globals.elem.forEach((toggleSwitch) => {
-            if (parseInt(toggleSwitch.dataset.toggleTotal) > 2) {
-                this.toggleMoreSwitches(toggleSwitch)
+            if (toggleSwitch.dataset.staticLink) {
+                this.staticLink(toggleSwitch)
             } else {
-                this.toggle2Switches(toggleSwitch)
+                if (parseInt(toggleSwitch.dataset.toggleTotal) > 2) {
+                    this.toggleMoreSwitches(toggleSwitch)
+                } else {
+                    this.toggle2Switches(toggleSwitch)
+                }
             }
         })
     },
@@ -52,6 +56,23 @@ export default {
                 this.setActiveItem(toggleSwitch, index + 1)
                 // for MutationObserver use
                 toggleSwitch.setAttribute("ts-activechanged", "")
+            })
+        })
+    },
+
+    staticLink(toggleSwitch) {
+        const activeItem = parseInt(toggleSwitch.dataset.activeItem)
+        
+        // initial state
+        this.setActiveItem(toggleSwitch, activeItem)
+
+        // trigger from individual item
+        const tsItems = toggleSwitch.querySelectorAll(".ts-item")
+        tsItems.forEach((item, index) => {
+            item.addEventListener("click", () => {
+                if (activeItem !== index + 1) {
+                    window.location.href = item.dataset.link
+                }
             })
         })
     },
