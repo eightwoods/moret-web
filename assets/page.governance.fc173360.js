@@ -1,1 +1,0 @@
-var r={globals:{elem:document.querySelector(".governance")},init(){new MutationObserver(a=>{console.log("sidenav has changed from Governance!")}).observe(this.globals.elem.querySelector(".sidenav"),{childList:!0,attributes:!1,characterData:!1})}};export{r as default};

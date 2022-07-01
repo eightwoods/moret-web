@@ -74,7 +74,7 @@ export default {
         tsddsObserver.observe(document.querySelector(".opt-strike"), tsddsOptions)
         tsddsObserver.observe(document.querySelector(".opt-expiry"), tsddsOptions)
 
-        // observe expiry dropdown select
+        // observe expiry dropdown select, only on initial load
         const expiryObserver = new MutationObserver((mutations) => {
             this.optToken()
             expiryObserver.disconnect()
