@@ -9,7 +9,7 @@ import componentTradingviewWidget from "../components/component.tradingviewWidge
 export default {
     globals: {
         elem: document.querySelector(".trader"),
-        initObserver: true
+        init: true
     },
 
     init() {
@@ -18,6 +18,11 @@ export default {
         this.setTrade()
 
         // observe sidenav
+        const sidenavOptions = {
+            childList: true, 
+            attributes: true, 
+            attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
+        }
         const sidenavObserver = new MutationObserver((mutations) => {
             console.log("sidenav has changed from Trader!")
 
@@ -26,65 +31,76 @@ export default {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
                             componentTradingviewWidget.createGraph()
-                            this.optToken()
                             this.optStrike()
                             this.optPrice()
                             this.liquidityPool()
+                            if (!this.globals.init) {
+                                this.optToken()
+                            }
                             break
                         case "sidenav-refreshprice":
                             this.optPrice()
+                            if (document.querySelector(".overlay-popup")) {
+                                this.optPrice(true)
+                            }
                             break
                         default:
                     }
                 }
             }
-            
-            this.globals.initObserver = false
+
+            this.globals.init = false
         })
-        sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), {
-            childList: true, 
-            attributes: true, 
-            attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
-        })
+        sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
         
-        // observe toggle switches call/put
-        const optcallputObserver = new MutationObserver((mutations) => {
-            if (!this.globals.initObserver) {
-                this.optStrike()
+        // observe toggle switches and dropdown select
+        const tsddsOptions = {attributes: true, attributeFilter: ["ts-activechanged", "dds-updated"]}
+        const tsddsObserver = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.attributeName === "ts-activechanged" || mutation.attributeName === "dds-updated") {
+                    this.optPrice()
+
+                    if (mutation.target.classList.contains("opt-callput")) {
+                        this.optStrike()
+                    } else if (mutation.target.classList.contains("opt-expiry")) {
+                        this.optToken()
+                    }
+                }
             }
         })
-        optcallputObserver.observe(document.querySelector(".opt-callput"), {childList: false, attributes: true, characterData: false})
+        tsddsObserver.observe(document.querySelector(".opt-buysell"), tsddsOptions)
+        tsddsObserver.observe(document.querySelector(".opt-callput"), tsddsOptions)
+        tsddsObserver.observe(document.querySelector(".opt-token"), tsddsOptions)
+        tsddsObserver.observe(document.querySelector(".opt-strike"), tsddsOptions)
+        tsddsObserver.observe(document.querySelector(".opt-expiry"), tsddsOptions)
 
         // observe expiry dropdown select
-        const expiryObserver = new MutationObserver(async(mutations) => {
-            if (!this.globals.initObserver) {
-                this.optToken()
-            }
+        const expiryObserver = new MutationObserver((mutations) => {
+            this.optToken()
+            expiryObserver.disconnect()
         })
-        expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true, attributes: false, characterData: false})
+        expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
+        
     },
 
     async optToken() {
+        // console.log("optToken()")
         const expiry = document.querySelector(".opt-expiry .ds-value1").textContent.replace("Days", "").replace("Day", "").trim()
         const optToken = await getVolTokenName(null, expiry)
         document.querySelector(".opt-token .ts-token").textContent = optToken
     },
 
     optStrike() {
+        // console.log("optStrike()")
         const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call" ? true : false
         componentDropdownSelect.createListItems(document.querySelector(".opt-strike"), getStrikes(null, isCall), false)
     },
 
-    optExpiry() {
-        componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
-    },
-
-    async optPrice(objInsert2elem = null) {
-
-        console.log("optPrice()")
-
+    optPrice(inOverlayPopup = false) {
+        // console.log("optPrice()")
         const isBuy = componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy" ? true : false
         const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call" ? true : false
+        const paymentMethod = componentToggleSwitches.getActiveItem(document.querySelector(".opt-token"), true)
 
         new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -92,15 +108,16 @@ export default {
                     "strike": document.querySelector(".opt-strike .ds-value1").textContent.trim(), 
                     "expiry": document.querySelector(".opt-expiry .ds-value1").textContent.replace("Days", "").replace("Day", "").trim()
                 })
-            }, objInsert2elem ? 500 : 2000)
+            }, this.globals.init ? 2000 : 500)
         })
         .then(async(res) => { 
             // console.log(res)
-            const optPrice = await calcOptionPrice(null, tokenName(), isBuy, isCall, 0, res.strike, 0.00001, res.expiry)
-            if (objInsert2elem) {
-                objInsert2elem.volatility.textContent = optPrice.volatility
-                objInsert2elem.premium.textContent = optPrice.premium
-                objInsert2elem.collateral.textContent = optPrice.collateral
+            const optPrice = await calcOptionPrice(null, tokenName(), isBuy, isCall, paymentMethod, res.strike, 0.00001, res.expiry)
+            if (inOverlayPopup) {
+                // console.log("refresh inOverlayPopup")
+                document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
+                document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
+                document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
             } else {
                 document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
                 document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
@@ -111,9 +128,14 @@ export default {
     },
 
     async liquidityPool() {
+        // console.log("liquidityPool()")
         const liquidityPool = await getCapital()
         document.querySelector(".liquidity-pool .pb-price-end").textContent = liquidityPool.gross
         componentPercentageBar.progressBar(document.querySelector(".liquidity-pool"), liquidityPool.perc)
+    },
+
+    optExpiry() {
+        componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
     },
 
     setTrade() {
@@ -139,11 +161,7 @@ export default {
             // insert data values in overlay popup
             componentDropdownSelect.getValues(document.querySelector(".opt-strike"), document.querySelector(".overlay-popup .to-strike span"))
             componentDropdownSelect.getValues(document.querySelector(".opt-expiry"), document.querySelector(".overlay-popup .to-expiry span"), true)
-            this.optPrice({
-                "volatility": document.querySelector(".overlay-popup .to-volatility span"),
-                "premium": document.querySelector(".overlay-popup .to-premium span"),
-                "collateral": document.querySelector(".overlay-popup .to-collateral span")
-            })
+            this.optPrice(true)
         })
     },
 }

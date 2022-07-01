@@ -25,6 +25,9 @@ export default {
                 this.setActiveItem(toggleSwitch, 1)
             }
 
+            // for MutationObserver use
+            toggleSwitch.setAttribute("ts-activechanged", "")
+
             // toggle switch collab (bg color) base on data attribute
             if (toggleSwitch.dataset.collab) {
                 if (toggleSwitch.classList.contains("ts-active1")) {
@@ -47,6 +50,8 @@ export default {
         tsItems.forEach((item, index) => {
             item.addEventListener("click", () => {
                 this.setActiveItem(toggleSwitch, index + 1)
+                // for MutationObserver use
+                toggleSwitch.setAttribute("ts-activechanged", "")
             })
         })
     },
@@ -71,15 +76,21 @@ export default {
         })
     },
 
-    getActiveItem(toggleSwitch) {
+    getActiveItem(toggleSwitch, getIndexVal = false) {
         let activeItem = null
+        let activeIndex = 0
         const tsItems = toggleSwitch.querySelectorAll(".ts-item")
-        tsItems.forEach((item) => {
+        tsItems.forEach((item, index) => {
             if (item.classList.contains("ts-item-active")) {
                 activeItem = item.textContent
+                activeIndex = index
             }
         })
 
-        return activeItem
+        if (getIndexVal) {
+            return activeIndex
+        } else {
+            return activeItem
+        }
     },
 }

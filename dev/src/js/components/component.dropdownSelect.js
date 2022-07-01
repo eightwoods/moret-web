@@ -16,15 +16,22 @@ export default {
             // set input field
             if (input) {
                 // input events
-                input.addEventListener("click", (e) => {
+                input.addEventListener("click", () => {
                     inputFocus = true
                     dropdownSelect.querySelectorAll("li").forEach((item) => item.classList.remove("info-active"))
                     this.valueFromInputField(dropdownSelect, 0)
                 }, false)
 
-                input.addEventListener("blur", () => {
+                input.addEventListener("blur", (e) => {
                     inputFocus = false
                     btn.parentElement.classList.remove("active")
+
+                    // for MutationObserver use
+                    setTimeout(() => {
+                        if (e.target.value !== "") {
+                            dropdownSelect.setAttribute("dds-updated", "")
+                        }
+                    }, 500)
                 }, false)
 
                 input.addEventListener("keyup", async(e) => {
@@ -33,6 +40,12 @@ export default {
                         inputValue = 0
                     }
                     this.valueFromInputField(dropdownSelect, inputValue)
+                }, false)
+
+                input.addEventListener("keydown", (e) => {
+                    if (e.keyCode == 13) {
+                        // ENTER key
+                    }
                 }, false)
             }
 
@@ -100,6 +113,9 @@ export default {
                 item.classList.add("info-active")
                 // set value
                 this.valueFromListItem(dropdownSelect)
+
+                // for MutationObserver use
+                dropdownSelect.setAttribute("dds-updated", "")
             }, false)
         })
     },

@@ -11,14 +11,14 @@ export default {
         emptyOutDir: false,
         rollupOptions: {
             input: fg.sync(path.resolve(__dirname, "dev", "*.html")),
-        }
+        },
+        plugins: [
+            del({ targets: "assets/*" }),
+            copy({
+                targets: [
+                    { src: "dev/src/json/*.json", dest: "json" }
+                ]
+            })
+        ]
     },
-    plugins: [
-        del({ targets: "assets/*" }),
-        copy({
-            targets: [
-                { src: "dev/src/json/*.json", dest: "json" }
-            ]
-        })
-    ]
 }

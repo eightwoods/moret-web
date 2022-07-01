@@ -66,6 +66,15 @@
                 margin-bottom: 10px;
             }
 
+            .input-message {
+                @include fontSize(12px);
+                text-align: center;
+                color: $white-14;
+                border-bottom: 2px solid $white-4;
+                padding-bottom: 4px;
+                margin-bottom: 10px;
+            }
+
             ul {
                 text-align: center;
                 li {
@@ -80,6 +89,7 @@
                     }
 
                     &.info-active {
+                        pointer-events: none;
                         border: 2px solid $white-8;
                     }
                 }
