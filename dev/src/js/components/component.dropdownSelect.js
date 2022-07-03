@@ -16,22 +16,21 @@ export default {
             // set input field
             if (input) {
                 // input events
-                input.addEventListener("click", () => {
+                const resetInputEvent = () => {
+                    inputFocus = false
+                    btn.parentElement.classList.remove("active")
+                }
+
+                input.addEventListener("click", (e) => {
                     inputFocus = true
                     dropdownSelect.querySelectorAll("li").forEach((item) => item.classList.remove("info-active"))
-                    this.valueFromInputField(dropdownSelect, 0)
+                    if (e.target.value === "") {
+                        this.valueFromInputField(dropdownSelect, 0)
+                    }
                 }, false)
 
                 input.addEventListener("blur", (e) => {
-                    inputFocus = false
-                    btn.parentElement.classList.remove("active")
-
-                    // for MutationObserver use
-                    setTimeout(() => {
-                        if (e.target.value !== "") {
-                            dropdownSelect.setAttribute("dds-updated", "")
-                        }
-                    }, 500)
+                    resetInputEvent()
                 }, false)
 
                 input.addEventListener("keyup", async(e) => {
@@ -43,8 +42,14 @@ export default {
                 }, false)
 
                 input.addEventListener("keydown", (e) => {
+                    // ENTER key
                     if (e.keyCode == 13) {
-                        // ENTER key
+                        // for MutationObserver use
+                        if (e.target.value !== "") {
+                            resetInputEvent()
+                            dropdownSelect.setAttribute("dds-selected", 0)
+                            dropdownSelect.setAttribute("dds-updated", "")
+                        }
                     }
                 }, false)
             }
@@ -70,13 +75,12 @@ export default {
         })
     },
 
-    async createListItems(dropdownSelect, arrayValues, firstItemActive = true) {
+    async createListItems(dropdownSelect, arrayValues, firstItemActive = true, resetInput = false) {
         const infoList = dropdownSelect.querySelector(".info-list")
         infoList.textContent = ""
 
         const items = await arrayValues
         items.forEach((item, index) => {
-            const middleList = Big(items.length).div(2).round().toNumber()
             const list = document.createElement("li")
             list.textContent = item
             if (firstItemActive) {
@@ -85,9 +89,16 @@ export default {
                     list.className = "info-active"
                 }
             } else {
-                // middle active item
-                if (middleList === (index + 1)) {
-                    list.className = "info-active"
+                if (dropdownSelect.hasAttribute("dds-selected")) {
+                    if (parseInt(dropdownSelect.getAttribute("dds-selected")) === (index + 1)) {
+                        list.className = "info-active"
+                    }
+                } else {
+                    // middle active item
+                    const middleList = Big(items.length).div(2).round().toNumber()
+                    if (middleList === (index + 1)) {
+                        list.className = "info-active"
+                    }
                 }
             }
 
@@ -95,26 +106,31 @@ export default {
         })
 
         this.eventListItems(dropdownSelect)
+        if (resetInput) {
+            const input = dropdownSelect.querySelector("input[name='info-amount']")
+            if (input) input.value = ""
+        }
     },
 
     eventListItems(dropdownSelect) {
         this.valueFromListItem(dropdownSelect)
 
-        const input = dropdownSelect.querySelector("input[name='info-amount']")
-        if (input) input.value = ""
-
         const listItems = dropdownSelect.querySelectorAll("li")
-        listItems.forEach((item) => {
+        listItems.forEach((item, index) => {
             item.addEventListener("click", () => {
-                // reset
+                // reset input
+                const input = dropdownSelect.querySelector("input[name='info-amount']")
                 if (input) input.value = ""
+                // reset items
                 listItems.forEach((item) => item.classList.remove("info-active"))
+
                 // set state
                 item.classList.add("info-active")
                 // set value
                 this.valueFromListItem(dropdownSelect)
 
                 // for MutationObserver use
+                dropdownSelect.setAttribute("dds-selected", (index + 1))
                 dropdownSelect.setAttribute("dds-updated", "")
             }, false)
         })
@@ -137,7 +153,7 @@ export default {
         dropdownSelect.querySelector(".ds-value2").textContent = await calcMoneyness(null, inputVal, isCall) // calculate percentage value
     },
 
-    async getValues(dropdownSelect, insert2elem, showFirstVal = false) {
+    async insertValues(dropdownSelect, insert2elem, firstVal = false, secondVal = false) {
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve([dropdownSelect.querySelector(".ds-value1").textContent, dropdownSelect.querySelector(".ds-value2").textContent])
@@ -146,8 +162,10 @@ export default {
         .then((res) => {
             // console.log(res)
             let value = `${res[0].trim()} (${res[1].trim()})`
-            if (showFirstVal) {
+            if (firstVal) {
                 value = res[0].trim()
+            } else if (secondVal) {
+                value = res[1].trim()
             }
             insert2elem.textContent = value
         })

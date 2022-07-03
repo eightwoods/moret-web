@@ -49,8 +49,11 @@
             position: absolute;
             top: -10px;
             left: 0;
-            background-color: rgba(21, 27, 36, 0.4);
-            backdrop-filter: blur(80px);
+            background-color: $color-bg;
+            body.desktop & {
+                background-color: rgba($color: $color-bg, $alpha: 0.4);
+                backdrop-filter: blur(80px);
+            }
             border: 2px solid $white-8;
             border-radius: 8px;
             padding: spacer();

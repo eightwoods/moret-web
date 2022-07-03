@@ -123,6 +123,9 @@ $base-font-size: 16px;
 }
 
 @mixin popupBg {
-    background-color: rgba($color: #151b24cc, $alpha: 0.8);
-    backdrop-filter: blur(38px);
+    background-color: #151b24;
+    body.desktop & {
+        background-color: rgba($color: #151b24, $alpha: 0.8);
+        backdrop-filter: blur(38px);
+    }
 }
