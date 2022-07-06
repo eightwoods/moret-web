@@ -189,7 +189,12 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
                 "collateral": `${Big(collateral).round(2)}${collateralToken}`
             }
         } else {
-            //...
+            return {
+                "volatility": vol,
+                "premium": premium,
+                "collateral": collateral,
+                "pool": bestPool
+            }
         }
     } catch(err) {
         return err.message
@@ -241,6 +246,7 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    console.log(web3.utils.fromWei(optionCost['volatility']), web3.utils.fromWei(optionCost['premium']), web3.utils.fromWei(optionCost['collateral']))
     const fundingAddress = await moretContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
@@ -254,18 +260,20 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
         }
     }
     const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), paymentTokenAddress)
-    const fundingToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+    const collateralToken = await getContract(web3, getJsonUrl("ERC20.json"), paymentMethod == 1 ? objTokenAddr: fundingAddress)
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-    await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost[0])
-    await approveMaxAmount(fundingToken, account, exchangeAddress, optionCost[1])
+    await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
+    await approveMaxAmount(collateralToken, account, exchangeAddress, optionCost['collateral'])
 }
 
 export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
-    var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call();
-    // console.log(approvedAmount, spendAmount);
-    if (spendAmount.gt(web3.utils.toBN(approvedAmount))) {
+    var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
+    const tokenDecimals = await erc20Token.methods.decimals().call()
+    const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toString())).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+    console.log(approvedAmount, spendAmount, spendAmountInWei);
+    if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice();
         var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval });
         gasEstimatedApproval = Number(web3.utils.toBN(gasEstimatedApproval).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
@@ -285,7 +293,7 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
 export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
-    const poolAddress = web3.utils.toChecksumAddress(optionCost[3]) 
+    const poolAddress = web3.utils.toChecksumAddress(optionCost['pool']) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
     
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
