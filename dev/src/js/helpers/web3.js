@@ -68,9 +68,9 @@ export const calcMoneyness = async(tokenAddr = null, strike, isCall) => {
     if (moneyness === 100) {
         return "ATM"
     } else if (moneyness > 100) {
-        return `${(moneyness - 100).toString()}${isCall ? "% ITM" : "% OTM"}`
+        return `${(moneyness - 100).toString()}${isCall ? "% OTM" : "% ITM"}`
     } else {
-        return `${(100 - moneyness).toString()}${isCall ? "% OTM" : "% ITM"}`
+        return `${(100 - moneyness).toString()}${isCall ? "% ITM" : "% OTM"}`
     }
 }
 
