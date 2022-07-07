@@ -9,8 +9,11 @@ export default {
     init() {
         this.globals.elem.forEach((table) => {
             this.swipeArrows(table)
-            this.limitView(table)
-
+            this.sortableHeaders(table)
+            if (table.dataset.limitview) {
+                this.limitView(table)
+            }
+            
             // on window resize
             this.hasScroll(table)
             window.addEventListener("resize", () => {
@@ -40,6 +43,17 @@ export default {
             arrowRight.addEventListener("click", () => {
                 gsap.to(tableContainer, {scrollLeft: "+=100", ease: "none"})
             }, false)
+        }
+    },
+
+    hasScroll(table) {
+        const tableContainerWidth = table.querySelector(".table-container").offsetWidth
+        const tableWidth = table.querySelector("table").offsetWidth
+
+        if (tableWidth > tableContainerWidth) {
+            table.setAttribute("data-has-scroll", true)
+        } else {
+            table.setAttribute("data-has-scroll", false)
         }
     },
 
@@ -73,14 +87,61 @@ export default {
         }
     },
 
-    hasScroll(table) {
-        const tableContainerWidth = table.querySelector(".table-container").offsetWidth
-        const tableWidth = table.querySelector("table").offsetWidth
+    sortableHeaders(table) {
+        const tableHeadCell = table.querySelectorAll("thead th")
 
-        if (tableWidth > tableContainerWidth) {
-            table.setAttribute("data-has-scroll", true)
-        } else {
-            table.setAttribute("data-has-scroll", false)
+        tableHeadCell.forEach((headCell, index) => {
+            // filter from here to retrieve index value
+            if (headCell.classList.contains("sortable")) {
+                // let toggleFlag = 1
+                headCell.addEventListener("click", () => {
+                    // toggleFlag *= -1
+                    this.sortByColumn({
+                        table,
+                        index,
+                        flag: headCell.classList.contains("sort-asc") ? -1 : 1, // toggleFlag (retain previous flag individually)
+                        sortText: headCell.classList.contains("sort-text"),
+                    })
+                }, false)
+            }
+        })
+    },
+
+    sortByColumn(obj) {
+        const tableRows = Array.from(obj.table.querySelectorAll("tbody tr"))
+
+        const getVal = (elSort) => {
+            let sortVal = ""
+
+            if (obj.sortText) {
+                sortVal = elSort.querySelector(`td:nth-child(${obj.index + 1})`).textContent.trim().toLowerCase()
+            } else if (elSort.querySelector(`td:nth-child(${obj.index + 1})`).dataset.unformattedValue) {
+                sortVal = parseFloat(elSort.querySelector(`td:nth-child(${obj.index + 1})`).dataset.unformattedValue)
+            } else {
+                sortVal = parseFloat(elSort.querySelector(`td:nth-child(${obj.index + 1})`).textContent.trim())
+            }
+
+            return sortVal
         }
+
+        tableRows.sort((a, b) => {
+            const elA = getVal(a)
+            const elB = getVal(b)
+
+            if (elA < elB) return -1 * obj.flag
+
+            if (elA > elB) return 1 * obj.flag
+
+            return 0
+        })
+
+        // update sortable arrows
+        obj.table.querySelectorAll("th.sortable").forEach((headCell) => headCell.classList.remove("sort-asc", "sort-desc"))
+        obj.table.querySelector(`th:nth-child(${obj.index + 1})`).classList.add(obj.flag === 1 ? "sort-asc" : "sort-desc")
+
+        // append sorted rows
+        tableRows.forEach((row) => {
+            obj.table.querySelector("tbody").appendChild(row)
+        })
     },
 }
