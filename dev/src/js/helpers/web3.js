@@ -247,7 +247,7 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
-    console.log(web3.utils.fromWei(optionCost['volatility']), web3.utils.fromWei(optionCost['premium']), web3.utils.fromWei(optionCost['collateral']))
+    console.log(optionCost)
     const fundingAddress = await moretContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
@@ -296,6 +296,9 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
     const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
     const poolAddress = web3.utils.toChecksumAddress(optionCost['pool']) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
+    
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     var gasPriceCurrent = await web3.eth.getGasPrice();
