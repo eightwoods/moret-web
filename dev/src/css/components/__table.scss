@@ -10,27 +10,27 @@
 
             th, td {
                 text-align: center;
-                padding: spacer() spacer(1.5);
+                padding: 15px 30px;
             }
 
             thead {
                 position: relative;
-                &::before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: $white-4;
-                    border-radius: 8px;
-                }
+                // &::before {
+                //     content: "";
+                //     position: absolute;
+                //     top: 0;
+                //     left: 0;
+                //     width: 100%;
+                //     height: 100%;
+                //     background-color: $white-4;
+                //     border-radius: 8px;
+                // }
             }
 
             th {
                 &.sortable {
                     cursor: pointer;
-                    position: relative;
+                    // position: relative;
                     &::after {
                         content: "";
                         position: absolute;
@@ -75,14 +75,6 @@
     .table-arrowleft, .table-arrowright {
         display: none;
     }
-
-    &[data-limitview="true"] {
-        .table-viewmore {
-            position: absolute;
-            @include centerElement(x);
-            bottom: -28px;
-        }
-    }
     
     &[data-has-scroll="true"] {
         .table-container {
@@ -124,9 +116,43 @@
         }
     }
 
-    &:not([data-limitview]) {
-        .table-container {
-            height: 64 * 6px;
+    &[data-limitview="button"] {
+        .table-viewmore {
+            position: absolute;
+            @include centerElement(x);
+            bottom: -28px;
+        }
+    }
+
+    &[data-limitview="scroll"] {
+        &[data-max-rows] {
+            .table-container {
+                @include scrollElement();
+                height: 54 * 6px;
+                margin-bottom: 20px;
+
+                th {
+                    position: sticky;
+                    top: 0;
+                    background-color: #272D35;
+
+                    &:first-child {
+                        border-top-left-radius: 8px;
+                    }
+                    &:last-child {
+                        border-top-right-radius: 8px;
+                    }
+                }
+            }
+
+            &::after {
+                content: "SCROLL \a0\2191\2193";
+                @include fontSize(10px);
+                position: absolute;
+                bottom: -20px;
+                width: 100%;
+                text-align: center;
+            }
         }
     }
 }

@@ -4,14 +4,18 @@ import { mobileDevices } from "../helpers/utils"
 export default {
     globals: {
         elem: document.querySelectorAll(".comp-tables"),
+        limitrows: 6,
     },
 
     init() {
         this.globals.elem.forEach((table) => {
             this.swipeArrows(table)
             this.sortableHeaders(table)
-            if (table.dataset.limitview) {
-                this.limitView(table)
+            if (table.dataset.limitview === "button") {
+                this.limitViewButton(table)
+            }
+            if (table.dataset.limitview === "scroll") {
+                this.limitViewScroll(table)
             }
             
             // on window resize
@@ -57,9 +61,9 @@ export default {
         }
     },
 
-    limitView(table) {
+    limitViewButton(table) {
         const tableRows = table.querySelectorAll("tbody tr")
-        const limitRows = 5
+        const limitRows = this.globals.limitrows
 
         tableRows.forEach((row, index) => {
             if (index > (limitRows - 1)) {
@@ -84,6 +88,15 @@ export default {
                 tableRows.forEach((row) => row.classList.remove("hide"))
                 viewMore.remove()
             }, false)
+        }
+    },
+
+    limitViewScroll(table) {
+        const tableRows = table.querySelectorAll("tbody tr")
+        const limitRows = this.globals.limitrows
+
+        if (tableRows.length > (limitRows - 1)) {
+            table.setAttribute("data-max-rows", true)
         }
     },
 
