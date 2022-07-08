@@ -308,7 +308,6 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
     })
 }
 
-
 // 9. read historical transactions: fromBlockNumber is integer of starting block number, can be zero
 export const getPastTransactions = async (tokenAddr = null, fromBlockNumber) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
@@ -434,12 +433,10 @@ export const getVolTradingPools = async (tokenAddress) => {
 
 // 12. trade vol tokens 
 
-
 // 13. list all pools with their features
-
 
 // 14. invest in a selected pool
 
 // 15. divest from a selected pool
 
-// 14. governance functions
+// 16. governance functions
