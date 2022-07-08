@@ -115,6 +115,7 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 }
 // ----- currently refactor methods above !!! -----
 //
+
 // 6. calculate option prices (including vol, premium and collateral) depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
 // isCall is true if Call is selected, false if Put is selected
@@ -279,7 +280,7 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
         gasEstimatedApproval = Number(web3.utils.toBN(gasEstimatedApproval).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
         var nonceNewAproval = await web3.eth.getTransactionCount(account);
         await erc20Token.methods.approve(spenderAddress, maxAmount).send({ from: account, gas: gasEstimatedApproval, gasPrice: gasPriceApproval, nonce: nonceNewAproval });
-        console.log('cost approved', erc20Token._address, spenderAddress, maxAmount);
+        console.log("cost approved", erc20Token._address, spenderAddress, maxAmount);
     }
 }
 
@@ -302,7 +303,8 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
     gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
     var nonceNew = await web3.eth.getTransactionCount(account);
     await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
-        return "https://polygonscan.com/tx/" + hash;
+        console.log(`https://polygonscan.com/tx/${hash}`)
+        return `https://polygonscan.com/tx/${hash}`
     })
 }
 
