@@ -1,6 +1,6 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
 import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade } from "../helpers/web3"
+import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getPastTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
 import componentToggleSwitches from "../components/component.toggleSwitches"
@@ -17,6 +17,9 @@ export default {
         this.optAmount()
         this.optExpiry()
         this.buttonTrade()
+
+        // as a test...
+        getPastTransactions()
 
         // observe sidenav
         const sidenavOptions = {
@@ -169,7 +172,7 @@ export default {
             const arrNames = [
                 {
                     name: `${componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell"))}:`, 
-                    span: `call on ${tokenName()} - ${tokenPrice()}`, 
+                    span: `${componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase()} on ${tokenName()} - ${tokenPrice()}`, 
                     class: "to-buy"
                 }, 
                 {name: "Strike:", span: "-", class: "to-strike"},
@@ -206,7 +209,7 @@ export default {
             button.remove()
 
             // function web3 call
-            console.log(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+            // console.log(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
             approveOptionSpending(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
             executeOptionTrade(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
         }, false)
