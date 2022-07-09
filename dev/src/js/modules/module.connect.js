@@ -121,8 +121,8 @@ export default {
                 closeOverlayPopup()
             } else {
                 const arrNames = [
-                    {name: "", class: "np-icon"}, 
-                    {name: "This is not a “Polygon” blockchain!", class: "np-text size-lgmd"}
+                    {name: "", class: "warning-icon"}, 
+                    {name: "This is not a “Polygon” blockchain!", class: "warning-text size-lgmd"}
                 ]
                 showOverlayPopup(null, createList(arrNames, "notpolygon"), true)
             }

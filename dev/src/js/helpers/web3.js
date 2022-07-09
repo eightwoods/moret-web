@@ -257,7 +257,7 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
             paymentTokenAddress = await moretContract.methods.getVolatilityToken(objTokenAddr, tenor).call()
         }
         catch (err) {
-            console.log('no vol token exists for ' + expiry.toString())
+            console.log(`no vol token exists for ${expiry.toString()}`)
         }
     }
     const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), paymentTokenAddress)
@@ -265,15 +265,21 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-    await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
-    await approveMaxAmount(collateralToken, account, exchangeAddress, optionCost['collateral'])
+    try {
+        await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
+        await approveMaxAmount(collateralToken, account, exchangeAddress, optionCost['collateral'])
+    }
+    catch (err) {
+        console.warn(err)
+        return "failure"
+    }
 }
 
 export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
     const tokenDecimals = await erc20Token.methods.decimals().call()
     const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toString())).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
-    console.log(approvedAmount, spendAmount, spendAmountInWei);
+    // console.log(approvedAmount, spendAmount, spendAmountInWei);
     if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice();
         var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval });
@@ -281,11 +287,6 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
         var nonceNewAproval = await web3.eth.getTransactionCount(account);
         await erc20Token.methods.approve(spenderAddress, maxAmount).send({ from: account, gas: gasEstimatedApproval, gasPrice: gasPriceApproval, nonce: nonceNewAproval });
         console.log("cost approved", erc20Token._address, spenderAddress, maxAmount);
-        return 'success'
-    }
-    else{
-        console.log("allowance already approved");
-        return 'success'
     }
 }
 
@@ -305,15 +306,25 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    var gasPriceCurrent = await web3.eth.getGasPrice();
-    var gasEstimated = await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent });
-    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
-    var nonceNew = await web3.eth.getTransactionCount(account);
-    await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
-        console.log(`https://polygonscan.com/tx/${hash}`)
-        return `https://polygonscan.com/tx/${hash}`
-    })
+    try {
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        var gasPriceCurrent = await web3.eth.getGasPrice();
+        var gasEstimated = await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+        var nonceNew = await web3.eth.getTransactionCount(account);
+
+        let approveTradeLink = null
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+            // console.log(`https://polygonscan.com/tx/${hash}`)
+            // return `https://polygonscan.com/tx/${hash}`
+            approveTradeLink = `https://polygonscan.com/tx/${hash}`
+        })
+
+        return approveTradeLink
+    }
+    catch (err) {
+        console.warn(err)
+    }
 }
 
 // 9. read historical transactions: fromBlockNumber is integer of starting block number, can be zero

@@ -133,3 +133,29 @@ $base-font-size: 16px;
         backdrop-filter: blur(38px);
     }
 }
+
+@mixin popupWarning {
+    .warning-icon {
+        position: relative;
+        height: 60px;
+        &::before {
+            content: "";
+            @include centerElement(x);
+            top: 0;
+            width: 60px;
+            height: 60px;
+            background-color: $color-pink;
+            opacity: 0.2;
+            border-radius: 50%;
+        }
+        background-image: url("/src/img/icon_info.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .warning-text {
+        color: $color-pink;
+        text-align: center;
+        padding-top: spacer();
+    }
+}
