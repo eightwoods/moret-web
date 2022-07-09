@@ -18,9 +18,6 @@ export default {
         this.optExpiry()
         this.buttonTrade()
 
-        // as a test...
-        getPastTransactions()
-
         // observe sidenav
         const sidenavOptions = {
             childList: true, 
@@ -97,6 +94,9 @@ export default {
             expiryObserver.disconnect()
         })
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
+
+        // as a test...
+        getPastTransactions(null, 9000, 30500000)
     },
 
     optTokenName() {
@@ -209,6 +209,7 @@ export default {
             button.remove()
 
             // function web3 call
+            
             // console.log(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
             approveOptionSpending(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
             executeOptionTrade(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
