@@ -106,8 +106,8 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
     
     try {
         const volTokenAddress = await moretContract.methods.getVolatilityToken(objTokenAddr, tenor).call()
-        const volToken = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
-        const volTokenName = await volToken.methods.symbol().call()
+        const volTokenContract = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
+        const volTokenName = await volTokenContract.methods.symbol().call()
         return volTokenName
     } catch(err) {
         return ""
@@ -177,12 +177,6 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
             // note that if vol token is used to pay premium, USDC will be used as collateral
         }
 
-        // if (outputReceipt){
-        //     return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  <br>Premium: " + premium.toFixed(5) + premiumToken + "  <br>Collateral: " + collateral.toFixed(2) + collateralToken
-        // }
-        // else{
-        //     return "Implied Volatility: " + vol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + "  Premium: " + premium.toFixed(5) + premiumToken + "  Collateral: "+ collateral.toFixed(2) + collateralToken
-        // }
         if (token) {
             return {
                 "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
@@ -400,12 +394,12 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
             "Type": option.poType == 0 ? "Call" : "Put",
             "BS": option.side == 0 ? "Buy" : "Sell",
             "Expiry": new Date(option.maturity * 1000).toLocaleString(),
-            "Strike": optionStrike.toFixed(2),
-            "Amount": optionAmount.toFixed(2),
-            "Delta": timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0? 1: -1),
-            "Gamma": timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1),
-            "Vega": timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1),
-            "Theta": timeToExpiry <= 0 ? 0 : getTheta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1),
+            "Strike": optionStrike.toFixed(0),
+            "Amount": optionAmount.toFixed(3),
+            "Delta": (timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1)).toFixed(3),
+            "Gamma": (timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)).toFixed(3),
+            "Vega": (timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)).toFixed(3),
+            "Theta": (timeToExpiry <= 0 ? 0 : getTheta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1)).toFixed(3),
         })
     }
     // console.log(optionTable)
@@ -420,67 +414,94 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 // amount is in float number of USDC if isBuy is true, it is number of vol token if isBuy is false
 // expiry is in number of days
 // return 1) amount of vol token if isBuy is true, or amount of USDC if is Buy is false, and 2) the pool address for best pricing
-export const calcVolTokenPrice = async (tokenAddress, isBuy, tradeAmount, expiry, outputReceipt) => {
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const oracle = await getPriceOracle(tokenAddress)
-    const tenor = Math.floor(expiry * 86400)
-    const timeToExpiry = expiry / 365
-    const oracleVol = await oracle.methods.queryVol(tenor).call()
-    const tokenPrice = await oracle.methods.queryPrice().call()
-    const allPools = await getVolTradingPools(tokenAddress)
-    if(allPools.length > 0){
+export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, amount, expiry) => {
+    try{
+        const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+
+        const oracle = await getPriceOracle(tokenAddress)
+        const tenor = Math.floor(expiry * 86400)
+        const oracleVol = await oracle.methods.queryVol(tenor).call()
+        const oraclePrice = await oracle.methods.queryPrice().call()
+        const estimatedOptionAmount = (isBuy ? (amount / parseFloat(web3.utils.fromWei(oracleVol))) : amount) / parseFloat(web3.utils.fromWei(oraclePrice)) / Math.sqrt(timeToExpiry) / 0.4
+
+        const allPools = await getVolTradingPools(objTokenAddr)
+        var returnAmount, notional
+        var vol = 0
+
         const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-        try {
-            const volTokenAddress = await moretContract.methods.getVolatilityToken(tokenAddress, tenor).call()
-            const volToken = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
-            const volTokenSymbol = await volToken.methods.symbol().call()
+        const volTokenAddress = await moretContract.methods.getVolatilityToken(objTokenAddr, tenor).call()
+        const volTokenContract = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
+        const volToken = await volTokenContract.methods.symbol().call()
+        const premiumToken = "USDC"
 
-            var optionAmount = isBuy ? (tradeAmount / parseFloat(web3.utils.fromWei(oracleVol)) * Math.sqrt(timeToExpiry) / 0.4) : (tradeAmount / 0.4)
-            var bestPool = (0).toString(16)
-            var amount = 0
-            for (let i = 0; i < allPools.length; i++) {
-                const poolAddress = allPools[i]
-                const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, tokenPrice, web3.utils.toWei(optionAmount.toString(), 'ether'), 0, isBuy ? 0 : 1, true)
+        const timeToExpiry = expiry / 365
+        var bestPool = (0).toString(16)
 
-                const quotedPremium = parseFloat(web3.utils.fromWei(quotedPrice[0]))
-                const quotedVol = parseFloat(web3.utils.fromWei(quotedPrice[3]))
-                if(isBuy){
-                    const mintAmount = await volToken.methods.getMintAmount(quotedPrice[0], quotedPrice[3]).call()
-                    const mintAmountScaled = parseFloat(web3.utils.fromWei(mintAmount)) * (tradeAmount / quotedPremium)
-                    if(mintAmountScaled > amount){
-                        amount = mintAmountScaled
-                        bestPool = poolAddress
-                    }
-                }
-                else{
-                    const burnAmount = await volToken.methods.getBurnAmount(quotedPrice[0], quotedPrice[3]).call()
-                    const returnAmountScaled = quotedPremium * (tradeAmount / parseFloat(web3.utils.fromWei(burnAmount)))
-                    if (returnAmountScaled > amount) {
-                        amount = returnAmountScaled
-                        bestPool = poolAddress
-                    }
-                }
-            }
-            if (outputReceipt){
+        if (allPools.length==0){
+            throw 'There is no available pool to trade volatility tokens with.'
+        }
 
+        for (let i = 0; i < allPools.length; i++) {
+            const poolAddress = allPools[i]
+            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toString(), 'ether'), 0, isBuy ? 0 : 1, true).call()
+            const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+            const quotedVolatility = parseFloat(web3.utils.fromWei(quotedPrice[3]))
+            const optionAmount = (isBuy? quotedPremium: (quotedPremium / quotedVolatility)) / amount * estimatedOptionAmount
+            const forAmount = isBuy? (amount / quotedVolatility): (amount * quotedVolatility)
+
+            if (parseInt(bestPool, 16) == 0) {
+                returnAmount = forAmount
+                bestPool = poolAddress
+                vol = quotedVolatility
+                notional = optionAmount
             }
-            else{
-                if(isBuy){
-                    return "Implied Volatility: " + quotedVol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " Exchange for Volatility Tokens: " + amount.toFixed(2) + volTokenSymbol
-                }
-                else{
-                    return "Implied Volatility: " + quotedVol.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " Exchange for USDC: " + amount.toFixed(2)
-                }
-                
+            else if (returnAmount < forAmount) {
+                returnAmount = forAmount
+                bestPool = poolAddress
+                vol = quotedVolatility
+                notional = optionAmount
             }
+
+            // if (isBuy) {
+            //     const mintAmount = await volTokenContract.methods.getMintAmount(quotedPrice[0], quotedPrice[3]).call()
+            //     const mintAmountScaled = parseFloat(web3.utils.fromWei(mintAmount)) * (tradeAmount / quotedPremium)
+            //     if (mintAmountScaled > amount) {
+            //         amount = mintAmountScaled
+            //         bestPool = poolAddress
+            //     }
+            // }
+            // else {
+            //     const burnAmount = await volTokenContract.methods.getBurnAmount(quotedPrice[0], quotedPrice[3]).call()
+            //     const returnAmountScaled = quotedPremium * (tradeAmount / parseFloat(web3.utils.fromWei(burnAmount)))
+            //     if (returnAmountScaled > amount) {
+            //         amount = returnAmountScaled
+            //         bestPool = poolAddress
+            //     }
+            // }
             
         }
-        catch (err) {
-            console.log('no vol token exists for ' + expiry.toString())
+
+        if (token) {
+            return {
+                "volatility": vol.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                "premium": `${Big(isBuy ? amount : returnAmount).round(5)}${premiumToken}`,
+                "volpremium": `${Big(isBuy ? returnAmount : amount).round(5)}${volToken}`
+            }
+        } else {
+            return {
+                "volatility": vol,
+                "premium": isBuy ? amount : returnAmount,
+                "volpremium": isBuy ? returnAmount : amount,
+                "notional": notional,
+                "voltoken": volTokenAddress,
+                "pool": bestPool
+            }
         }
+    
     }
-    else{
-        console.log('There is no pools ready for quoting vols');
+    catch(err){
+        return err.message
     }
 }
 
@@ -499,17 +520,199 @@ export const getVolTradingPools = async (tokenAddress) => {
     return volTradingPools
 }
 
-// 12. trade vol tokens 
+// 12a. function to approve max amount if needed
+// isBuy is true if Buy is selected, otherwise false
+// amount is in float
+// expiry is in number of days
+export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount, expiry) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
+    console.log(volatilityCost)
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    if(isBuy){
+        const fundingAddress = await moretContract.methods.funding().call()
+        const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+        await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
+    }
+    else{
+        const volTokenAddress = web3.utils.toChecksumAddress(volatilityCost['voltoken'])
+        const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), volTokenAddress)
+        await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['volpremium'])
+    }
+}
+
+// 12b. trade vol tokens 
+// isBuy is true if Buy is selected, otherwise false
+// amount is in float
+// expiry is in number of days
+export const executeVolatilityTrade = async (tokenAddr = null, isBuy, amount, expiry) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
+    const poolAddress = web3.utils.toChecksumAddress(volatilityCost['pool'])
+    const optionNotional = web3.utils.toWei(volatilityCost['notional'].toString())
+    const tenor = Math.floor(expiry * 86400) // convert to seconds
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+    await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        console.log(`https://polygonscan.com/tx/${hash}`)
+        return `https://polygonscan.com/tx/${hash}`
+    })
+}
+
+// 13. list all pools with their features ( to be done )
 //
 
-// 13. list all pools with their features
-//
 
 // 14. invest in a selected pool
-//
+// amount is the USDC amount to invest in pool
+export const quoteInvestInPool = async (poolAddress, amount) => {
+    try {
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        const vaultAddress = await exchangeContract.methods.vault().call()
+        const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+        const grossCapital = await vaultContract.methods.calcCapital(poolAddress, false, true).call()
+        const grossCapitalFloat = parseFloat(web3.utils.fromWei(grossCapital))
+        const quoteInvest = grossCapitalFloat > 0 ? (amount / grossCapitalFloat): amount
+
+        const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+        const poolToken = await poolContract.methods.symbol().call()
+        const premiumToken = 'USDC'
+
+        return {
+            'invest': `${Big(amount).round(5)}${premiumToken}`,
+            'holding': `${Big(quoteInvest).round(5)}${poolToken}`
+        }
+    }
+    catch (err) {
+        return err.message
+    }
+}
+
+// amount is the USDC amount to invest in pool
+export const approveInvestInPool = async (amount) =>{
+    try{
+        const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+        const fundingAddress = await moretContract.methods.funding().call()
+        const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+
+        var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+        var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, amount)
+        return 'success'
+    }
+        catch (err) {
+        return err.message
+    }
+}
+
+// poolAddress is the selected pool contract address
+// amount is the USDC amount to invest in pool
+export const investInPool = async (poolAddress, amount) => {
+    try{
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        
+        var gasPriceCurrent = await web3.eth.getGasPrice();
+        var gasEstimated = await exchangeContract.methods.addCapital(poolAddress, amount).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+        var nonceNew = await web3.eth.getTransactionCount(account);
+        await exchangeContract.methods.addCapital(poolAddress, amount).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+            console.log(`https://polygonscan.com/tx/${hash}`)
+            return `https://polygonscan.com/tx/${hash}`
+        })
+    }
+    catch(err){
+        return err.message
+    }
+}
 
 // 15. divest from a selected pool
-//
+// amount is the USDC amount to invest in pool
+export const quoteDivestFromPool = async (poolAddress, amount) => {
+    try {
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        const vaultAddress = await exchangeContract.methods.vault().call()
+        const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+        const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+        const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
+        if (netCapitalFloat <= 0) {
+            throw 'Net capital to withdraw is zero.'
+        }
+        const quoteDivest = amount / netCapitalFloat
 
-// 16. governance functions
-//
+        const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+        const poolToken = await poolContract.methods.symbol().call()
+        const premiumToken = 'USDC'
+
+        return {
+            'divest': `${Big(amount).round(5)}${premiumToken}`,
+            'holding': `${Big(quoteDivest).round(5)}${poolToken}`
+        }
+    }
+    catch (err) {
+        return err.message
+    }
+}
+
+// amount is the usdc amount to invest in pool
+export const approveDivestFromPool = async (poolAddress, amount) => {
+    try{
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        const vaultAddress = await exchangeContract.methods.vault().call()
+        const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+        const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+        const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
+        if (netCapitalFloat <= 0) {
+            throw 'Net capital to withdraw is zero.'
+        }
+        const poolAmount = amount / netCapitalFloat;
+
+        const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), poolAddress)
+        var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+        var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, poolAmount)
+        return 'success'
+    }
+    catch(err){
+        return err.message
+    }
+}
+
+// poolAddress is the selected pool contract address
+// amount is the USDC amount to invest in pool
+export const divestFromPool = async (poolAddress, amount) => {
+    try{
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        const vaultAddress = await exchangeContract.methods.vault().call()
+        const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+        const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+        const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
+        if (netCapitalFloat<= 0){
+            throw 'Net capital to withdraw is zero.'
+        }
+        const poolAmount = amount / netCapitalFloat;
+
+        var gasPriceCurrent = await web3.eth.getGasPrice();
+        var gasEstimated = await exchangeContract.methods.withdrawCapital(poolAddress, poolAmount).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+        var nonceNew = await web3.eth.getTransactionCount(account);
+        await exchangeContract.methods.withdrawCapital(poolAddress, poolAmount).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+            console.log(`https://polygonscan.com/tx/${hash}`)
+            return `https://polygonscan.com/tx/${hash}`
+        })
+    }
+    catch (err) {
+        return err.message
+    }
+}
+
+// 17. governance functions
