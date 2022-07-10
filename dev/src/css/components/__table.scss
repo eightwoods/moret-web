@@ -1,4 +1,5 @@
-.comp-tables, .comp-tables-dynamic {
+.comp-tables, 
+.comp-dynamic-table {
     position: relative;
 
     .table-container {
@@ -147,6 +148,8 @@
     }
 }
 
-.comp-tables-dynamic {
-    display: none;
+.comp-dynamic-table {
+    .table-container {
+        display: none;
+    }
 }

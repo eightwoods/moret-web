@@ -13,11 +13,7 @@ export default {
         })
     },
 
-    setTable(table, tableDynamic = false) {
-        if (tableDynamic) {
-            table.classList.add("show-important")
-        }
-
+    setTable(table) {
         this.swipeArrows(table)
         this.sortableHeaders(table)
         if (table.dataset.limitview === "button") {
@@ -34,10 +30,25 @@ export default {
         })
     },
 
-    setRows(table, dataColumns = []) {
+    setDynamic(table, dataRows = [], setRows = true) {
+        if (dataRows.length > 0) {
+            table.querySelector(".table-container").classList.add("show-important")
+            this.setTable(table)
+            if (setRows) {
+                dataRows.forEach((row) => this.setRows(table, row))
+            }
+        } else {
+            const noData = document.createElement("div")
+            noData.className = "align-center"
+            noData.textContent = "No available data to show"
+            table.appendChild(noData)
+        }
+    },
+
+    setRows(table, dataColumn = []) {
         const tbody = table.querySelector("tbody")
         const row = document.createElement("tr")
-        dataColumns.forEach((data) => {
+        dataColumn.forEach((data) => {
             const col = document.createElement("td")
             col.textContent = data
             row.appendChild(col)

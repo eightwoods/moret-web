@@ -303,11 +303,10 @@ export default {
 
     transactionsTable() {
         getPastTransactions(null, 9000, null).then((results) => {
-            const tableDynamic = document.querySelector(".transactions .comp-tables-dynamic")
-
+            const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
+            const dataRows = []
             results.forEach((data) => {
-                // console.log(data)
-                componentTables.setRows(tableDynamic, [
+                dataRows.push([
                     data.Type,
                     data.BS,
                     data.Expiry,
@@ -319,8 +318,7 @@ export default {
                     data.Theta
                 ])
             })
-            
-            componentTables.setTable(tableDynamic, true)
+            componentTables.setDynamic(dynamicTable, dataRows)
         })
     },
 
