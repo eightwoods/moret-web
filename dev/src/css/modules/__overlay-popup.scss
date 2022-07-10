@@ -129,6 +129,10 @@
                 margin-bottom: spacer(0.5);
             }
 
+            .approve-trade-link {
+                margin-top: spacer(1.5);
+            }
+
             .await-failure {
                 @include popupWarning;
                 margin-top: spacer(1.5);

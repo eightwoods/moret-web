@@ -3,6 +3,7 @@ import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/util
 import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getPastTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
+import componentTables from "../components/component.tables"
 import componentToggleSwitches from "../components/component.toggleSwitches"
 import componentTradingviewWidget from "../components/component.tradingviewWidget"
 
@@ -18,6 +19,7 @@ export default {
         this.optAmount()
         this.optExpiry()
         this.buttonTrade()
+        this.transactionsTable()
 
         // observe sidenav
         const sidenavOptions = {
@@ -95,9 +97,6 @@ export default {
             expiryObserver.disconnect()
         })
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
-
-        // as a test...
-        getPastTransactions(null, 9000, null)
     },
 
     optTokenName() {
@@ -256,6 +255,7 @@ export default {
                         const approveTradeLink = document.createElement("a")
                         approveTradeLink.setAttribute("href", approveTrade)
                         approveTradeLink.setAttribute("target", "_blank")
+                        approveTradeLink.className = "link-arrow"
                         approveTradeLink.textContent = "View on Polygonscan"
                         approveTradeLinkWrapper.appendChild(approveTradeLink)
                         container.appendChild(approveTradeLinkWrapper)
@@ -299,6 +299,29 @@ export default {
         clearInterval(this.globals.execIntervalId)
         this.globals.execIntervalId = null
         console.log("clearTradeTimer()")
+    },
+
+    transactionsTable() {
+        getPastTransactions(null, 9000, null).then((results) => {
+            const tableDynamic = document.querySelector(".transactions .comp-tables-dynamic")
+
+            results.forEach((data) => {
+                // console.log(data)
+                componentTables.setRows(tableDynamic, [
+                    data.Type,
+                    data.BS,
+                    data.Expiry,
+                    data.Strike,
+                    data.Amount,
+                    data.Delta,
+                    data.Gamma,
+                    data.Vega,
+                    data.Theta
+                ])
+            })
+            
+            componentTables.setTable(tableDynamic, true)
+        })
     },
 
     isBuy() {

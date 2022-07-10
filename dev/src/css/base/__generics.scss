@@ -99,6 +99,23 @@ a {
             background-color: $white-6;
         }
     }
+
+    &.link-arrow {
+        display: inline-block;
+        position: relative;
+        text-decoration: underline;
+        margin-right: 20px;
+        &::after {
+            content: "";
+            @include centerElement(y);
+            right: -15px;
+            width: 6px;
+            height: 10px;
+            background-image: url("/src/img/arrow_horizontal.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    }
 }
 
 img {

@@ -9,21 +9,40 @@ export default {
 
     init() {
         this.globals.elem.forEach((table) => {
-            this.swipeArrows(table)
-            this.sortableHeaders(table)
-            if (table.dataset.limitview === "button") {
-                this.limitViewButton(table)
-            }
-            if (table.dataset.limitview === "scroll") {
-                this.limitViewScroll(table)
-            }
-            
-            // on window resize
-            this.hasScroll(table)
-            window.addEventListener("resize", () => {
-                this.hasScroll(table)
-            })
+            this.setTable(table)
         })
+    },
+
+    setTable(table, tableDynamic = false) {
+        if (tableDynamic) {
+            table.classList.add("show-important")
+        }
+
+        this.swipeArrows(table)
+        this.sortableHeaders(table)
+        if (table.dataset.limitview === "button") {
+            this.limitViewButton(table)
+        }
+        if (table.dataset.limitview === "scroll") {
+            this.limitViewScroll(table)
+        }
+        
+        // on window resize
+        this.hasScroll(table)
+        window.addEventListener("resize", () => {
+            this.hasScroll(table)
+        })
+    },
+
+    setRows(table, dataColumns = []) {
+        const tbody = table.querySelector("tbody")
+        const row = document.createElement("tr")
+        dataColumns.forEach((data) => {
+            const col = document.createElement("td")
+            col.textContent = data
+            row.appendChild(col)
+        })
+        tbody.appendChild(row)
     },
 
     swipeArrows(table) {
