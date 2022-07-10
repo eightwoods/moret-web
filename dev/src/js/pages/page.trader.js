@@ -162,6 +162,8 @@ export default {
         // console.log("liquidityPool()")
         const liquidityPool = await getCapital()
         document.querySelector(".liquidity-pool .pb-price-end").textContent = liquidityPool.gross
+        document.querySelector(".liquidity-pool .pb-price-from").textContent = liquidityPool.utilized
+        document.querySelector(".liquidity-pool .pb-text-value").textContent = liquidityPool.text
         componentPercentageBar.progressBar(document.querySelector(".liquidity-pool"), liquidityPool.perc)
     },
 

@@ -126,6 +126,14 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
 export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
     try {
+        if (strike<=0){
+            throw 'Strike not set correctly.'
+        }
+        if(expiry <= 0){
+            throw 'Expiry not set correctly'
+        }
+
+
         const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
         const tenor = Math.floor(expiry * 86400)
@@ -181,18 +189,25 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
             return {
                 "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
                 "premium": `${Big(premium).round(5)}${premiumToken}`,
-                "collateral": `${Big(collateral).round(2)}${collateralToken}`
+                "collateral": `${Big(collateral).round(2)}${collateralToken}`,
+                "error": ''
             }
         } else {
             return {
                 "volatility": vol,
                 "premium": premium,
                 "collateral": collateral,
-                "pool": bestPool
+                "pool": bestPool,
+                "error": ''
             }
         }
     } catch(err) {
-        return err.message
+        return {
+            "volatility": "-",
+            "premium": "-",
+            "collateral": "-",
+            "error": err.message
+        }
     }    
 }
 
@@ -222,11 +237,15 @@ export const getCapital = async (tokenAddr = null) => {
         grossCapitalTotal = grossCapitalTotal + parseFloat(web3.utils.fromWei(grossCapital))
         netCapitalTotal = netCapitalTotal + parseFloat(web3.utils.fromWei(netCapital))
     }
+    const utilizedCapital = grossCapitalTotal - netCapitalTotal
     const utilization = Math.max(0, 1 - netCapitalTotal / grossCapitalTotal)
+    console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
     // return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
     return {
-        "gross": `$${(grossCapitalTotal / 1000)}K`,
-        "perc": utilization.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0})
+        "gross": `$${(grossCapitalTotal / 1000).toFixed(3)}K`,
+        "utilized": `$${(utilizedCapital / 1000).toFixed(3)}K`,
+        "perc": utilization * 100 ,
+        "text": utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })
     }
 }
 
@@ -416,6 +435,10 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 // return 1) amount of vol token if isBuy is true, or amount of USDC if is Buy is false, and 2) the pool address for best pricing
 export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, amount, expiry) => {
     try{
+        if (expiry <= 0) {
+            throw 'Expiry not set correctly'
+        }
+
         const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
 
@@ -501,7 +524,12 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
     
     }
     catch(err){
-        return err.message
+        return {
+            "volatility": "-",
+            "premium": "-",
+            "volpremium": "-",
+            "error": err.message
+        }
     }
 }
 
