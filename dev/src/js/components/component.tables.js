@@ -33,10 +33,10 @@ export default {
     setDynamic(table, dataRows = [], setRows = true) {
         if (dataRows.length > 0) {
             table.querySelector(".table-container").classList.add("show-important")
-            this.setTable(table)
             if (setRows) {
                 dataRows.forEach((row) => this.setRows(table, row))
             }
+            this.setTable(table)
         } else {
             const noData = document.createElement("div")
             noData.className = "align-center"
