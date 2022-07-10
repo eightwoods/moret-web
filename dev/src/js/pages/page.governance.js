@@ -11,7 +11,7 @@ export default {
             attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
         }
         const sidenavObserver = new MutationObserver((mutations) => {
-            console.log("sidenav has changed from Governance!")
+            console.log("sidenav refreshed from Governance!")
 
             for (let mutation of mutations) {
                 if (mutation.type === "attributes") {

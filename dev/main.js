@@ -100,6 +100,11 @@ const setup = {
             const { default: trader } = await import("./src/js/pages/page.trader")
             trader.init()
         }
+
+        if (document.querySelector(".trader-volatility")) {
+            const { default: traderVolatility } = await import("./src/js/pages/page.traderVolatility")
+            traderVolatility.init()
+        }
     },
 
     setEvents() {

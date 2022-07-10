@@ -41,7 +41,111 @@
                 </div>
             </div>
 
+            <div class="newopt-statistic m-b-20">
+                <div class="newopt">
+                    <div class="row in-box z-index-20 m-b-20 animate-panel">
+                        <div class="header-title m-b-24">New option</div>
+                        <div class="options m-b-24">
+                            <div class="toggle-switches-collab ts-bg-green">
+                                <div class="opt-buysell toggle-switches ts-active1" data-collab="true" data-bg1="ts-bg-green" data-bg2="ts-bg-pink">
+                                    <div class="ts-item">Buy</div>
+                                    <div class="ts-item">Sell</div>
+                                </div>
+                                <div class="opt-callput toggle-switches ts-active1">
+                                    <div class="ts-item">Call</div>
+                                    <div class="ts-item">Put</div>
+                                </div>
+                            </div>
+                            <div class="opt-token toggle-switches ts-bg-grey ts-active1" data-toggle-total="3">
+                                <div class="ts-item">USDC</div>
+                                <div class="ts-item ts-token-name">TOKEN</div>
+                                <div class="ts-item ts-token">TOKEN</div>
+                            </div>
+                            <div class="opt-strike dropdown-select">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Strike: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <input type="number" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" />
+                                        <div class="input-message">Hit ENTER key when done!</div>
+                                        <ul class="info-list"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="opt-amount in-border white-50">
+                                Amount:&nbsp;<input type="number" name="opt-amount" value="0.0001" onKeyPress="if(this.value.length==6) return false;" />
+                            </div>
+                            <div class="opt-expiry dropdown-select">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Expiry: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <ul class="info-list"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="opt-price info">
+                            <div class="info-col">
+                                <a href="#" class="btn btn-blue">Trade</a>
+                            </div>
+                            <div class="info-col white-50">
+                                <ul>
+                                    <li>Implied Volatility: <span class="white-100 info-volatility">0%</span></li>
+                                    <li>Premium: <span class="white-100 info-premium">0</span></li>
+                                    <li>Collateral: <span class="white-100 info-collateral">0</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row in-box animate-panel">
+                        <div class="liquidity-pool percentage-bar" data-init-value="0">
+                            <div class="pb-main">
+                                <div class="pb-price-from">$0</div>
+                                <div class="pb-progress">
+                                    <div class="pb-progressbar"></div>
+                                </div>
+                                <div class="pb-price-end">$200K</div>
+                            </div>
+                            <div class="pb-text size-sm word-nowrap">
+                                <span class="pb-text-value">0%</span> of liquidity pool utilized
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="statistic in-box animate-panel">
+                    <div class="header-title m-b-24">Statistic</div>
+                    <div class="tradingview-widget-wrapper"></div>
+                </div>
+            </div>
             
+            <div class="transactions in-box animate-panel">
+                <div class="header-title m-b-24">Transactions</div>
+                <div class="comp-dynamic-table" data-limitview="scroll">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sortable sort-text">Type</th>
+                                    <th class="sortable sort-text">B/S</th>
+                                    <th class="sortable">Expiry</th>
+                                    <th class="sortable">Strike</th>
+                                    <th class="sortable">Amount</th>
+                                    <th class="sortable">Delta</th>
+                                    <th class="sortable">Gamma</th>
+                                    <th class="sortable">Vega</th>
+                                    <th class="sortable">Theta</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 </main>

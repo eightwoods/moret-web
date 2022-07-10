@@ -239,7 +239,7 @@ export const getCapital = async (tokenAddr = null) => {
     }
     const utilizedCapital = grossCapitalTotal - netCapitalTotal
     const utilization = Math.max(0, 1 - netCapitalTotal / grossCapitalTotal)
-    console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
+    // console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
     // return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
     return {
         "gross": `$${(grossCapitalTotal / 1000).toFixed(3)}K`,

@@ -13,7 +13,7 @@ export default {
             attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
         }
         const sidenavObserver = new MutationObserver((mutations) => {
-            console.log("sidenav has changed from Liquidity!")
+            console.log("sidenav refreshed from Liquidity!")
 
             for (let mutation of mutations) {
                 if (mutation.type === "attributes") {

@@ -1,7 +1,7 @@
 import { gsap } from "gsap"
 import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
 import { getImageUrl } from "../helpers/utils"
-import { web3, getPrice, getStrikes, calcMoneyness, calcIV, getVolTokenName, calcOptionPrice, getCapital } from "../helpers/web3"
+import { getPrice } from "../helpers/web3"
 
 export default {
     globals: {

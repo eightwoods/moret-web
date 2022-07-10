@@ -9,7 +9,7 @@ import componentTradingviewWidget from "../components/component.tradingviewWidge
 
 export default {
     globals: {
-        elem: document.querySelector(".trader"),
+        elem: document.querySelector(".trader-volatility"),
         init: true,
         execIntervalId: null
     },
@@ -28,7 +28,7 @@ export default {
             attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
         }
         const sidenavObserver = new MutationObserver((mutations) => {
-            console.log("sidenav refreshed from Trader!")
+            console.log("sidenav refreshed from Trader Volatility!")
 
             for (let mutation of mutations) {
                 if (mutation.type === "attributes") {
