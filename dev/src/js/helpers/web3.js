@@ -344,12 +344,15 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
+        }).on('error', function (error, receipt) {
+            return ""
         })
 
         return approveTradeLink
     }
     catch (err) {
         console.warn(err)
+        return ""
     }
 }
 
@@ -430,7 +433,7 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 
 // 11. quote vol prices depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
-// amount is in float number of USDC if isBuy is true, it is number of vol token if isBuy is false
+// amount is in float number of USDC
 // expiry is in number of days
 // return 1) amount of vol token if isBuy is true, or amount of USDC if is Buy is false, and 2) the pool address for best pricing
 export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, amount, expiry) => {
@@ -442,14 +445,18 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
 
-        const oracle = await getPriceOracle(tokenAddress)
+        const oracle = await getPriceOracle(objTokenAddr)
         const tenor = Math.floor(expiry * 86400)
+        const timeToExpiry = expiry / 365
+
         const oracleVol = await oracle.methods.queryVol(tenor).call()
         const oraclePrice = await oracle.methods.queryPrice().call()
-        const estimatedOptionAmount = (isBuy ? (amount / parseFloat(web3.utils.fromWei(oracleVol))) : amount) / parseFloat(web3.utils.fromWei(oraclePrice)) / Math.sqrt(timeToExpiry) / 0.4
-
+        const estimatedOptionAmount = amount / parseFloat(web3.utils.fromWei(oracleVol)) / parseFloat(web3.utils.fromWei(oraclePrice)) / 0.4
+        // console.log(oracleVol, oraclePrice, estimatedOptionAmount, amount)
         const allPools = await getVolTradingPools(objTokenAddr)
-        var returnAmount, notional
+        // console.log(allPools)
+
+        var volAmount, notional
         var vol = 0
 
         const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
@@ -457,30 +464,29 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         const volTokenContract = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
         const volToken = await volTokenContract.methods.symbol().call()
         const premiumToken = "USDC"
-
-        const timeToExpiry = expiry / 365
+        
         var bestPool = (0).toString(16)
-
+        
         if (allPools.length==0){
             throw 'There is no available pool to trade volatility tokens with.'
         }
 
         for (let i = 0; i < allPools.length; i++) {
             const poolAddress = allPools[i]
-            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toString(), 'ether'), 0, isBuy ? 0 : 1, true).call()
+            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true).call()
             const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
             const quotedVolatility = parseFloat(web3.utils.fromWei(quotedPrice[3]))
             const optionAmount = (isBuy? quotedPremium: (quotedPremium / quotedVolatility)) / amount * estimatedOptionAmount
-            const forAmount = isBuy? (amount / quotedVolatility): (amount * quotedVolatility)
+            const forAmount = amount / quotedVolatility
 
             if (parseInt(bestPool, 16) == 0) {
-                returnAmount = forAmount
+                volAmount = forAmount
                 bestPool = poolAddress
                 vol = quotedVolatility
                 notional = optionAmount
             }
-            else if (returnAmount < forAmount) {
-                returnAmount = forAmount
+            else if (volAmount < forAmount) {
+                volAmount = forAmount
                 bestPool = poolAddress
                 vol = quotedVolatility
                 notional = optionAmount
@@ -508,14 +514,14 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         if (token) {
             return {
                 "volatility": vol.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "premium": `${Big(isBuy ? amount : returnAmount).round(5)}${premiumToken}`,
-                "volpremium": `${Big(isBuy ? returnAmount : amount).round(5)}${volToken}`
+                "premium": `${Big(amount).round(5)}${premiumToken}`,
+                "volpremium": `${Big(volAmount).round(5)}${volToken}`
             }
         } else {
             return {
                 "volatility": vol,
-                "premium": isBuy ? amount : returnAmount,
-                "volpremium": isBuy ? returnAmount : amount,
+                "premium": amount,
+                "volpremium": volAmount,
                 "notional": notional,
                 "voltoken": volTokenAddress,
                 "pool": bestPool
@@ -524,6 +530,7 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
     
     }
     catch(err){
+        console.log(err.message)
         return {
             "volatility": "-",
             "premium": "-",
@@ -556,19 +563,19 @@ export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount,
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
-    console.log(volatilityCost)
+    // console.log(volatilityCost)
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
     if(isBuy){
         const fundingAddress = await moretContract.methods.funding().call()
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
-        await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, volatilityCost['premium'])
     }
     else{
         const volTokenAddress = web3.utils.toChecksumAddress(volatilityCost['voltoken'])
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), volTokenAddress)
-        await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['volpremium'])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, volatilityCost['volpremium'])
     }
 }
 
@@ -577,24 +584,32 @@ export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount,
 // amount is in float
 // expiry is in number of days
 export const executeVolatilityTrade = async (tokenAddr = null, isBuy, amount, expiry) => {
-    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
-    const poolAddress = web3.utils.toChecksumAddress(volatilityCost['pool'])
-    const optionNotional = web3.utils.toWei(volatilityCost['notional'].toString())
-    const tenor = Math.floor(expiry * 86400) // convert to seconds
+    try{
+        const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+        const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
+        const poolAddress = web3.utils.toChecksumAddress(volatilityCost['pool'])
+        const optionNotional = web3.utils.toWei(volatilityCost['notional'].toFixed(18), 'ether')
+        const tenor = Math.floor(expiry * 86400) // convert to seconds
 
-    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
-    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+        var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+        var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    var gasPriceCurrent = await web3.eth.getGasPrice();
-    var gasEstimated = await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).estimateGas({ from: account, gasPrice: gasPriceCurrent });
-    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
-    var nonceNew = await web3.eth.getTransactionCount(account);
-    await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
-        console.log(`https://polygonscan.com/tx/${hash}`)
-        return `https://polygonscan.com/tx/${hash}`
-    })
+        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+        var gasPriceCurrent = await web3.eth.getGasPrice();
+        var gasEstimated = await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+        var nonceNew = await web3.eth.getTransactionCount(account);
+        await exchangeContract.methods.tradeVolToken(poolAddress, tenor, optionNotional, isBuy ? 0 : 1).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+            console.log(`https://polygonscan.com/tx/${hash}`)
+            return `https://polygonscan.com/tx/${hash}`
+        }).on('error', function (error, receipt) {
+            return ""
+        })
+    }
+    catch(err){
+        console.warn(err)
+        return ""
+    }
 }
 
 // 13. list all pools with their features ( to be done )

@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader Volatility</title>
-  <script type="module" crossorigin src="/assets/main.809fb542.js"></script>
+  <script type="module" crossorigin src="/assets/main.4663baeb.js"></script>
   <link rel="stylesheet" href="/assets/main.a293f598.css">
 </head>
 <body>
@@ -53,31 +53,9 @@
                                     <div class="ts-item">Buy</div>
                                     <div class="ts-item">Sell</div>
                                 </div>
-                                <div class="opt-callput toggle-switches ts-active1">
-                                    <div class="ts-item">Call</div>
-                                    <div class="ts-item">Put</div>
-                                </div>
-                            </div>
-                            <div class="opt-token toggle-switches ts-bg-grey ts-active1" data-toggle-total="3">
-                                <div class="ts-item">USDC</div>
-                                <div class="ts-item ts-token-name">TOKEN</div>
-                                <div class="ts-item ts-token">TOKEN</div>
-                            </div>
-                            <div class="opt-strike dropdown-select">
-                                <div class="ds-btn in-border white-50" tabindex="0">
-                                    <div class="ds-col word-nowrap">Strike: <span class="white-100 ds-value1">0</span></div>
-                                    <div class="ds-col word-nowrap ds-value2">0%</div>
-                                </div>
-                                <div class="ds-info-container">
-                                    <div class="ds-info">
-                                        <input type="number" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" />
-                                        <div class="input-message">Hit ENTER key when done!</div>
-                                        <ul class="info-list"></ul>
-                                    </div>
-                                </div>
                             </div>
                             <div class="opt-amount in-border white-50">
-                                Amount:&nbsp;<input type="number" name="opt-amount" value="0.0001" onKeyPress="if(this.value.length==6) return false;" />
+                                Dollar Amount:&nbsp;<input type="number" name="opt-amount" value="0.01" onKeyPress="if(this.value.length==6) return false;" />
                             </div>
                             <div class="opt-expiry dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
@@ -98,8 +76,8 @@
                             <div class="info-col white-50">
                                 <ul>
                                     <li>Implied Volatility: <span class="white-100 info-volatility">0%</span></li>
-                                    <li>Premium: <span class="white-100 info-premium">0</span></li>
-                                    <li>Collateral: <span class="white-100 info-collateral">0</span></li>
+                                    <!-- <li>Dollar Amount: <span class="white-100 info-premium">0</span></li> -->
+                                    <li>Volatility Token Amount: <span class="white-100 info-vol-premium">0</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -125,7 +103,7 @@
                 </div>
             </div>
             
-            <div class="transactions in-box animate-panel">
+            <!-- <div class="transactions in-box animate-panel">
                 <div class="header-title m-b-24">Transactions</div>
                 <div class="comp-dynamic-table" data-limitview="scroll">
                     <div class="table-container">
@@ -147,7 +125,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </section>
 </main>

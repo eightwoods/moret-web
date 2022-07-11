@@ -1,6 +1,6 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
 import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getPastTransactions } from "../helpers/web3"
+import { calcIV, getVolTokenName, calcVolTokenPrice, getCapital, approveVolatilitySpending, executeVolatilityTrade, getPastTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
 import componentTables from "../components/component.tables"
@@ -35,16 +35,9 @@ export default {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
                             componentTradingviewWidget.createGraph()
-                            this.optTokenName()
                             // remove attribute to reset option Strike
-                            document.querySelector(".opt-strike").removeAttribute("dds-selected")
-                            this.optStrike(true)
-                            
                             this.optPrice()
                             this.liquidityPool()
-                            if (!this.globals.init) {
-                                this.optToken()
-                            }
                             break
                         case "sidenav-refreshprice":
                             this.optPrice()
@@ -77,42 +70,20 @@ export default {
                         }
                         this.optStrike()
 
-                    } else if (mutation.target.classList.contains("opt-expiry")) {
-                        this.optToken()
-                    }
+                    } 
 
                     this.optPrice()
                 }
             }
         })
         tsddsObserver.observe(document.querySelector(".opt-buysell"), tsddsOptions)
-        tsddsObserver.observe(document.querySelector(".opt-callput"), tsddsOptions)
-        tsddsObserver.observe(document.querySelector(".opt-token"), tsddsOptions)
-        tsddsObserver.observe(document.querySelector(".opt-strike"), tsddsOptions)
         tsddsObserver.observe(document.querySelector(".opt-expiry"), tsddsOptions)
 
         // observe option Expiry dropdown select, only on initial load
         const expiryObserver = new MutationObserver((mutations) => {
-            this.optToken()
             expiryObserver.disconnect()
         })
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
-    },
-
-    optTokenName() {
-        // console.log("optTokenName()")
-        document.querySelector(".opt-token .ts-token-name").textContent = tokenName()
-    },
-
-    async optToken() {
-        // console.log("optToken()")
-        const optToken = await getVolTokenName(null, this.getExpiryValue())
-        document.querySelector(".opt-token .ts-token").textContent = optToken
-    },
-
-    optStrike(resetInput = false) {
-        // console.log("optStrike()")
-        componentDropdownSelect.createListItems(document.querySelector(".opt-strike"), getStrikes(null, this.isCall()), false, resetInput)
     },
 
     optAmount() {
@@ -134,7 +105,6 @@ export default {
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve({
-                    "strike": this.getStrikeValue(), 
                     "amount": this.getAmountValue(), 
                     "expiry": this.getExpiryValue()
                 })
@@ -142,17 +112,17 @@ export default {
         })
         .then(async(res) => { 
             // console.log(res)
-            const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
+            const optPrice = await calcVolTokenPrice(null, tokenName(), this.isBuy(), res.amount, res.expiry)
             
             if (inOverlayPopup) {
                 // console.log("refresh inOverlayPopup")
                 document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
-                document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
-                document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
+                // document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
+                document.querySelector(".overlay-popup .to-vol-premium span").textContent = optPrice.volpremium
             } else {
                 document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
-                document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
-                document.querySelector(".opt-price .info-collateral").textContent = optPrice.collateral
+                // document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
+                document.querySelector(".opt-price .info-vol-premium").textContent = optPrice.volpremium
             }
         })
         .catch((err) => console.warn(err))
@@ -174,21 +144,19 @@ export default {
             const arrNames = [
                 {
                     name: `${componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell"))}:`, 
-                    span: `${componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase()} on ${tokenName()} - ${tokenPrice()}`, 
+                    span: `volatility token on ${tokenName()} - ${tokenPrice()}`, 
                     class: "to-buy"
                 }, 
-                {name: "Strike:", span: "-", class: "to-strike"},
                 {name: "Expiry:", span: "-", class: "to-expiry"},
-                {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
+                {name: "Dollar Amount:", span: this.getAmountValue(), class: "to-amount"},
                 {name: "Implied Volatility:", span: "-", class: "to-volatility"},
-                {name: "Premium:", span: "-", class: "to-premium"},
-                {name: "Collateral:", span: "-", class: "to-collateral"}
+                // {name: "Dollar Amount:", span: "-", class: "to-premium"},
+                {name: "Volatility Token Amount:", span: "-", class: "to-vol-premium"}
             ]
 
             showOverlayPopup("Trade overview", createList(arrNames, "tradeoverview"))
 
             // insert data values in overlay popup
-            componentDropdownSelect.insertValues(document.querySelector(".opt-strike"), document.querySelector(".overlay-popup .to-strike span"))
             componentDropdownSelect.insertValues(document.querySelector(".opt-expiry"), document.querySelector(".overlay-popup .to-expiry span"), true)
             this.optPrice(true)
             
@@ -232,22 +200,24 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approveOptionSpending(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+            const approveAllowance = await approveVolatilitySpending(null, this.isBuy(), this.getAmountValue(), this.getExpiryValue())
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
             } else {
                 awaitApproval.classList.add("await-active")
+                awaitApproval.textContent = "Allowance approved."
                 awaitApprovalTimer.remove()
                 this.clearTradeTimer()
 
                 // execute option trade
                 setTimeout(async() => {
                     this.executeTradeTimer(awaitTradeTimer)
-                    const approveTrade = await executeOptionTrade(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+                    const approveTrade = await executeVolatilityTrade(null, this.isBuy(), this.getAmountValue(), this.getExpiryValue())
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)
                     } else {
                         awaitTrade.classList.add("await-active")
+                        awaitTrade.textContent = "Transaction mined."
                         awaitTradeTimer.remove()
                         this.clearTradeTimer()
 
@@ -326,18 +296,6 @@ export default {
 
     isBuy() {
         return componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy"
-    },
-
-    isCall() {
-        return componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
-    },
-
-    getPaymentMethodValue() {
-        return componentToggleSwitches.getActiveItem(document.querySelector(".opt-token"), true)
-    },
-
-    getStrikeValue() {
-        return document.querySelector(".opt-strike .ds-value1").textContent.trim()
     },
 
     getAmountValue() {
