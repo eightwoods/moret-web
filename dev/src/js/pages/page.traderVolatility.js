@@ -1,6 +1,6 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
 import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { calcIV, getVolTokenName, calcVolTokenPrice, getCapital, approveVolatilitySpending, executeVolatilityTrade, getPastTransactions } from "../helpers/web3"
+import { calcIV, getVolTokenName, calcVolTokenPrice, getCapital, approveVolatilitySpending, executeVolatilityTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
 import componentTables from "../components/component.tables"
@@ -274,7 +274,7 @@ export default {
     },
 
     transactionsTable() {
-        getPastTransactions(null, 9000, null).then((results) => {
+        getActiveTransactions(null).then((results) => {
             const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
             const dataRows = []
             results.forEach((data) => {

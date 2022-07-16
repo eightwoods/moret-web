@@ -376,29 +376,6 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
     let resEvents = null
     await exchangeContract.getPastEvents('NewOption', { filter: { _purchaser: account, _underlying: objTokenAddr }, fromBlock: fromBlock, toBlock: endBlock ? endBlock : latestBlock }, async (err, events) => { 
         resEvents = events
-        // console.log('events', events)
-        // for (let i = 0; i < events.length; i++) {
-        //     const optionId = events[i].returnValues._optionId
-        //     const option = await vaultContract.methods.getOption(optionId).call()
-        //     const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
-        //     const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
-        //     const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
-        //     const timeToExpiry = secondsToExpiry / (3600 * 24 * 365)
-        //     // console.log(i, secondsToExpiry, timeToExpiry)
-        //     const impliedVol = secondsToExpiry <= 0 ? 0 : await oracle.methods.queryVol(secondsToExpiry).call() 
-        //     const optionData = {}
-        //     optionData["Type"] = option.poType == 0 ? "Call" : "Put"
-        //     optionData["B/S"] = option.side == 0 ? "Buy" : "Sell"
-        //     optionData["Expiry"] = new Date(option.maturity * 1000).toLocaleString()
-        //     optionData["Strike"] = optionStrike.toFixed(2)
-        //     optionData["Amount"] = optionAmount.toFixed(2)
-        //     optionData["Delta"] = timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0? 1: -1)
-        //     optionData["Gamma"] = timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)
-        //     optionData["Vega"] = timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)
-        //     optionData["Theta"] = timeToExpiry <= 0 ? 0 : getTheta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1)
-        //     // console.log(optionData)
-        //     optionTable.push(optionData)
-        // }
     })
     
     // best approach illiterate array value and for iteration
@@ -418,12 +395,65 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
             "Expiry": new Date(option.maturity * 1000).toLocaleString(),
             "Strike": optionStrike.toFixed(0),
             "Amount": optionAmount.toFixed(3),
-            "Delta": (timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1)).toFixed(3),
-            "Gamma": (timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)).toFixed(3),
-            "Vega": (timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1)).toFixed(3),
-            "Theta": (timeToExpiry <= 0 ? 0 : getTheta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1)).toFixed(3),
+            "Delta": (timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
+            "Gamma": (timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
+            "Vega": (timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
+            "Theta": (timeToExpiry <= 0 ? 0 : getTheta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
         })
     }
+    // console.log(optionTable)
+    return optionTable
+}
+
+export const getActiveTransactions = async (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    const vaultAddress = await exchangeContract.methods.vault().call()
+    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+
+    const oracle = await getPriceOracle(objTokenAddr)
+    var spot = await oracle.methods.queryPrice().call();
+    var spotPrice = parseFloat(web3.utils.fromWei(spot));
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+    
+    const allPools = await getAllPools(objTokenAddr)
+    let optionTable = []
+    var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
+
+    await Promise.all(allPools.map(async (poolAddress) => {
+        const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
+        await Promise.all(options.map(async (optionId) => {
+            let option = await vaultContract.methods.getOption(optionId).call();
+            let secondsToExpiry = Math.floor(option.maturity - ts);
+            let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
+            let optionStrike = parseFloat(web3.utils.fromWei(option.strike));
+            let optionAmount = parseFloat(web3.utils.fromWei(option.amount));
+            let optionType = option.poType == 0 ? "call" : "put";
+            let optionMultiplier = option.side == 0 ? 1 : -1;
+            let optionDelta, optionGamma, optionVega, optionTheta;
+            if (secondsToExpiry > 0) {
+                let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
+                let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
+                optionDelta = getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
+                optionGamma = getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
+                optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
+                optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
+            }
+            optionTable.push({
+                "Type": option.poType == 0 ? "Call" : "Put",
+                "BS": option.side == 0 ? "Buy" : "Sell",
+                "Expiry": new Date(option.maturity * 1000).toLocaleString(),
+                "Strike": optionStrike.toFixed(0),
+                "Amount": optionAmount.toFixed(3),
+                "Delta": optionDelta.toFixed(3),
+                "Gamma": optionGamma.toFixed(3),
+                "Vega": optionVega.toFixed(3),
+                "Theta": optionTheta.toFixed(3),
+            })}));
+    }));
+
     // console.log(optionTable)
     return optionTable
 }

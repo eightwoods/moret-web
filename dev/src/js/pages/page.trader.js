@@ -1,6 +1,6 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
 import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getPastTransactions } from "../helpers/web3"
+import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
 import componentTables from "../components/component.tables"
@@ -237,6 +237,7 @@ export default {
                 this.executeTradeFailure(container, warningMessage)
             } else {
                 awaitApproval.classList.add("await-active")
+                awaitApproval.textContent = "Allowance approved."
                 awaitApprovalTimer.remove()
                 this.clearTradeTimer()
 
@@ -248,6 +249,7 @@ export default {
                         this.executeTradeFailure(container, warningMessage)
                     } else {
                         awaitTrade.classList.add("await-active")
+                        awaitTrade.textContent = "Transaction mined."
                         awaitTradeTimer.remove()
                         this.clearTradeTimer()
 
@@ -304,7 +306,7 @@ export default {
     },
 
     transactionsTable() {
-        getPastTransactions(null, 9000, null).then((results) => {
+        getActiveTransactions(null).then((results) => {
             const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
             const dataRows = []
             results.forEach((data) => {
