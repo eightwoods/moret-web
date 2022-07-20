@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, maxAmount, tokenAddress } from "./constant"
+import { moretAddress, exchangeAddress, maxAmount, tokenAddress, expirationDays } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
@@ -78,7 +78,7 @@ export const calcMoneyness = async(tokenAddr = null, strike, isCall) => {
 export const calcIV = async(tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const oracle = await getPriceOracle(objTokenAddr)
-    const expirationDays = [1, 7, 30]
+    // const expirationDays = [1, 7, 30]
     let expirations = []
 
     for (let expiry of expirationDays) {
@@ -99,6 +99,7 @@ export const calcIV = async(tokenAddr = null) => {
 }
 
 // 5. refresh vol token name: it returns the name of volatility token and blank '' string if the vol token does not exist, in which case please remove the vol token from the selector
+// expiry is number of days
 export const getVolTokenName = async(tokenAddr = null, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
@@ -188,8 +189,8 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
         if (token) {
             return {
                 "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
-                "premium": `${Big(premium).round(5)}${premiumToken}`,
-                "collateral": `${Big(collateral).round(2)}${collateralToken}`,
+                "premium": `${Big(premium).round(3)} ${premiumToken}`,
+                "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
                 "error": ''
             }
         } else {
@@ -280,7 +281,9 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     try {
         await approveMaxAmount(paymentToken, account, exchangeAddress, optionCost['premium'])
-        await approveMaxAmount(collateralToken, account, exchangeAddress, optionCost['collateral'])
+        if (collateralToken._address != paymentToken._address){
+            await approveMaxAmount(collateralToken, account, exchangeAddress, optionCost['collateral'])
+        }
     }
     catch (err) {
         console.warn(err)
@@ -292,7 +295,7 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
     const tokenDecimals = await erc20Token.methods.decimals().call()
     const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toString())).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
-    // console.log(approvedAmount, spendAmount, spendAmountInWei);
+    console.log(approvedAmount, spendAmount, spendAmountInWei);
     if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice()
         var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval })
@@ -440,28 +443,25 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionGamma = getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
-            }
-            optionTable.push({
-                "Type": option.poType == 0 ? "Call" : "Put",
-                "BS": option.side == 0 ? "Buy" : "Sell",
-                "Expiry": new Date(option.maturity * 1000).toLocaleString(),
-                "Strike": optionStrike.toFixed(0),
-                "Amount": optionAmount.toFixed(3),
-                "Delta": optionDelta.toFixed(3),
-                "Gamma": optionGamma.toFixed(3),
-                "Vega": optionVega.toFixed(3),
-                "Theta": optionTheta.toFixed(3),
-            })}));
+            
+                optionTable.push({
+                    "Type": option.poType == 0 ? "Call" : "Put",
+                    "BS": option.side == 0 ? "Buy" : "Sell",
+                    "Expiry": new Date(option.maturity * 1000).toLocaleString(),
+                    "Strike": optionStrike.toFixed(0),
+                    "Amount": optionAmount.toFixed(3),
+                    "Delta": optionDelta.toFixed(3),
+                    "Gamma": optionGamma.toFixed(3),
+                    "Vega": optionVega.toFixed(3),
+                    "Theta": optionTheta.toFixed(3),
+            })}}));
     }));
 
     // console.log(optionTable)
     return optionTable
 }
 
-// 10. ???
-//
-
-// 11. quote vol prices depending on parameters:
+// 10. quote vol prices depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
 // amount is in float number of USDC
 // expiry is in number of days
@@ -544,8 +544,8 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         if (token) {
             return {
                 "volatility": vol.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "premium": `${Big(amount).round(5)}${premiumToken}`,
-                "volpremium": `${Big(volAmount).round(5)}${volToken}`
+                "premium": `${Big(amount).round(5)} ${premiumToken}`,
+                "volpremium": `${Big(volAmount).round(5)} ${volToken}`
             }
         } else {
             return {
@@ -585,7 +585,7 @@ export const getVolTradingPools = async (tokenAddress) => {
     return volTradingPools
 }
 
-// 12a. function to approve max amount if needed
+// 11a. function to approve max amount if needed
 // isBuy is true if Buy is selected, otherwise false
 // amount is in float
 // expiry is in number of days
@@ -609,7 +609,7 @@ export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount,
     }
 }
 
-// 12b. trade vol tokens 
+// 11b. trade vol tokens 
 // isBuy is true if Buy is selected, otherwise false
 // amount is in float
 // expiry is in number of days
@@ -640,6 +640,42 @@ export const executeVolatilityTrade = async (tokenAddr = null, isBuy, amount, ex
         console.warn(err)
         return ""
     }
+}
+
+// 12. List all vol token holdings
+export const getVolatilityHoldings = async (tokenAddr = null) =>{
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const oracleAddress = await moretContract.methods.getVolatilityChain(String(objTokenAddr)).call()
+    const oracle = await getContract(web3, getJsonUrl("VolatilityChain.json"), oracleAddress)
+    
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+    let volatilityTable = []
+
+    await Promise.all(expirationDays.map(async (expiry) => {
+        try {
+            const tenor = Big(expiry).times(86400).round().toNumber() // convert to seconds
+            const timeToExpiry = expiry / 365 // converts to days
+            const volatility = await oracle.methods.queryVol(tenor).call()
+            const gtDay = Big(expiry).eq(1) ? "" : "s"
+            const volTokenAddress = await moretContract.methods.getVolatilityToken(String(objTokenAddr), tenor).call()
+            const volTokenContract = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
+            const volTokenHolding = await volTokenContract.methods.balanceOf(account).call()
+            const volTokenName = await volTokenContract.methods.symbol().call()
+            const impliedVol = parseFloat(web3.utils.fromWei(volatility)) / Math.sqrt(timeToExpiry)
+            volatilityTable.push({
+                "Token": volTokenName,
+                "Tenor": `${expiry} Day${gtDay}`,
+                "Amount": parseFloat(web3.utils.fromWei(volTokenHolding)).toFixed(4),
+                "ImpliedVolatility": impliedVol.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0}),
+            })
+        }
+        catch (err) {
+            console.log(err.message)
+        }
+    }))
+    return volatilityTable
 }
 
 // 13. list all pools with their features ( to be done )

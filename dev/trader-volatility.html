@@ -53,7 +53,7 @@
                                 </div>
                             </div>
                             <div class="opt-amount in-border white-50">
-                                Dollar Amount:&nbsp;<input type="number" name="opt-amount" value="0.01" onKeyPress="if(this.value.length==6) return false;" />
+                                Dollar Amount:&nbsp;<input type="number" name="opt-amount" value="1" onKeyPress="if(this.value.length==6) return false;" />
                             </div>
                             <div class="opt-expiry dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
@@ -101,29 +101,24 @@
                 </div>
             </div>
             
-            <!-- <div class="transactions in-box animate-panel">
-                <div class="header-title m-b-24">Transactions</div>
+            <div class="transactions in-box animate-panel">
+                <div class="header-title m-b-24">Holdings</div>
                 <div class="comp-dynamic-table" data-limitview="scroll">
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th class="sortable sort-text">Type</th>
-                                    <th class="sortable sort-text">B/S</th>
-                                    <th class="sortable">Expiry</th>
-                                    <th class="sortable">Strike</th>
+                                    <th class="sortable sort-text">Token</th>
+                                    <th class="sortable">Tenor</th>
                                     <th class="sortable">Amount</th>
-                                    <th class="sortable">Delta</th>
-                                    <th class="sortable">Gamma</th>
-                                    <th class="sortable">Vega</th>
-                                    <th class="sortable">Theta</th>
+                                    <th class="sortable">Implied Volatility</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
-            </div> -->
+            </div>
         </div>
     </section>
 </main>
@@ -180,7 +175,6 @@
     </div>
 </footer>
 <script type="module" src="/main.js"></script>
-<!-- <script type="module" src="/web3.min.js"></script> -->
 <script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </body>
 </html>

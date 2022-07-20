@@ -287,12 +287,12 @@ export default {
         const padTime = (val) => val > 9 ? val : `0${val}`
         let totalSeconds = 0
         this.globals.execIntervalId = setInterval(() => {
-            totalSeconds++
             if (totalSeconds > 120) {
                 // more than 2 mins, create warning
                 this.executeTradeFailure(document.querySelector(".overlay-popup .executetrade"), "Warning: Transaction has taking longer than normal to be mined. You can close the window and try to trade again.")
                 this.clearTradeTimer()
             } else {
+                totalSeconds++
                 elemTimer.textContent = `${padTime(parseInt(totalSeconds / 60))}:${padTime(totalSeconds % 60)}`
             }
         }, 1000)

@@ -6,6 +6,8 @@ export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 export const tokenActive = "tokenActive"
 
+export const expirationDays = [1, 7, 30]
+
 export const tokenName = () => JSON.parse(localStorage.getItem(tokenActive)).token
 
 export const tokenPrice = () => JSON.parse(localStorage.getItem(tokenActive)).price
