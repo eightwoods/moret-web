@@ -717,6 +717,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
         poolTable.push({
             "Name": name,
             "Symbol": symbol,
+            "Address": poolAddress,
             "Description": web3.utils.hexToAscii(description),
             "MarketCap": `$${(grossCapital).toFixed(0)}`,
             "Utilization": utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
