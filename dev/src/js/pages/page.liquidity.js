@@ -1,4 +1,6 @@
 import Swiper from "swiper"
+import { getAllPoolsInfo } from "../helpers/web3"
+import componentTables from "../components/component.tables"
 
 export default {
     globals: {
@@ -6,6 +8,9 @@ export default {
     },
 
     init() {
+        // static methods call
+        this.poolsTable()
+
         // observe sidenav
         const sidenavOptions = {
             childList: true, 
@@ -32,6 +37,7 @@ export default {
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
 
         this.setSwiper()
+
     },
 
     setSwiper() {
@@ -49,6 +55,22 @@ export default {
         const btnPrev = this.globals.elem.querySelector(".swiper-button-prev")
         btnPrev.addEventListener("click", () => {
             swiper.slidePrev()
+        })
+    },
+
+    poolsTable() {
+        getAllPoolsInfo(null).then((results) => {
+            const dynamicTable = document.querySelector(".pools .comp-dynamic-table")
+            const dataRows = []
+            results.forEach((data) => {
+                dataRows.push([
+                    data.Name,
+                    data.MarketCap,
+                    data.Utilization,
+                    data.EstimatedYield
+                ])
+            })
+            componentTables.setDynamic(dynamicTable, dataRows)
         })
     },
 }

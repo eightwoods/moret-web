@@ -189,7 +189,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
         if (token) {
             return {
                 "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
-                "premium": `${Big(premium).round(3)} ${premiumToken}`,
+                "premium": `${Big(premium).round(5)} ${premiumToken}`,
                 "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
                 "error": ''
             }
@@ -294,7 +294,7 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
 export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
     const tokenDecimals = await erc20Token.methods.decimals().call()
-    const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toString())).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+    const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toFixed(18))).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
     console.log(approvedAmount, spendAmount, spendAmountInWei);
     if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice()
@@ -680,7 +680,56 @@ export const getVolatilityHoldings = async (tokenAddr = null) =>{
 
 // 13. list all pools with their features ( to be done )
 //
+export const getAllPoolsInfo = async (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    const vaultAddress = await exchangeContract.methods.vault().call()
+    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
+    const allPools = await getAllPools(objTokenAddr)
+    // var grossCapitalTotal = 0
+    // var netCapitalTotal = 0
+    let poolTable = []
+
+    // await Promise.all(allPools.map(async (poolAddress) => {
+    for (let i = 0; i < allPools.length; i++) {
+        const poolAddress = allPools[i]
+        let grossCapital = await vaultContract.methods.calcCapital(poolAddress, false, false).call()
+        grossCapital = parseFloat(web3.utils.fromWei(grossCapital))
+        let netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
+        netCapital = parseFloat(web3.utils.fromWei(netCapital))
+        const utilizedCapital = grossCapital - netCapital
+        const utilization = Math.max(0, 1 - netCapital / grossCapital)
+
+        const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+        const name = await poolContract.methods.name().call()
+        const symbol = await poolContract.methods.symbol().call()
+        let curveFactor = await poolContract.methods.volCapacityFactor().call()
+        let exerciseFee = await poolContract.methods.exerciseFee().call()
+        let minVol = await poolContract.methods.minVolPrice().call()
+
+        const marketAddress = await poolContract.methods.marketMaker().call()
+        const marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
+        let bot = await marketContract.methods.hedgingBot().call()
+        let description = await marketContract.methods.description().call()
+        let estyield = 0
+
+        poolTable.push({
+            "Name": name,
+            "Symbol": symbol,
+            "Description": web3.utils.hexToAscii(description),
+            "MarketCap": `$${(grossCapital).toFixed(0)}`,
+            "Utilization": utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+            "AMMCurveFactor": parseFloat(web3.utils.fromWei(curveFactor)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+            "ExerciseFee": parseFloat(web3.utils.fromWei(exerciseFee)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 }),
+            "MinVolPrice": parseFloat(web3.utils.fromWei(minVol)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 }),
+            "Bot": bot.toString(),
+            "EstimatedYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+            })
+    }
+    
+    return poolTable
+}
 
 // 14. invest in a selected pool
 // amount is the USDC amount to invest in pool

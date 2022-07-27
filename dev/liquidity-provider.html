@@ -38,48 +38,20 @@
                 <div class="m-b-20">
                     <a href="#" class="btn btn-white btn-title size-md">Pool information</a>
                 </div>
-                <div class="in-box">
+                <div class="pools in-box">
                     <div class="header-title m-b-24">Liquidity pool list</div>
-                    <div class="comp-tables">
+                    <div class="comp-dynamic-table" data-limitview="scroll">
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Type</th>
-                                        <th>B/S</th>
-                                        <th>Expiry</th>
-                                        <th>Strike</th>
-                                        <th>Amount</th>
-                                        <th>Delta</th>
-                                        <th>Gamma</th>
-                                        <th>Vega</th>
-                                        <th>Theta</th>
+                                        <th class="sortable sort-text">Name</th>
+                                        <th class="sortable">Market Cap</th>
+                                        <th class="sortable">Utilization</th>
+                                        <th class="sortable">Estimated Yield</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Buy</td>
-                                        <td>Call</td>
-                                        <td>7d</td>
-                                        <td>2700</td>
-                                        <td>1</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Buy</td>
-                                        <td>Call</td>
-                                        <td>7d</td>
-                                        <td>2700</td>
-                                        <td>1</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                        <td>94.66%</td>
-                                    </tr>
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -338,5 +310,6 @@
 </footer>
 <script type="module" src="/main.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
 </body>
 </html>
