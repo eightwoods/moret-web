@@ -1,5 +1,5 @@
 import { gsap } from "gsap"
-import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
+import { minimizeAddress, createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
 import { web3 } from "../helpers/web3"
 
 export default {
@@ -39,10 +39,9 @@ export default {
                     // console.log("current account", accounts)
                     connectionButton.textContent = ""
 
-                    const strAccounts = String(accounts)
                     const account = document.createElement("div")
                     account.className = "in-border white-50 icon icon-account active-account"
-                    account.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
+                    account.textContent = `${minimizeAddress(accounts)}`
                     connectionButton.appendChild(account)
                     
                 } else {
@@ -93,8 +92,7 @@ export default {
             
             const elemActiveAccount = document.querySelector("header .active-account")
             if (accounts.length > 0 && elemActiveAccount) {
-                const strAccounts = String(accounts)
-                elemActiveAccount.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
+                elemActiveAccount.textContent = `${minimizeAddress(accounts)}`
             }
 
             location.reload()

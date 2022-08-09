@@ -58,6 +58,11 @@ export const getImageUrl = (filename) => new URL(`/src/img/${filename}`, import.
 
 export const getJsonUrl = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`
 
+export const minimizeAddress = (address) => {
+    const strAddress = String(address)
+    return `${strAddress.substring(0, 4)}...${strAddress.substring(strAddress.length - 4)}`
+}
+
 export const createList = (arrValues, containerClass) => {
     const listContainer = document.createElement("ul")
     listContainer.className = containerClass

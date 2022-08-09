@@ -80,7 +80,7 @@
             @include popupWarning;
         }
 
-        .tradeoverview {
+        .tradeoverview, .liquiditypool {
             li {
                 color: $white-50;
                 margin-bottom: 10px;
