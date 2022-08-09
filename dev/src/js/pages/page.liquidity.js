@@ -9,7 +9,7 @@ export default {
 
     init() {
         // static methods call
-        this.poolsTable()
+        this.setPoolsAndHottubs()
 
         // observe sidenav
         const sidenavOptions = {
@@ -35,42 +35,79 @@ export default {
             this.globals.init = false
         })
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
-
-        this.setSwiper()
-
     },
 
-    setSwiper() {
-        const swiper = new Swiper(".swiper", {
-            slidesPerView: "auto",
-            spaceBetween: 12,
-            grabCursor: false,
-        })
-
-        const btnNext = this.globals.elem.querySelector(".swiper-button-next")
-        btnNext.addEventListener("click", () => {
-            swiper.slideNext()
-        })
-
-        const btnPrev = this.globals.elem.querySelector(".swiper-button-prev")
-        btnPrev.addEventListener("click", () => {
-            swiper.slidePrev()
-        })
-    },
-
-    poolsTable() {
+    setPoolsAndHottubs() {
         getAllPoolsInfo(null).then((results) => {
-            const dynamicTable = document.querySelector(".pools .comp-dynamic-table")
-            const dataRows = []
+            const poolsTable = document.querySelector(".pools .comp-dynamic-table")
+            const poolsData = []
+            let swiperSlideElem = ""
+
             results.forEach((data) => {
-                dataRows.push([
+                poolsData.push([
                     data.Name,
                     data.MarketCap,
                     data.Utilization,
                     data.EstimatedYield
                 ])
+
+                const strBot = String(data.Bot)
+                swiperSlideElem += `
+                    <div class="swiper-slide">
+                        <div class="in-box">
+                            <ul class="info">
+                                <li>Name: <span>${data.Name}</span></li>
+                                <li>Description: <span>${data.Description}</span></li>
+                                <li>Dedicated hedging address: <span>${strBot.substring(0, 4)}...${strBot.substring(strBot.length - 4)}</span></li>
+                                <li>AMM factor: <span>${data.AMMCurveFactor}</span></li>
+                                <li>Exercise fee: <span>${data.ExerciseFee}</span></li>
+                                <li>Minimum volatility price: <span>${data.MinVolPrice}</span></li>
+                            </ul>
+                            <div class="buttons m-t-24">
+                                <div class="col">
+                                    <div class="in-border word-nowrap white-50">
+                                        <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <a href="#" class="btn btn-green js-topup">Top-up</a>
+                                </div>
+                                <div class="col">
+                                    <a href="#" class="btn btn-pink js-takeout">Take-out</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
             })
-            componentTables.setDynamic(dynamicTable, dataRows)
+            document.querySelector(".swiper .swiper-wrapper").innerHTML = swiperSlideElem
+            componentTables.setDynamic(poolsTable, poolsData)
+
+            const swiper = new Swiper(".swiper", {
+                slidesPerView: "auto",
+                spaceBetween: 12,
+                grabCursor: false,
+            })
+
+            if (results.length > 1) {
+                const btnNext = this.globals.elem.querySelector(".swiper-button-next")
+                btnNext.classList.remove("hide-important")
+                btnNext.addEventListener("click", () => {
+                    swiper.slideNext()
+                })
+
+                const btnPrev = this.globals.elem.querySelector(".swiper-button-prev")
+                btnPrev.classList.remove("hide-important")
+                btnPrev.addEventListener("click", () => {
+                    swiper.slidePrev()
+                })
+
+                poolsTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                    row.classList.add("cursor")
+                    row.addEventListener("click", () => {
+                        swiper.slideTo(index)
+                    }, false)
+                })
+            }
         })
     },
 }

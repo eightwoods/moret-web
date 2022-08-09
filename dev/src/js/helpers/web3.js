@@ -2,6 +2,7 @@ import Big from "big.js"
 import { moretAddress, exchangeAddress, maxAmount, tokenAddress, expirationDays } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
+import componentTables from "../components/component.tables"
 
 export const web3 = new Web3(window.ethereum)
 
@@ -459,6 +460,48 @@ export const getActiveTransactions = async (tokenAddr = null) => {
 
     // console.log(optionTable)
     return optionTable
+}
+
+export const setTableActiveTransactions = () => {
+    const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
+    transactionsTable.innerHTML = `
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable sort-text">Type</th>
+                        <th class="sortable sort-text">B/S</th>
+                        <th class="sortable sort-text">Expiry</th>
+                        <th class="sortable">Strike</th>
+                        <th class="sortable">Amount</th>
+                        <th class="sortable">Delta</th>
+                        <th class="sortable">Gamma</th>
+                        <th class="sortable">Vega</th>
+                        <th class="sortable">Theta</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>`
+
+    getActiveTransactions(null).then((results) => {
+        const dataRows = []
+        results.forEach((data) => {
+            dataRows.push([
+                data.Type,
+                data.BS,
+                data.Expiry,
+                data.Strike,
+                data.Amount,
+                data.Delta,
+                data.Gamma,
+                data.Vega,
+                data.Theta
+            ])
+        })
+
+        componentTables.setDynamic(transactionsTable, dataRows)
+    })
 }
 
 // 10. quote vol prices depending on parameters:

@@ -1,4 +1,5 @@
 import { gsap } from "gsap"
+import { setTableActiveTransactions } from "../helpers/web3"
 
 export const breakpoint = {
     xl:   1200,
@@ -127,6 +128,22 @@ export const closeOverlayPopup = () => {
     if (overlayPopup) {
         noScroll(false)
         gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
+            // Trader - refresh holdings table
+            const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
+            if (transactionsTable) {
+                const prevNumberRows = transactionsTable.querySelectorAll("tr").length
+                let timerId = setInterval(() => {
+                    console.log("curr rows", transactionsTable.querySelectorAll("tr").length, "prev rows", prevNumberRows)
+                    if (transactionsTable.querySelectorAll("tr").length > prevNumberRows) {
+                        console.log("clear interval for transactions table")
+                        clearInterval(timerId)
+                    } else {
+                        console.log("refresh transactions table")
+                        setTableActiveTransactions()
+                    }
+                }, 8000)
+            }
+
             overlayPopup.remove()
         }})
     }

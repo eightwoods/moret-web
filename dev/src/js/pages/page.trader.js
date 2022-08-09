@@ -1,9 +1,8 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
 import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
+import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, setTableActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
-import componentTables from "../components/component.tables"
 import componentToggleSwitches from "../components/component.toggleSwitches"
 import componentTradingviewWidget from "../components/component.tradingviewWidget"
 
@@ -19,7 +18,7 @@ export default {
         this.optAmount()
         this.optExpiry()
         this.buttonTrade()
-        this.transactionsTable()
+        setTableActiveTransactions()
 
         // observe sidenav
         const sidenavOptions = {
@@ -303,27 +302,6 @@ export default {
         clearInterval(this.globals.execIntervalId)
         this.globals.execIntervalId = null
         console.log("clearTradeTimer()")
-    },
-
-    transactionsTable() {
-        getActiveTransactions(null).then((results) => {
-            const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
-            const dataRows = []
-            results.forEach((data) => {
-                dataRows.push([
-                    data.Type,
-                    data.BS,
-                    data.Expiry,
-                    data.Strike,
-                    data.Amount,
-                    data.Delta,
-                    data.Gamma,
-                    data.Vega,
-                    data.Theta
-                ])
-            })
-            componentTables.setDynamic(dynamicTable, dataRows)
-        })
     },
 
     isBuy() {

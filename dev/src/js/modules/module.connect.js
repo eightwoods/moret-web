@@ -95,9 +95,9 @@ export default {
             if (accounts.length > 0 && elemActiveAccount) {
                 const strAccounts = String(accounts)
                 elemActiveAccount.textContent = `${strAccounts.substring(0, 4)}...${strAccounts.substring(strAccounts.length - 4)}`
-            } else {
-                location.reload()
             }
+
+            location.reload()
         })
     },
 
