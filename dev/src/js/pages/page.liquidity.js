@@ -11,6 +11,7 @@ export default {
     init() {
         // static methods call
         this.setPoolsAndHottubs()
+        this.setActiveVote()
 
         // observe sidenav
         const sidenavOptions = {
@@ -162,8 +163,18 @@ export default {
         const container = document.createElement("div")
         container.className = "executetrade"
         document.querySelector(".overlay-popup .op-content").appendChild(container)
+        
+        let btnColor = "blue"
+        switch (type) {
+            case "topup":
+                btnColor = "green"
+                break
+            case "takeout":
+                btnColor = "pink"
+                break
+            default:
+        }
 
-        const btnColor = type === "topup" ? "green" : "pink"
         const button = document.createElement("a")
         button.setAttribute("href", "#")
         button.className = `btn btn-${btnColor}`
@@ -174,7 +185,33 @@ export default {
             e.preventDefault()
             
             // logic event
-            
+            switch (type) {
+                case "topup":
+                    // 
+                    break
+                case "takeout":
+                    // 
+                    break
+                default:
+                    // propose
+            }
         }, false)
+    },
+
+    setActiveVote() {
+        const activeVote = document.querySelector(".active-vote")
+
+        activeVote.querySelector(".js-propose").addEventListener("click", (e) => {
+            e.preventDefault()
+            const arrNames = [
+                {name: "Description:", span: activeVote.querySelector("input[name='description']").value},
+                {name: "GitHub:", span: activeVote.querySelector("input[name='github']").value},
+                {name: "Address:", span: activeVote.querySelector("input[name='address']").value},
+                {name: "Amount:", span: activeVote.querySelector("input[name='usdc-amount']").value},
+            ]
+
+            showOverlayPopup("Propose strategies", createList(arrNames, "proposestrategies"))
+            this.executeTrade("propose")
+        })
     },
 }

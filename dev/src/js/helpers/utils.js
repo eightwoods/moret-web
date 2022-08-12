@@ -133,22 +133,37 @@ export const closeOverlayPopup = () => {
     if (overlayPopup) {
         noScroll(false)
         gsap.to(document.querySelector(".op-box"), {opacity: 0, scale: 0.5, duration: 0.35, onComplete: function(){
+            const elMain = document.querySelector("main")
+            const executeButton = elMain.dataset.executeButton
+            const executeFailure = elMain.dataset.executeFailure
+
             // Trader - refresh holdings table
             const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
-            if (transactionsTable) {
-                const prevNumberRows = transactionsTable.querySelectorAll("tr").length
-                let timerId = setInterval(() => {
-                    console.log("curr rows", transactionsTable.querySelectorAll("tr").length, "prev rows", prevNumberRows)
-                    if (transactionsTable.querySelectorAll("tr").length > prevNumberRows) {
-                        console.log("clear interval for transactions table")
-                        clearInterval(timerId)
+            if (executeButton && !executeFailure && transactionsTable) {
+                console.log("trans: OK to refresh")
+                const transPrevNumbRows = transactionsTable.querySelectorAll("tr").length
+                let transRefreshLimit = 0
+                let transIntervalId = setInterval(() => {
+                    let transCurrNumbRows = transactionsTable.querySelectorAll("tr").length
+                    console.log("trans: curr rows", transCurrNumbRows, "trans: prev rows", transPrevNumbRows)
+                    if (transCurrNumbRows !== transPrevNumbRows) {
+                        console.log("trans: clear interval not equal refresh")
+                        clearInterval(transIntervalId)
                     } else {
-                        console.log("refresh transactions table")
+                        // stop after 8 times if interval not clear
+                        if (transRefreshLimit++ > 8) {
+                            console.log("trans: clear interval refresh limit")
+                            clearInterval(transIntervalId)
+                        }
+                        
+                        console.log("trans: refresh holdings table")
                         setTableActiveTransactions()
                     }
                 }, 8000)
             }
 
+            elMain.removeAttribute("data-execute-button")
+            elMain.removeAttribute("data-execute-failure")
             overlayPopup.remove()
         }})
     }

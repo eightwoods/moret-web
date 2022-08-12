@@ -19,6 +19,7 @@ export default {
         this.optExpiry()
         this.buttonTrade()
         setTableActiveTransactions()
+        document.querySelector(".transactions .js-refresh").addEventListener("click", () => setTableActiveTransactions())
 
         // observe sidenav
         const sidenavOptions = {
@@ -208,6 +209,7 @@ export default {
 
         button.addEventListener("click", async(e) => {
             e.preventDefault()
+            document.querySelector("main").setAttribute("data-execute-button", true)
             button.remove()
 
             const awaitApproval = document.createElement("div")
@@ -269,27 +271,34 @@ export default {
     },
 
     executeTradeFailure(container, failureTxt) {
-        const awaitFailure = document.createElement("div")
-        awaitFailure.className = "await-failure"
-        const warningIcon = document.createElement("div")
-        warningIcon.className = "warning-icon"
-        const warningText = document.createElement("div")
-        warningText.className = "warning-text"
-        warningText.textContent = failureTxt
-        awaitFailure.appendChild(warningIcon)
-        awaitFailure.appendChild(warningText)
-        container.appendChild(awaitFailure)
+        if (document.querySelector(".overlay-popup")) {
+            console.log("executeTradeFailure()")
+            document.querySelector("main").setAttribute("data-execute-failure", true)
+
+            const awaitFailure = document.createElement("div")
+            awaitFailure.className = "await-failure"
+            const warningIcon = document.createElement("div")
+            warningIcon.className = "warning-icon"
+            const warningText = document.createElement("div")
+            warningText.className = "warning-text"
+            warningText.textContent = failureTxt
+            awaitFailure.appendChild(warningIcon)
+            awaitFailure.appendChild(warningText)
+            container.appendChild(awaitFailure)
+        }
+
+        this.clearTradeTimer()
     },
 
     executeTradeTimer(elemTimer) {
-        // console.log("executeTradeTimer()")
+        console.log("executeTradeTimer()")
         const padTime = (val) => val > 9 ? val : `0${val}`
         let totalSeconds = 0
         this.globals.execIntervalId = setInterval(() => {
             if (totalSeconds > 120) {
                 // more than 2 mins, create warning
+                console.log("more than 2 mins, show warning")
                 this.executeTradeFailure(document.querySelector(".overlay-popup .executetrade"), "Warning: Transaction has taking longer than normal to be mined. You can close the window and try to trade again.")
-                this.clearTradeTimer()
             } else {
                 totalSeconds++
                 elemTimer.textContent = `${padTime(parseInt(totalSeconds / 60))}:${padTime(totalSeconds % 60)}`
@@ -298,10 +307,9 @@ export default {
     },
 
     clearTradeTimer() {
-        // clear intervals
+        console.log("clearTradeTimer()")
         clearInterval(this.globals.execIntervalId)
         this.globals.execIntervalId = null
-        console.log("clearTradeTimer()")
     },
 
     isBuy() {

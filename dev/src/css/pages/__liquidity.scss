@@ -44,7 +44,7 @@
                     .col {
                         &:first-child {
                             grid-column-end: span 2;
-                            text-align: right;
+                            // text-align: right;
                             input {
                                 width: calc(100% - 55px);
                                 text-align: center;
@@ -106,9 +106,19 @@
 
                     @include mediaQuery($pb-sm) {
                         grid-template-columns: repeat(2, 1fr);
-                        .form-col {
-                            &:last-child {
-                                grid-column-end: span 2;
+                        // .form-col {
+                        //     &:last-child {
+                        //         grid-column-end: span 2;
+                        //     }
+                        // }
+                    }
+                    
+                    .form-col {
+                        &:last-child {
+                            input {
+                                width: calc(100% - 55px);
+                                text-align: center;
+                                background-color: $white-8;
                             }
                         }
                     }
