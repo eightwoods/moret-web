@@ -1,5 +1,6 @@
 import { gsap } from "gsap"
-import { setTableActiveTransactions } from "../helpers/web3"
+import pageLiquidity from "../pages/page.liquidity"
+import pageTrader from "../pages/page.trader"
 
 export const breakpoint = {
     xl:   1200,
@@ -138,28 +139,35 @@ export const closeOverlayPopup = () => {
             const executeFailure = elMain.dataset.executeFailure
 
             // Trader - refresh holdings table
-            const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
+            const transactionsTable = document.querySelector(".trader .transactions .comp-dynamic-table")
             if (executeButton && !executeFailure && transactionsTable) {
-                console.log("trans: OK to refresh")
-                const transPrevNumbRows = transactionsTable.querySelectorAll("tr").length
+                console.log("Transactions: OK to refresh")
+                const transPrevNumbRows = transactionsTable.querySelectorAll("tbody tr").length
                 let transRefreshLimit = 0
                 let transIntervalId = setInterval(() => {
-                    let transCurrNumbRows = transactionsTable.querySelectorAll("tr").length
-                    console.log("trans: curr rows", transCurrNumbRows, "trans: prev rows", transPrevNumbRows)
+                    let transCurrNumbRows = transactionsTable.querySelectorAll("tbody tr").length
+                    console.log("Transactions: curr rows", transCurrNumbRows, "Transactions: prev rows", transPrevNumbRows)
                     if (transCurrNumbRows !== transPrevNumbRows) {
-                        console.log("trans: clear interval not equal refresh")
+                        console.log("Transactions: clear interval not equal refresh")
                         clearInterval(transIntervalId)
                     } else {
                         // stop after 8 times if interval not clear
                         if (transRefreshLimit++ > 8) {
-                            console.log("trans: clear interval refresh limit")
+                            console.log("Transactions: clear interval refresh limit")
                             clearInterval(transIntervalId)
                         }
                         
-                        console.log("trans: refresh holdings table")
-                        setTableActiveTransactions()
+                        console.log("Transactions: refresh holdings table")
+                        pageTrader.activeTransactions()
                     }
-                }, 8000)
+                }, 10000)
+            }
+
+            // Liquidity provider -  refresh Pool information and Active hot tubs
+            const liquidityPool = document.querySelector(".liquidity .pool-list")
+            if (executeButton && !executeFailure && liquidityPool) {
+                console.log("Liquidity: refresh Pool information and Active hot tubs")
+                setTimeout(() => pageLiquidity.setPoolsAndHottubs(), 30000)
             }
 
             elMain.removeAttribute("data-execute-button")

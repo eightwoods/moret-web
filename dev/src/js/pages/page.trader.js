@@ -1,8 +1,9 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
-import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
-import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, setTableActiveTransactions } from "../helpers/web3"
+import { createList, showOverlayPopup } from "../helpers/utils"
+import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
+import componentTables from "../components/component.tables"
 import componentToggleSwitches from "../components/component.toggleSwitches"
 import componentTradingviewWidget from "../components/component.tradingviewWidget"
 
@@ -17,9 +18,9 @@ export default {
         // static methods call
         this.optAmount()
         this.optExpiry()
+        this.activeTransactions()
+        document.querySelector(".transactions .js-refresh").addEventListener("click", () => this.activeTransactions())
         this.buttonTrade()
-        setTableActiveTransactions()
-        document.querySelector(".transactions .js-refresh").addEventListener("click", () => setTableActiveTransactions())
 
         // observe sidenav
         const sidenavOptions = {
@@ -165,6 +166,49 @@ export default {
         document.querySelector(".liquidity-pool .pb-price-from").textContent = liquidityPool.utilized
         document.querySelector(".liquidity-pool .pb-text-value").textContent = liquidityPool.text
         componentPercentageBar.progressBar(document.querySelector(".liquidity-pool"), liquidityPool.perc)
+    },
+
+    activeTransactions() {
+        console.log("activeTransactions()")
+        const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
+        transactionsTable.innerHTML = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable sort-text">Type</th>
+                            <th class="sortable sort-text">B/S</th>
+                            <th class="sortable sort-text">Expiry</th>
+                            <th class="sortable">Strike</th>
+                            <th class="sortable">Amount</th>
+                            <th class="sortable">Delta</th>
+                            <th class="sortable">Gamma</th>
+                            <th class="sortable">Vega</th>
+                            <th class="sortable">Theta</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>`
+
+        getActiveTransactions(null).then((results) => {
+            const dataRows = []
+            results.forEach((data) => {
+                dataRows.push([
+                    data.Type,
+                    data.BS,
+                    data.Expiry,
+                    data.Strike,
+                    data.Amount,
+                    data.Delta,
+                    data.Gamma,
+                    data.Vega,
+                    data.Theta
+                ])
+            })
+
+            componentTables.setDynamic(transactionsTable, dataRows)
+        })
     },
 
     buttonTrade() {

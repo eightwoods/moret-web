@@ -34,27 +34,13 @@
     <section class="liquidity">
         <div class="sidenav animate-panel"></div>
         <div class="content">
-            <div class="pool-info animate-panel">
+            <div class="pool-list animate-panel">
                 <div class="m-b-20">
                     <a href="#" class="btn btn-white btn-title size-md">Pool information</a>
                 </div>
                 <div class="pools in-box">
-                    <div class="header-title m-b-24">Liquidity pool list</div>
-                    <div class="comp-dynamic-table" data-limitview="scroll">
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th class="sortable sort-text">Name</th>
-                                        <th class="sortable">Market Cap</th>
-                                        <th class="sortable">Utilization</th>
-                                        <th class="sortable">Estimated Yield</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <div class="header-title m-b-24">Liquidity pool list<span class="icon icon-refresh cursor js-refresh"></span></div>
+                    <div class="comp-dynamic-table" data-limitview="scroll"></div>
                     <!-- <div class="buttons m-t-24">
                         <div class="col">
                             <div class="in-border display-inline word-nowrap white-50"><span class="white-100">6000</span> USDC</div>
@@ -71,11 +57,7 @@
                 <div class="m-b-20">
                     <a href="#" class="btn btn-white btn-title size-md">Active hot tubs</a>
                 </div>
-                <div class="swiper">
-                    <div class="swiper-wrapper"></div>
-                </div>
-                <div class="swiper-button-next hide-important"></div>
-                <div class="swiper-button-prev hide-important"></div>
+                <div class="hottubs-content"></div>
             </div>
 
             <div class="active-vote m-t-48 animate-panel">

@@ -11,6 +11,7 @@ export default {
     init() {
         // static methods call
         this.setPoolsAndHottubs()
+        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setPoolsAndHottubs())
         this.setActiveVote()
 
         // observe sidenav
@@ -40,9 +41,32 @@ export default {
     },
 
     setPoolsAndHottubs() {
+        const poolsTable = document.querySelector(".pool-list .comp-dynamic-table")
+        poolsTable.innerHTML = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable sort-text">Name</th>
+                            <th class="sortable sort-text">Market Cap</th>
+                            <th class="sortable">Utilization</th>
+                            <th class="sortable">Estimated Yield</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>`
+
+        const poolsSwiper = document.querySelector(".active-hottubs .hottubs-content")
+        poolsSwiper.innerHTML = `
+            <div class="swiper">
+                <div class="swiper-wrapper"></div>
+            </div>
+            <div class="swiper-button-next hide-important"></div>
+            <div class="swiper-button-prev hide-important"></div>`
+
         getAllPoolsInfo(null).then((results) => {
             // console.log(results)
-            const poolsTable = document.querySelector(".pools .comp-dynamic-table")
             const poolsData = []
             let swiperSlideElem = ""
 
@@ -82,7 +106,7 @@ export default {
                         </div>
                     </div>`
             })
-            document.querySelector(".swiper .swiper-wrapper").innerHTML = swiperSlideElem
+            poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
 
             // init swiper
             const swiper = new Swiper(".swiper", {
@@ -97,17 +121,13 @@ export default {
             // events
             if (results.length > 1) {
                 // swiper arrows
-                const btnNext = this.globals.elem.querySelector(".swiper-button-next")
-                btnNext.classList.remove("hide-important")
-                btnNext.addEventListener("click", () => {
-                    swiper.slideNext()
-                })
+                const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
+                swiperBtnNext.classList.remove("hide-important")
+                swiperBtnNext.addEventListener("click", () => swiper.slideNext())
 
-                const btnPrev = this.globals.elem.querySelector(".swiper-button-prev")
-                btnPrev.classList.remove("hide-important")
-                btnPrev.addEventListener("click", () => {
-                    swiper.slidePrev()
-                })
+                const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
+                swiperBtnPrev.classList.remove("hide-important")
+                swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
 
                 // pools table rows to navigate swiper
                 poolsTable.querySelectorAll("tbody tr").forEach((row, index) => {
@@ -119,7 +139,7 @@ export default {
             }
 
             // Top-up and Take-out
-            document.querySelectorAll(".swiper .swiper-slide").forEach((slide) => {
+            poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
                 slide.querySelector(".js-topup").addEventListener("click", (e) => {
                     e.preventDefault()
                     this.setPopupInfo({
@@ -163,16 +183,12 @@ export default {
         const container = document.createElement("div")
         container.className = "executetrade"
         document.querySelector(".overlay-popup .op-content").appendChild(container)
-        
+
         let btnColor = "blue"
-        switch (type) {
-            case "topup":
-                btnColor = "green"
-                break
-            case "takeout":
-                btnColor = "pink"
-                break
-            default:
+        if (type === "topup") {
+            btnColor = "green"
+        } else if (type === "takeout") {
+            btnColor = "pink"
         }
 
         const button = document.createElement("a")
@@ -183,14 +199,15 @@ export default {
 
         button.addEventListener("click", async(e) => {
             e.preventDefault()
+            document.querySelector("main").setAttribute("data-execute-button", true)
             
             // logic event
             switch (type) {
                 case "topup":
-                    // 
+                    //...
                     break
                 case "takeout":
-                    // 
+                    //...
                     break
                 default:
                     // propose
