@@ -1,5 +1,5 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
-import { createList, showOverlayPopup } from "../helpers/utils"
+import { getLoader, createList, showOverlayPopup } from "../helpers/utils"
 import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
@@ -169,8 +169,11 @@ export default {
     },
 
     activeTransactions() {
-        console.log("activeTransactions()")
-        const transactionsTable = document.querySelector(".transactions .comp-dynamic-table")
+        // console.log("activeTransactions()")
+        const transactions = document.querySelector(".transactions")
+        getLoader(transactions)
+
+        const transactionsTable = transactions.querySelector(".comp-dynamic-table")
         transactionsTable.innerHTML = `
             <div class="table-container">
                 <table>
@@ -192,6 +195,8 @@ export default {
             </div>`
 
         getActiveTransactions(null).then((results) => {
+            getLoader(transactions, false)
+
             const dataRows = []
             results.forEach((data) => {
                 dataRows.push([

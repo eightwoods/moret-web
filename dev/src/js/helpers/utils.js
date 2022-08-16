@@ -55,6 +55,11 @@ export const getUrlVars = () => new URLSearchParams(window.location.search)
 
 export const getUrlParam = (param) => getUrlVars().get(param)
 
+export const getLoader = (elParent, show = true) => {
+    const loader = elParent.querySelector(".loader")
+    show ? loader.classList.remove("hide") : loader.classList.add("hide")
+}
+
 export const getImageUrl = (filename) => new URL(`/src/img/${filename}`, import.meta.url).href
 
 export const getJsonUrl = (filename) => location.hostname === "localhost" ? `/src/json/${filename}` : `../json/${filename}`

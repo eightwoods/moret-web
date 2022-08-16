@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { getAllPoolsInfo, quoteInvestInPool } from "../helpers/web3"
-import { minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -41,7 +41,12 @@ export default {
     },
 
     setPoolsAndHottubs() {
-        const poolsTable = document.querySelector(".pool-list .comp-dynamic-table")
+        const poolList = document.querySelector(".pool-list")
+        const hotTubs = document.querySelector(".active-hottubs")
+        getLoader(poolList)
+        getLoader(hotTubs)
+        
+        const poolsTable = poolList.querySelector(".comp-dynamic-table")
         poolsTable.innerHTML = `
             <div class="table-container">
                 <table>
@@ -57,7 +62,7 @@ export default {
                 </table>
             </div>`
 
-        const poolsSwiper = document.querySelector(".active-hottubs .hottubs-content")
+        const poolsSwiper = hotTubs.querySelector(".hottubs-content")
         poolsSwiper.innerHTML = `
             <div class="swiper">
                 <div class="swiper-wrapper"></div>
@@ -67,6 +72,9 @@ export default {
 
         getAllPoolsInfo(null).then((results) => {
             // console.log(results)
+            getLoader(poolList, false)
+            getLoader(hotTubs, false)
+
             const poolsData = []
             let swiperSlideElem = ""
 
