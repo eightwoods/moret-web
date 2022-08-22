@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { getAllPoolsInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
-import { minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -323,26 +323,19 @@ export default {
 
     setActiveVote() {
         const activeVote = document.querySelector(".active-vote")
-        const initialCapital = activeVote.querySelector("input[name='usdc-amount']").value
-        const poolName = activeVote.querySelector("input[name='pool-name']").value
-        const poolSymbol = activeVote.querySelector("input[name='pool-symbol']").value
-        const description = activeVote.querySelector("input[name='description']").value
-        const hedgingAddress = activeVote.querySelector("input[name='address']").value
-
-        console.log(initialCapital, poolName, poolSymbol, hedgingAddress)
 
         activeVote.querySelector(".js-propose").addEventListener("click", (e) => {
             e.preventDefault()
             const arrNames = [
-                { name: "Pool Name:", span: poolName },
-                { name: "Pool Symbol:", span: poolSymbol },
-                { name: "Description:", span: description },
-                { name: "Hedging Address:", span: hedgingAddress },
-                { name: "Initial USDC Amount:", span: initialCapital },
+                { name: "Pool Name:", span: activeVote.querySelector("input[name='pool-name']").value },
+                { name: "Pool Symbol:", span: activeVote.querySelector("input[name='pool-symbol']").value },
+                { name: "Description:", span: activeVote.querySelector("input[name='description']").value },
+                { name: "Hedging Address:", span: activeVote.querySelector("input[name='address']").value },
+                { name: "Initial USDC Amount:", span: activeVote.querySelector("input[name='usdc-amount']").value },
             ]
 
             showOverlayPopup("Propose strategies", createList(arrNames, "proposestrategies"))
-            this.executeTrade("propose", null, parseFloat(initialCapital), {"name": poolName, "symbol": poolSymbol, "description": description, "hedgingAddress": hedgingAddress})
+            this.executeTrade("propose", null, parseFloat(activeVote.querySelector("input[name='usdc-amount']").value), { "name": activeVote.querySelector("input[name='pool-name']").value, "symbol": activeVote.querySelector("input[name='pool-symbol']").value, "description": activeVote.querySelector("input[name='description']").value, "hedgingAddress": activeVote.querySelector("input[name='address']").value })
         })
     },
 }
