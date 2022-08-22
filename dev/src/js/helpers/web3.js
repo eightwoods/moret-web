@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, maxAmount, tokenAddress, expirationDays } from "./constant"
+import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
@@ -294,8 +294,8 @@ export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, pay
 export const approveMaxAmount = async (erc20Token, account, spenderAddress, spendAmount) => {
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
     const tokenDecimals = await erc20Token.methods.decimals().call()
-    const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toFixed(18))).mul(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
-    console.log(approvedAmount, spendAmount, spendAmountInWei);
+    const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+    // console.log(approvedAmount, spendAmount, spendAmountInWei);
     if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice()
         var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval })
@@ -426,7 +426,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
     var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
 
     await Promise.all(allPools.map(async (poolAddress) => {
-        const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
+        const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
         await Promise.all(options.map(async (optionId) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
@@ -735,7 +735,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
 // 14. invest in a selected pool
 // amount is the USDC amount to invest in pool
 export const quoteInvestInPool = async (poolAddress, amount) => {
-    try {
+    // try {
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
         const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
@@ -748,16 +748,45 @@ export const quoteInvestInPool = async (poolAddress, amount) => {
         const premiumToken = 'USDC'
 
         return {
-            'invest': `${Big(amount).round(5)}${premiumToken}`,
-            'holding': `${Big(quoteInvest).round(5)}${poolToken}`
+            'invest': `${Big(amount).round(5)} ${premiumToken}`,
+            'holding': `${Big(quoteInvest).round(5)} ${poolToken}`
         }
-    }
-    catch (err) {
-        return err.message
-    }
+    // }
+    // catch (err) {
+    //     return err.message
+    // }
 }
 
 // amount is the USDC amount to invest in pool
+export const approvePool = async (type, poolAddress, amount) => {
+    let log = ""
+    switch (type) {    
+        case "takeout":
+            log= await approveDivestFromPool(poolAddress, amount)
+            break
+        default:
+            log = await approveInvestInPool(amount)
+    }
+    console.log('approve', log)
+    return log
+}
+
+export const tradePool = async (type, poolAddress, amount, poolParams) => {
+    let log = ""
+    switch (type) {
+        case "topup":
+            log = await investInPool(poolAddress, amount)
+            break
+        case "takeout":
+            log = await divestFromPool(poolAddress, amount)
+            break
+        default:
+            log = await createPool(null, poolParams['name'], poolParams['symbol'], poolParams['description'], web3.utils.toChecksumAddress(poolParams['hedgingAddress']), amount)
+    }
+    console.log('trade', log)
+    return log
+}
+
 export const approveInvestInPool = async (amount) =>{
     try{
         const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
@@ -766,38 +795,50 @@ export const approveInvestInPool = async (amount) =>{
 
         var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
         var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+        // console.log(paymentToken, account, exchangeAddress, amount)
         await approveMaxAmount(paymentToken, account, exchangeAddress, amount)
         return 'success'
     }
         catch (err) {
-        return err.message
+        return 'failure' //err.message
     }
 }
 
 // poolAddress is the selected pool contract address
 // amount is the USDC amount to invest in pool
 export const investInPool = async (poolAddress, amount) => {
-    try{
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        
-        var gasPriceCurrent = await web3.eth.getGasPrice();
-        var gasEstimated = await exchangeContract.methods.addCapital(poolAddress, amount).estimateGas({ from: account, gasPrice: gasPriceCurrent });
-        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
-        var nonceNew = await web3.eth.getTransactionCount(account);
-        await exchangeContract.methods.addCapital(poolAddress, amount).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
-            console.log(`https://polygonscan.com/tx/${hash}`)
-            return `https://polygonscan.com/tx/${hash}`
-        })
-    }
-    catch(err){
-        return err.message
-    }
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const fundingAddress = await moretContract.methods.funding().call()
+    const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+
+    const tokenDecimals = await paymentToken.methods.decimals().call()
+    const amountInDecimals = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await exchangeContract.methods.addCapital(poolAddress, amountInDecimals).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    console.log('add capital', poolAddress, amountInDecimals)
+    let approveTradeLink = null
+    await exchangeContract.methods.addCapital(poolAddress, amountInDecimals).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
 }
 
 // 15. divest from a selected pool
 // amount is the USDC amount to invest in pool
 export const quoteDivestFromPool = async (poolAddress, amount) => {
-    try {
+    // try {
         const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
         const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
@@ -813,13 +854,13 @@ export const quoteDivestFromPool = async (poolAddress, amount) => {
         const premiumToken = 'USDC'
 
         return {
-            'divest': `${Big(amount).round(5)}${premiumToken}`,
-            'holding': `${Big(quoteDivest).round(5)}${poolToken}`
+            'divest': `${Big(amount).round(5)} ${premiumToken}`,
+            'holding': `${Big(quoteDivest).round(5)} ${poolToken}`
         }
-    }
-    catch (err) {
-        return err.message
-    }
+    // }
+    // catch (err) {
+    //     return err.message
+    // }
 }
 
 // amount is the usdc amount to invest in pool
@@ -842,36 +883,107 @@ export const approveDivestFromPool = async (poolAddress, amount) => {
         return 'success'
     }
     catch(err){
-        return err.message
+        return 'failure' //err.message
     }
 }
 
 // poolAddress is the selected pool contract address
 // amount is the USDC amount to invest in pool
 export const divestFromPool = async (poolAddress, amount) => {
-    try{
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
-        const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
-        const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
-        const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
-        if (netCapitalFloat<= 0){
-            throw 'Net capital to withdraw is zero.'
-        }
-        const poolAmount = amount / netCapitalFloat;
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    const vaultAddress = await exchangeContract.methods.vault().call()
+    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+    const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
+    if (netCapitalFloat<= 0){
+        throw 'Net capital to withdraw is zero.'
+    }
+    const poolAmount = amount / netCapitalFloat;
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
-        var gasPriceCurrent = await web3.eth.getGasPrice();
-        var gasEstimated = await exchangeContract.methods.withdrawCapital(poolAddress, poolAmount).estimateGas({ from: account, gasPrice: gasPriceCurrent });
-        gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
-        var nonceNew = await web3.eth.getTransactionCount(account);
-        await exchangeContract.methods.withdrawCapital(poolAddress, poolAmount).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
-            console.log(`https://polygonscan.com/tx/${hash}`)
-            return `https://polygonscan.com/tx/${hash}`
-        })
-    }
-    catch (err) {
-        return err.message
-    }
+    const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), poolAddress)
+    const tokenDecimals = await paymentToken.methods.decimals().call()
+    const amountInDecimals = web3.utils.toBN(web3.utils.toWei(poolAmount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await exchangeContract.methods.withdrawCapital(poolAddress, amountInDecimals).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    console.log('withdraw capital', poolAddress, amountInDecimals)
+    let approveTradeLink = null
+    await exchangeContract.methods.withdrawCapital(poolAddress, amountInDecimals).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
+}
+
+// 16. add new pools
+export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketMakerDescription, botAddress, initialCapital) => {
+
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    const marketFactoryContract = await getContract(web3, getJsonUrl("MarketMakerFactory.json"), marketMakerFactoryAddress)
+    const poolFactoryContract = await getContract(web3, getJsonUrl("PoolFactory.json"), poolFactoryAddress)
+    const poolGovFactoryContract = await getContract(web3, getJsonUrl("PoolGovernorFactory.json"), poolGovFactoryAddress)
+    
+    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const brokerAddress = await moretContract.methods.broker().call()
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    
+    let factoryCount = await marketFactoryContract.methods.count().call()
+    let salt = web3.utils.keccak256(factoryCount.toString())
+
+    var gasPriceCurrent = await web3.eth.getGasPrice()
+    const gasDefault = 1e7
+    var nonceNew = await web3.eth.getTransactionCount(account)
+    const description = web3.utils.padLeft(web3.utils.asciiToHex(marketMakerDescription), 32)
+    console.log(salt, web3.utils.toChecksumAddress(botAddress), objTokenAddr, description)
+    await marketFactoryContract.methods.deploy(salt, web3.utils.toChecksumAddress(botAddress), objTokenAddr, description).send({ from: account, gas: gasDefault, gasPrice: gasPriceCurrent, nonce: nonceNew })
+    let marketAddress = await marketFactoryContract.methods.computeAddress(salt, web3.utils.toChecksumAddress(botAddress), objTokenAddr, description).call()
+    let marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
+    console.log('new market contract', marketAddress)
+    
+    gasPriceCurrent = await web3.eth.getGasPrice()
+    nonceNew = await web3.eth.getTransactionCount(account)
+    await poolFactoryContract.methods.deploy(salt, poolName, poolSymbol, marketAddress, brokerAddress).send({ from: account, gas: gasDefault, gasPrice: gasPriceCurrent, nonce: nonceNew })
+    let poolAddress = await poolFactoryContract.methods.computeAddress(salt, poolName, poolSymbol, marketAddress).call()
+    let poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+    console.log('new pool contract', poolAddress)
+    
+    gasPriceCurrent = await web3.eth.getGasPrice()
+    nonceNew = await web3.eth.getTransactionCount(account)
+    await poolGovFactoryContract.methods.deploy(salt, poolAddress).send({ from: account, gas: gasDefault, gasPrice: gasPriceCurrent, nonce: nonceNew })
+    // let poolGovBytecode = web3.utils.soliditySha3(Govern.bytecode, web3.eth.abi.encodeParameters(['address'], [poolAddress2]));
+    // let poolGovAddress = '0x' + web3.utils.soliditySha3('0xff', poolGovFactoryInstance.address, salt2, poolGovBytecode).substr(26);
+    // let poolGovInstance = await Govern.at(poolGovAddress);
+    console.log('new pool gov contract')
+    
+    const fundingAddress = await marketContract.methods.funding().call()
+    const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+    const fundingDecimals = await fundingContract.methods.decimals().call();
+    var initialCapitalERC20 = initialCapital * (10 ** (Number(fundingDecimals)));
+    initialCapitalERC20 = web3.utils.toBN(initialCapitalERC20.toString());
+    gasPriceCurrent = await web3.eth.getGasPrice()
+    nonceNew = await web3.eth.getTransactionCount(account)
+    let approveTradeLink = null
+
+    await exchangeContract.methods.addCapital(poolAddress, initialCapitalERC20).send({ from: account, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
 }
 
 // 17. governance functions

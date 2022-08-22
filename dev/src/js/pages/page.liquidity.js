@@ -1,6 +1,6 @@
 import Swiper from "swiper"
-import { getAllPoolsInfo, quoteInvestInPool } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import { getAllPoolsInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
+import { minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -174,20 +174,34 @@ export default {
     },
 
     setPopupInfo(objVal) {
-        quoteInvestInPool(objVal.poolAddress, objVal.poolAmount).then((results) => {
-            const arrNames = [
-                {name: "Name of liquidity pool:", span: objVal.poolName},
-                {name: "Address of liquidity pool:", span: minimizeAddress(objVal.poolAddress)},
-                {name: "Top up amount:", span: results.invest},
-                {name: "Liquidity pool tokens:", span: results.holding},
-            ]
+        if (objVal.type === "topup") {
+            quoteInvestInPool(objVal.poolAddress, objVal.poolAmount).then((results) => {
+                const arrNames = [
+                    {name: "Name of liquidity pool:", span: objVal.poolName},
+                    {name: "Address of liquidity pool:", span: minimizeAddress(objVal.poolAddress)},
+                    {name: "Top up:", span: results.invest},
+                    {name: "Liquidity pool tokens:", span: results.holding},
+                ]
 
-            showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-            this.executeTrade(objVal.type)
-        })
+                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
+                this.executeTrade(objVal.type, objVal.poolAddress, parseFloat(objVal.poolAmount), null)
+            })
+        } else if (objVal.type === "takeout"){
+            quoteDivestFromPool(objVal.poolAddress, objVal.poolAmount).then((results) => {
+                const arrNames = [
+                    { name: "Name of liquidity pool:", span: objVal.poolName },
+                    { name: "Address of liquidity pool:", span: minimizeAddress(objVal.poolAddress) },
+                    { name: "Take out:", span: results.divest },
+                    { name: "Liquidity pool tokens:", span: results.holding },
+                ]
+
+                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
+                this.executeTrade(objVal.type, objVal.poolAddress, parseFloat(objVal.poolAmount), null)
+            })
+        }
     },
 
-    executeTrade(type) {
+    executeTrade(type, poolAddress, amount, poolParams) {
         const container = document.createElement("div")
         container.className = "executetrade"
         document.querySelector(".overlay-popup .op-content").appendChild(container)
@@ -207,36 +221,128 @@ export default {
 
         button.addEventListener("click", async(e) => {
             e.preventDefault()
-            document.querySelector("main").setAttribute("data-execute-button", true)
-            
-            // logic event
-            switch (type) {
-                case "topup":
-                    //...
-                    break
-                case "takeout":
-                    //...
-                    break
-                default:
-                    // propose
+            // document.querySelector("main").setAttribute("data-execute-button", true)
+            button.remove()
+
+            const awaitApproval = document.createElement("div")
+            awaitApproval.className = "await-approval"
+            awaitApproval.textContent = "Awaiting for allowance approval"
+            const awaitApprovalTimer = document.createElement("div")
+            awaitApprovalTimer.className = "await-approval-timer"
+            awaitApprovalTimer.textContent = "00:00"
+            awaitApproval.appendChild(awaitApprovalTimer)
+            container.appendChild(awaitApproval)
+
+            const awaitTrade = document.createElement("div")
+            awaitTrade.className = "await-trade"
+            awaitTrade.textContent = "Awaiting for transaction"
+            const awaitTradeTimer = document.createElement("div")
+            awaitTradeTimer.className = "await-trade-timer"
+            awaitTradeTimer.textContent = "00:00"
+            awaitTrade.appendChild(awaitTradeTimer)
+            container.appendChild(awaitTrade)
+
+            // approve option spending
+            this.executeTradeTimer(awaitApprovalTimer, 120)
+            const warningMessage = "Warning: Transaction has failed."
+            const approveAllowance = await approvePool(type, poolAddress, amount)
+            console.log('approve finished', approveAllowance)
+            if (approveAllowance === "failure") {
+                this.executeTradeFailure(container, warningMessage)
+            } else {
+                awaitApproval.classList.add("await-active")
+                awaitApproval.textContent = "Allowance approved."
+                awaitApprovalTimer.remove()
+                this.clearTradeTimer()
+
+                // execute option trade
+                setTimeout(async () => {
+                    this.executeTradeTimer(awaitTradeTimer, type==="propose"? 300: 120)
+                    console.log('prior to trade')
+                    const approveTrade = await tradePool(type, poolAddress, amount, poolParams)
+                    console.log('trade finished', approveTrade)
+                    if (approveTrade === "") {
+                        this.executeTradeFailure(container, warningMessage)
+                    } else {
+                        awaitTrade.classList.add("await-active")
+                        awaitTrade.textContent = "Transaction mined."
+                        awaitTradeTimer.remove()
+                        this.clearTradeTimer()
+
+                        // display approve trade link
+                        const approveTradeLinkWrapper = document.createElement("div")
+                        approveTradeLinkWrapper.className = "approve-trade-link"
+                        const approveTradeLink = document.createElement("a")
+                        approveTradeLink.setAttribute("href", approveTrade)
+                        approveTradeLink.setAttribute("target", "_blank")
+                        approveTradeLink.className = "link-arrow"
+                        approveTradeLink.textContent = "View on Polygonscan"
+                        approveTradeLinkWrapper.appendChild(approveTradeLink)
+                        container.appendChild(approveTradeLinkWrapper)
+                    }
+                }, 500)
             }
         }, false)
     },
 
+    executeTradeFailure(container, failureTxt) {
+        const awaitFailure = document.createElement("div")
+        awaitFailure.className = "await-failure"
+        const warningIcon = document.createElement("div")
+        warningIcon.className = "warning-icon"
+        const warningText = document.createElement("div")
+        warningText.className = "warning-text"
+        warningText.textContent = failureTxt
+        awaitFailure.appendChild(warningIcon)
+        awaitFailure.appendChild(warningText)
+        container.appendChild(awaitFailure)
+    },
+
+    executeTradeTimer(elemTimer, maxTimeOut) {
+        // console.log("executeTradeTimer()")
+        const padTime = (val) => val > 9 ? val : `0${val}`
+        let totalSeconds = 0
+        this.globals.execIntervalId = setInterval(() => {
+            totalSeconds++
+            if (totalSeconds > maxTimeOut) {
+                // more than 2 mins, create warning
+                this.executeTradeFailure(document.querySelector(".overlay-popup .executetrade"), "Warning: Transaction has taking longer than normal to be mined. You can close the window and try to trade again.")
+                this.clearTradeTimer()
+            } else {
+                elemTimer.textContent = `${padTime(parseInt(totalSeconds / 60))}:${padTime(totalSeconds % 60)}`
+            }
+        }, 1000)
+    },
+
+    clearTradeTimer() {
+        // clear intervals
+        clearInterval(this.globals.execIntervalId)
+        this.globals.execIntervalId = null
+        console.log("clearTradeTimer()")
+    },
+
     setActiveVote() {
         const activeVote = document.querySelector(".active-vote")
+        const initialCapital = activeVote.querySelector("input[name='usdc-amount']").value
+        const poolName = activeVote.querySelector("input[name='pool-name']").value
+        const poolSymbol = activeVote.querySelector("input[name='pool-symbol']").value
+        const description = activeVote.querySelector("input[name='description']").value
+        const hedgingAddress = activeVote.querySelector("input[name='address']").value
+
+        console.log(initialCapital, poolName, poolSymbol, hedgingAddress)
 
         activeVote.querySelector(".js-propose").addEventListener("click", (e) => {
             e.preventDefault()
             const arrNames = [
-                {name: "Description:", span: activeVote.querySelector("input[name='description']").value},
-                {name: "GitHub:", span: activeVote.querySelector("input[name='github']").value},
-                {name: "Address:", span: activeVote.querySelector("input[name='address']").value},
-                {name: "Amount:", span: activeVote.querySelector("input[name='usdc-amount']").value},
+                { name: "Pool Name:", span: poolName },
+                { name: "Pool Symbol:", span: poolSymbol },
+                { name: "Description:", span: description },
+                { name: "Hedging Address:", span: hedgingAddress },
+                { name: "Initial USDC Amount:", span: initialCapital },
             ]
 
             showOverlayPopup("Propose strategies", createList(arrNames, "proposestrategies"))
-            this.executeTrade("propose")
+            this.executeTrade("propose", null, parseFloat(initialCapital), {"name": poolName, "symbol": poolSymbol, "description": description, "hedgingAddress": hedgingAddress})
         })
     },
 }
