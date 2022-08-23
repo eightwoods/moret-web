@@ -126,7 +126,7 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 // expiry is in number of days
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
 export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
-    try {
+    // try {
         if (strike<=0){
             throw 'Strike not set correctly.'
         }
@@ -146,22 +146,27 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
 
         for(let i =0;i< allPools.length; i++){
             const poolAddress = allPools[i]
-            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, web3.utils.toWei(strike.toString(),'ether'), web3.utils.toWei(amount.toString(),'ether'), isCall? 0: 1, isBuy? 0: 1, false).call()
-            const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), isCall ? 0 : 1, isBuy ? 0 : 1, false)
+            console.log(poolAddress, quotedPrice[0])
 
-            if (parseInt(bestPool, 16)==0){
-                premium = quotedPremium
-                collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-                bestPool = poolAddress
-            }
-            else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
-                premium = quotedPremium
-                collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-                bestPool = poolAddress
+            if(quotedPrice[0] != -1){
+                const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+                console.log(poolAddress, quotedPremium)
+
+                if (parseInt(bestPool, 16)==0){
+                    premium = quotedPremium
+                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                    price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                    vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                    bestPool = poolAddress
+                }
+                else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
+                    premium = quotedPremium
+                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                    price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                    vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                    bestPool = poolAddress
+                }
             }
         }
 
@@ -202,14 +207,25 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
                 "error": ''
             }
         }
-    } catch(err) {
-        return {
-            "volatility": "-",
-            "premium": "-",
-            "collateral": "-",
-            "error": err.message
-        }
-    }    
+    // } catch(err) {
+    //     return {
+    //         "volatility": "-",
+    //         "premium": "-",
+    //         "collateral": "-",
+    //         "error": err.message
+    //     }
+    // }    
+}
+
+export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, amount, isCall, isBuy, isVol) => {
+    try{
+        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, amount, isCall, isBuy, isVol).call()
+        // console.log(poolAddress, quotedPrice)
+        return quotedPrice
+    } catch(err){
+        return [-1]
+    }
+    
 }
 
 export const getAllPools = async (tokenAddr = null) => {
@@ -484,7 +500,7 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         const estimatedOptionAmount = amount / parseFloat(web3.utils.fromWei(oracleVol)) / parseFloat(web3.utils.fromWei(oraclePrice)) / 0.4
         // console.log(oracleVol, oraclePrice, estimatedOptionAmount, amount)
         const allPools = await getVolTradingPools(objTokenAddr)
-        // console.log(allPools)
+        console.log(allPools)
 
         var volAmount, notional
         var vol = 0
@@ -503,25 +519,27 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
 
         for (let i = 0; i < allPools.length; i++) {
             const poolAddress = allPools[i]
-            const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true).call()
-            const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
-            const quotedVolatility = parseFloat(web3.utils.fromWei(quotedPrice[3]))
-            const optionAmount = (isBuy? quotedPremium: (quotedPremium / quotedVolatility)) / amount * estimatedOptionAmount
-            const forAmount = amount / quotedVolatility
+            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true)
 
-            if (parseInt(bestPool, 16) == 0) {
-                volAmount = forAmount
-                bestPool = poolAddress
-                vol = quotedVolatility
-                notional = optionAmount
-            }
-            else if (volAmount < forAmount) {
-                volAmount = forAmount
-                bestPool = poolAddress
-                vol = quotedVolatility
-                notional = optionAmount
-            }
+            if (quotedPrice[0] != -1){
+                const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+                const quotedVolatility = parseFloat(web3.utils.fromWei(quotedPrice[3]))
+                const optionAmount = (isBuy? quotedPremium: (quotedPremium / quotedVolatility)) / amount * estimatedOptionAmount
+                const forAmount = amount / quotedVolatility
 
+                if (parseInt(bestPool, 16) == 0) {
+                    volAmount = forAmount
+                    bestPool = poolAddress
+                    vol = quotedVolatility
+                    notional = optionAmount
+                }
+                else if (volAmount < forAmount) {
+                    volAmount = forAmount
+                    bestPool = poolAddress
+                    vol = quotedVolatility
+                    notional = optionAmount
+                }
+            }
             // if (isBuy) {
             //     const mintAmount = await volTokenContract.methods.getMintAmount(quotedPrice[0], quotedPrice[3]).call()
             //     const mintAmountScaled = parseFloat(web3.utils.fromWei(mintAmount)) * (tradeAmount / quotedPremium)
