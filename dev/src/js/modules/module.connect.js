@@ -120,7 +120,7 @@ export default {
             } else {
                 const arrNames = [
                     {name: "", class: "warning-icon"}, 
-                    {name: "This is not a “Polygon” blockchain!", class: "warning-text size-lgmd"}
+                    {name: "Please switch to Polygon chain.", class: "warning-text size-lgmd"}
                 ]
                 showOverlayPopup(null, createList(arrNames, "notpolygon"), true)
             }
