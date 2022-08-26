@@ -259,8 +259,8 @@ export const getCapital = async (tokenAddr = null) => {
     // console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
     // return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
     return {
-        "gross": `$${(grossCapitalTotal / 1000).toFixed(3)}K`,
-        "utilized": `$${(utilizedCapital / 1000).toFixed(3)}K`,
+        "gross": `$${(grossCapitalTotal / 1000).toFixed(1)}K`,
+        "utilized": `$${(utilizedCapital / 1000).toFixed(1)}K`,
         "perc": utilization * 100 ,
         "text": utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })
     }
@@ -500,7 +500,7 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         const estimatedOptionAmount = amount / parseFloat(web3.utils.fromWei(oracleVol)) / parseFloat(web3.utils.fromWei(oraclePrice)) / 0.4
         // console.log(oracleVol, oraclePrice, estimatedOptionAmount, amount)
         const allPools = await getVolTradingPools(objTokenAddr)
-        console.log(allPools)
+        // console.log(allPools)
 
         var volAmount, notional
         var vol = 0

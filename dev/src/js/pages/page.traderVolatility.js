@@ -17,7 +17,7 @@ export default {
     init() {
         // static methods call
         this.optAmount()
-        this.optExpiry()
+        // this.optExpiry()
         this.buttonTrade()
         this.transactionsTable()
 
@@ -36,6 +36,7 @@ export default {
                         case "sidenav-activechange":
                             componentTradingviewWidget.createGraph()
                             // remove attribute to reset option Strike
+                            this.optExpiry()
                             this.optPrice()
                             this.liquidityPool()
                             break

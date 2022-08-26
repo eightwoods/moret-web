@@ -17,7 +17,7 @@ export default {
     init() {
         // static methods call
         this.optAmount()
-        this.optExpiry()
+        // this.optExpiry()
         this.activeTransactions()
         document.querySelector(".transactions .js-refresh").addEventListener("click", () => this.activeTransactions())
         this.buttonTrade()
@@ -40,6 +40,7 @@ export default {
                             // remove attribute to reset option Strike
                             document.querySelector(".opt-strike").removeAttribute("dds-selected")
                             this.optStrike(true)
+                            this.optExpiry()
                             
                             this.optPrice()
                             this.liquidityPool()
