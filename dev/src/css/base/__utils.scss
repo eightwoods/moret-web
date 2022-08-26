@@ -1,0 +1,126 @@
+.mw-grid {
+    &-12, &-11, &-10, &-9, &-8, &-7, &-6 {
+        margin: 0 auto;
+    }
+    &-12 {
+        max-width: $mw-grid-12;
+    }
+    &-11 {
+        max-width: $mw-grid-11;
+    }
+    &-10 {
+        max-width: $mw-grid-10;
+    }
+    &-9 {
+        max-width: $mw-grid-9;
+    }
+    &-8 {
+        max-width: $mw-grid-8;
+    }
+    &-7 {
+        max-width: $mw-grid-7;
+    }
+    &-6 {
+        max-width: $mw-grid-6;
+    }
+}
+
+.header-title {
+    position: relative;
+    @include fontSize(24px);
+    padding-left: spacer();
+    &::before {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 8px;
+        height: 22px;
+        background-color: $white;
+        border-radius: 2px;
+    }
+}
+
+.btn-plus-subcopy {
+    display: flex;
+    column-gap: 20px;
+    row-gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.in-box {
+    background-color: $white-4;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.in-border {
+    padding: 8px 20px;
+    border: 2px solid $white-14;
+    border-radius: 8px;
+}
+
+.icon {
+    position: relative;
+
+    &-account, &-refresh {
+        &::before {
+            content: "";
+            @include centerElement(y);
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &-account {
+        padding-left: 50px;
+        &::before {
+            left: 20px;
+            background-image: url("/src/img/icon_account.svg");
+            background-repeat: no-repeat;
+        }
+    }
+
+    &-refresh {
+        padding-right: 50px;
+        &::before {
+            right: 20px;
+            background-image: url("/src/img/icon_refresh.svg");
+            background-repeat: no-repeat;
+        }
+    }
+}
+
+.loader {
+    position: relative;
+    width: 66px;
+    height: 66px;
+    margin: 0 auto;
+
+    &::before {
+        content: "loading";
+        @include centerElement;
+        @include fontSize(12px);
+    }
+
+    &::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 2px solid $white;
+        border-radius: 50%;
+        border-top: 2px solid $color-blue;
+        animation: loaderSpinner 2s linear infinite;
+    }
+}
+
+@keyframes loaderSpinner {
+    0% { 
+        transform: rotate(0deg); 
+    }
+    100% { 
+        transform: rotate(360deg); 
+    }
+}

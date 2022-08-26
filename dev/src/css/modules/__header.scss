@@ -1,0 +1,146 @@
+header {
+    opacity: 0;
+    z-index: 996;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: $color-bg;
+    border-bottom: 2px solid rgba($color: $black, $alpha: 0.1);
+
+    .head-contents {
+        position: relative;
+    }
+    
+    .head-main {
+        display: grid;
+        grid-auto-flow: column;
+        align-items: center;
+        .menu {
+            text-align: right;
+            @include mediaQuery($pb-lgmd) {
+                display: none;
+            }
+        }
+    }
+
+    .head-nav {
+        @include centerElement(y);
+        width: calc(100% - spacer(9));
+        margin-left: spacer(9);
+        @include mediaQuery($pb-lg, max) {
+            width: calc(100% - spacer(8));
+            margin-left: spacer(8);
+        }
+
+        @include mediaQuery($pb-lgmd, max) {
+            display: none;
+            z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: none;
+            width: 100vw;
+            height: 100vh;
+            margin-left: 0;
+            @include popupBg;
+        }
+
+        .nav-x, .nav-logo {
+            @include mediaQuery($pb-lgmd) {
+                display: none;
+            }
+        }
+        .nav-x {
+            text-align: right;
+            height: $header-height;
+            .btn-x {
+                margin-top: 22px;
+            }
+        }
+        .nav-logo {
+            text-align: center;
+        }
+
+        .nav-contents {
+            .social {
+                display: flex;
+                column-gap: 2px;
+                justify-content: center;
+            }
+
+            @include mediaQuery($pb-lgmd) {
+                display: grid;
+                grid-auto-flow: column;
+                align-items: center;
+
+                .items {
+                    display: flex;
+                    gap: 4px;
+                }
+
+                .items-right {
+                    display: flex;
+                    column-gap: 16px;
+                    align-items: center;
+                    justify-content: right;
+
+                    &-column-gap-lg {
+                        column-gap: 26px;
+                    }
+                }
+            }
+
+            @include mediaQuery($pb-lgmd, max) {
+                @include scrollElement(y);
+                position: absolute;
+                top: spacer(9);
+                left: 0;
+                width: 100vw;
+                height: calc(100vh - spacer(9));
+                
+                .items {
+                    text-align: center;
+                    padding-bottom: spacer(7);
+                    
+                    li {
+                        margin-bottom: spacer();
+                        a {
+                            position: relative;
+                            &.btn-border-active {
+                                border-color: $white-0;
+                                &::before, &::after {
+                                    content: "";
+                                    position: absolute;
+                                    top: 10px;
+                                    display: inline-block;
+                                    width: 22px;
+                                    height: 2px;
+                                    background-color: $color-blue;
+                                }
+                                &::before {
+                                    left: -22px;
+                                }
+                                &::after {
+                                    right: -22px;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .items-right {
+                    text-align: center;
+                }
+
+                .social, .notbtn-account {
+                    margin-bottom: spacer();
+                }
+
+                .button {
+                    margin-bottom: spacer(2);
+                }
+            }
+        }
+    }
+}

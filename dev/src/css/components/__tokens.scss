@@ -1,0 +1,133 @@
+// .tokens {}
+.token-btn, .token-info {
+    position: relative;
+    padding: 12px spacer();
+    background-color: $white-6;
+    border-radius: 8px;
+
+    .token-content {
+        display: inline-grid;
+        grid-auto-flow: column;
+        align-items: center;
+        column-gap: 14px;
+        vertical-align: top;
+        
+        .token-icon {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border: 2px solid $white-4;
+            border-radius: 50%;
+            img {
+                @include centerElement();
+            }
+
+            .token-total {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                width: 18px;
+                height: 18px;
+                @include fontSize(10px, 1);
+                text-align: center;
+                background-color: $white-14;
+                border-radius: 50%;
+                span {
+                    position: relative;
+                    top: 4px;
+                }
+            }
+        }
+    }
+}
+
+.token-btn {
+    z-index: 5;
+    position: relative;
+    
+    .token-arrow {
+        @include centerElement(y);
+        right: spacer();
+        &, span {
+            width: 20px;
+            height: 20px;
+        }
+
+        span {
+            display: block;
+            position: relative;
+            img {
+                @include centerElement();
+            }
+
+            transform: rotate(0);
+            transition: transform 0.5s;
+        }
+    }
+}
+
+.token-info {
+    .info-item {
+        display: inline-grid;
+        grid-auto-flow: column;
+        align-items: center;
+        column-gap: spacer();
+        vertical-align: top;
+        width: 100%;
+        color: $white-50;
+
+        margin-bottom: spacer(1.5);
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.token-info-container {
+    position: relative;
+    margin-top: 6px;
+    @include mediaQuery($pb-sm, max) {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 1s;
+    }
+
+    .token-info {
+        @include mediaQuery($pb-sm) {
+            overflow: hidden;
+            max-height: 0;
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 300px;
+            background-color: #232931;
+            opacity: 0;
+            transition: max-height 1s, top 0.5s, opacity 0.5s;
+        }
+    }
+}
+
+.token-item {
+    &.active {
+        z-index: 55;
+        .token-btn {
+            .token-arrow {
+                span {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+        .token-info-container {
+            @include mediaQuery($pb-sm, max) {
+                max-height: 1000px;
+            }
+            .token-info {
+                @include mediaQuery($pb-sm) {
+                    max-height: 1000px;
+                    top: 0;
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}

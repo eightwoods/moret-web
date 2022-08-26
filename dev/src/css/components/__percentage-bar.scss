@@ -1,0 +1,36 @@
+.percentage-bar {
+    position: relative;
+    padding-bottom: 6px;
+
+    .pb-main {
+        display: flex;
+        align-items: center;
+
+        .pb-progress {
+            position: relative;
+            width: calc(100% - 24px);
+            margin: 0 12px;
+            height: 6px;
+            background-color: $white-14;
+            border-radius: 3px;
+
+            .pb-progressbar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0%;
+                height: 100%;
+                background-color: $white;
+                border-radius: 3px;
+            }
+        }
+    }
+    
+    .pb-text {
+        @include centerElement(x);
+        top: 24px;
+        background-color: #353A42;
+        border-radius: 6px;
+        padding: 4px 12px;
+    }
+}

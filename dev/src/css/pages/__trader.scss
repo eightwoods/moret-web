@@ -1,0 +1,79 @@
+.trader, 
+.trader-volatility {
+    
+    .newopt-statistic {
+        display: grid;
+        gap: spacer();
+        @include mediaQuery($pb-xl) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .newopt {
+            .options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+
+                .opt-amount {
+                    input {
+                        width: 66px;
+                        text-align: center;
+                        background-color: $white-8;
+                    }
+                }
+            }
+
+            .opt-price {
+                @include mediaQuery($pb-xs) {
+                    display: flex;
+                    column-gap: 12px;
+                    align-items: center;
+                }
+
+                .info-col {
+                    &:first-child {
+                        .btn {
+                            text-align: center;
+                            width: 100%;
+                        }
+                        margin-bottom: 12px;
+                        @include mediaQuery($pb-xs) {
+                            .btn {
+                                width: auto;
+                            }
+                            margin-bottom: 0;
+                        }
+                    }
+
+                    &:last-child {
+                        @include mediaQuery($pb-xs) {
+                            width: 100%;
+                        }
+                    }
+                }
+
+                ul {
+                    display: flex;
+                    flex-wrap: wrap;
+                    column-gap: 12px;
+                    @include mediaQuery($pb-xs) {
+                        justify-content: flex-end;
+                    }
+
+                    li {
+                        white-space: nowrap;
+                    }
+                }
+            }
+        }
+
+        .statistic {
+            .tradingview-widget-wrapper {
+                height: 320px;
+                @include mediaQuery($pb-xl) {
+                    height: calc(100% - 60px);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,18 @@
+$fonts: (
+    "/src/fonts/Poppins-Regular.otf" 400 normal,
+    "/src/fonts/Poppins-Italic.otf" 400 italic,
+    "/src/fonts/Poppins-Medium.otf" 500 normal,
+    "/src/fonts/Poppins-MediumItalic.otf" 500 italic,
+    "/src/fonts/Poppins-Bold.otf" 700 normal,
+    "/src/fonts/Poppins-BoldItalic.otf" 700 italic
+);
+
+@each $fontSrc, $fontWeight, $fontStyle in $fonts {
+    @font-face {
+        font-family: "Poppins", sans-serif;
+        font-weight: #{$fontWeight};
+        font-style: #{$fontStyle};
+        font-display: swap;
+        src: url("#{$fontSrc}") format("otf");
+    }
+}

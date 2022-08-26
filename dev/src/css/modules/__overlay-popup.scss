@@ -1,0 +1,146 @@
+.overlay-popup {
+    z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100vw;
+    height: 100vh;
+    @include popupBg;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @media (max-height: 420px) {
+        display: block;
+        justify-content: initial;
+        align-items: initial;
+        @include scrollElement(y);
+    }
+    
+
+    .op-box {
+        position: relative;
+        width: 420px;
+        background-color: #151B24;
+        border: 2px solid $white-14;
+        border-radius: 10px;
+        padding: spacer();
+        margin: spacer();
+        @media (max-height: 420px) {
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .op-close {
+            z-index: 10;
+            position: absolute;
+            top: spacer();
+            right: 8px;
+            width: 38px;
+            height: 38px;
+            background-image: url("/src/img/btn_close.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    }
+
+    .op-content {
+        .connectwallets {
+            li {
+                cursor: pointer;
+                background-color: $white-2;
+                border-radius: 8px;
+                padding: spacer();
+                padding-right: spacer(2.5);
+                margin-bottom: 8px;
+                background-repeat: no-repeat;
+                background-position: right 18px center;
+
+                &.metamask {
+                    background-image: url("/src/img/connect_metamask.svg");
+                }
+                
+                &.walletconnect {
+                    pointer-events: none;
+                    background-image: url("/src/img/connect_walletconnect.svg");
+                }
+                
+                &.coinbase {
+                    pointer-events: none;
+                    background-image: url("/src/img/connect_coinbase.svg");
+                }
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+
+        .notpolygon {
+            @include popupWarning;
+        }
+
+        .tradeoverview, .liquiditypool, .proposestrategies {
+            li {
+                color: $white-50;
+                margin-bottom: 10px;
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                span {
+                    color: $white;
+                    margin-left: 8px;
+                    word-wrap: break-word;
+                }
+            }
+        }
+
+        .executetrade {
+            margin-top: spacer(2);
+
+            .await-approval, .await-trade {
+                position: relative;
+                padding-left: 28px;
+                color: $white-50;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 3px;
+                    left: 0;
+                    width: 16px;
+                    height: 16px;
+                    background-color: $white-14;
+                    border-radius: 50%;
+                }
+
+                &.await-active {
+                    color: $color-blue;
+                    &::before {
+                        background-image: url("/src/img/icon_tick.png");
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        background-color: $color-blue;
+                    }
+                }
+            }
+
+            .await-approval {
+                margin-bottom: spacer(0.5);
+            }
+
+            .approve-trade-link {
+                margin-top: spacer(1.5);
+            }
+
+            .await-failure {
+                @include popupWarning;
+                margin-top: spacer(1.5);
+                padding: spacer();
+                background-color: $white-4;
+                border-radius: 12px;
+            }
+        }
+    }
+}

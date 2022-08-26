@@ -1,0 +1,155 @@
+.comp-tables, 
+.comp-dynamic-table {
+    position: relative;
+
+    .table-container {
+        overflow: hidden;
+        position: relative;
+
+        table {
+            width: 100%;
+
+            th, td {
+                text-align: center;
+                padding: 15px 30px;
+            }
+
+            thead {
+                position: relative;
+            }
+
+            th {
+                background-color: #272D35;
+                &:first-child {
+                    border-top-left-radius: 8px;
+                }
+                &:last-child {
+                    border-top-right-radius: 8px;
+                }
+
+                &.sortable {
+                    cursor: pointer;
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        width: 10px;
+                        height: 100%;
+                        opacity: 0.2;
+                        margin-left: 10px;
+                        background-image: url("/src/img/arrow_vertical.svg");
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                }
+
+                &.sort-asc {
+                    &::after {
+                        opacity: 1;
+                    }
+                }
+
+                &.sort-desc {
+                    &::after {
+                        opacity: 1;
+                        transform: rotate(180deg);
+                    }
+                }
+            }
+
+            tbody {
+                tr {
+                    &:hover {
+                        background-color: $white-2;
+                    }
+                    td {
+                        color: $white-50;
+                        white-space: nowrap;
+                    }
+                }
+            }
+        }
+    }
+
+    .table-arrowleft, .table-arrowright {
+        display: none;
+    }
+    
+    &[data-has-scroll="true"] {
+        .table-container {
+            @include scrollElement(x);
+        }
+
+        body.mobile &, body.tablet & {
+            &::before {
+                content: "\2190  SWIPE \2192";
+                @include fontSize(10px);
+                position: absolute;
+                top: -20px;
+                right: 0;
+            }
+        }
+
+        .table-arrowleft, .table-arrowright {
+            display: block;
+            cursor: pointer;
+            position: absolute;
+            top: -40px;
+            width: 28px;
+            height: 28px;
+            background-color: $white-8;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .table-arrowleft {
+            right: 40px;
+            background-image: url("/src/img/arrow_horizontal.svg");
+            transform: rotate(180deg);
+        }
+
+        .table-arrowright {
+            right: 0;
+            background-image: url("/src/img/arrow_horizontal.svg");
+        }
+    }
+
+    &[data-limitview="button"] {
+        .table-viewmore {
+            position: absolute;
+            @include centerElement(x);
+            bottom: -28px;
+        }
+    }
+
+    &[data-limitview="scroll"] {
+        &[data-max-rows] {
+            .table-container {
+                @include scrollElement();
+                height: 54 * 6px;
+                margin-bottom: 20px;
+
+                th {
+                    position: sticky;
+                    top: 0;
+                }
+            }
+
+            &::after {
+                content: "SCROLL \a0\2191\2193";
+                @include fontSize(10px);
+                position: absolute;
+                bottom: -20px;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    }
+}
+
+.comp-dynamic-table {
+    .table-container {
+        display: none;
+    }
+}

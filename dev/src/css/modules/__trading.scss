@@ -1,0 +1,119 @@
+main.trading {
+    section {
+        $sideNavWidth: 320px;
+
+        @include mediaQuery($pb-lg) {
+            display: flex;
+        }
+        padding-bottom: spacer(5);
+
+        .sidenav {
+            @include mediaQuery($pb-lg) {
+                width: $sideNavWidth;
+                // height: 100vh;
+                margin-bottom: 0;
+                border-radius: 0 10px 10px 0;
+            }
+            background-color: $white-4;
+            border-radius: 10px;
+            margin-bottom: spacer(3);
+            padding: 12px;
+
+            .token-info {
+                @include mediaQuery($pb-xs, max) {
+                    padding-right: 14px;
+                    padding-left: 14px;
+                }
+            }
+
+            .token-main {
+                position: relative;
+
+                .token-info {
+                    @include mediaQuery($pb-lg, max) {
+                        padding-right: 45px;
+                    }
+                    
+                    .info-item {
+                        color: $white;
+                    }
+                }
+
+                .token-arrow {
+                    display: none;
+                    @include mediaQuery($pb-lg, max) {
+                        display: block;
+                        cursor: pointer;
+                        position: absolute;
+                        top: 12px;
+                        right: 5px;
+                        width: 40px;
+                        height: 40px;
+                        background-image: url("/src/img/arrow_vertical.svg");
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        transform: rotate(0);
+                        transition: transform 0.5s;
+                    }
+                }
+            }
+
+            .token-contents {
+                @include mediaQuery($pb-lg, max) {
+                    overflow: hidden;
+                    max-height: 0;
+                    transition: max-height 1s;
+                }
+
+                .token-list {
+                    position: relative;
+                    margin-top: 12px;
+                    margin-bottom: spacer();
+
+                    .token-info {
+                        overflow: hidden;
+                        background-color: $white-2;
+
+                        .info-item {
+                            cursor: pointer;
+                            &:last-child {
+                                // margin-bottom: spacer(0.5);
+                            }
+                        }
+                    }
+
+                    .token-viewmore {
+                        position: absolute;
+                        @include centerElement(x);
+                        bottom: -16px;
+                    }
+                }
+            }
+
+            &-mobile-active {
+                @include mediaQuery($pb-lg, max) {
+                    .token-main {
+                        .token-arrow {
+                            transform: rotate(180deg);
+                        }
+                    }
+
+                    .token-contents {
+                        max-height: 1000px;
+                    }
+                }
+            }
+        }
+
+        .content {
+            @include mediaQuery($pb-lg) {
+                width: calc(100% - #{$sideNavWidth});
+                padding-left: spacer();
+            }
+        }
+    }
+
+    .animate-panel {
+        opacity: 0;
+    }
+}

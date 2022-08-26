@@ -1,0 +1,147 @@
+.toggle-switches {
+    position: relative;
+    display: grid;
+    // grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    justify-items: center;
+    cursor: pointer;
+
+    &::before, &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background-color: $white-4;
+        border-radius: 8px;
+    }
+    &::before {
+        width: 100%;
+    }
+    &::after {
+        width: 50%;
+        transition: left 0.5s, background-color 0.5s;
+    }
+    
+    .ts-item {
+        z-index: 1;
+        position: relative;
+        padding: 10px 20px;
+        transition: color 0.5s;
+    }
+
+    &.ts-active1 {
+        &::after {
+            left: 0;
+        }
+        .ts-item:nth-child(1) {
+            color: $black;
+        }
+    }
+
+    &.ts-active2 {
+        &::after {
+            left: 50%;
+        }
+        .ts-item:nth-child(2) {
+            color: $black;
+        }
+    }
+
+    &.ts-active3 {
+        &::after {
+            left: 66.6666666%;
+        }
+        .ts-item:nth-child(3) {
+            color: $black;
+        }
+    }
+
+    &.ts-active4 {
+        &::after {
+            left: 75%;
+        }
+        .ts-item:nth-child(4) {
+            color: $black;
+        }
+    }
+
+    &.ts-bg {
+        &-white {
+            &::after {
+                background-color: $white;
+            }
+        }
+
+        &-green {
+            &::after {
+                background-color: $color-green;
+            }
+        }
+
+        &-pink {
+            &::after {
+                background-color: $color-pink;
+            }
+        }
+
+        &-grey {
+            &::after {
+                background-color: $white-14;
+            }
+
+            &.ts-active1, &.ts-active2, &.ts-active3, &.ts-active4 {
+                .ts-item {
+                    color: $white;
+                }
+            }
+        }
+    }
+
+    &[data-toggle-total="3"] {
+        &::after {
+            width: 33.3333333%;
+        }
+        &.ts-active2 {
+            &::after {
+                left: 33.3333333%;
+            }
+        }
+    }
+
+    &[data-toggle-total="4"] {
+        &::after {
+            width: 25%;
+        }
+        &.ts-active2 {
+            &::after {
+                left: 25%;
+            }
+        }
+        &.ts-active3 {
+            &::after {
+                left: 50%;
+            }
+        }
+    }
+}
+
+.toggle-switches-collab {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    &.ts-bg {
+        &-green {
+            .toggle-switches::after {
+                background-color: $color-green;
+            }
+        }
+
+        &-pink {
+            .toggle-switches::after {
+                background-color: $color-pink;
+            }
+        }
+    }
+}
