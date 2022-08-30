@@ -1,5 +1,5 @@
 import { tokenName, tokenPrice } from "../helpers/constant" 
-import { createList, showOverlayPopup, closeOverlayPopup } from "../helpers/utils"
+import { createList, showOverlayPopup, closeOverlayPopup, getLoader } from "../helpers/utils"
 import { calcIV, getVolTokenName, calcVolTokenPrice, getCapital, approveVolatilitySpending, executeVolatilityTrade, getVolatilityHoldings } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
@@ -19,7 +19,8 @@ export default {
         this.optAmount()
         // this.optExpiry()
         this.buttonTrade()
-        this.transactionsTable()
+        document.querySelector(".transactions .js-refresh").addEventListener("click", () => this.transactionsTable())
+        // this.transactionsTable()
 
         // observe sidenav
         const sidenavOptions = {
@@ -39,6 +40,7 @@ export default {
                             this.optExpiry()
                             this.optPrice()
                             this.liquidityPool()
+                            this.transactionsTable()
                             break
                         case "sidenav-refreshprice":
                             this.optPrice()
@@ -275,8 +277,28 @@ export default {
     },
 
     transactionsTable() {
+        const transactions = document.querySelector(".transactions")
+        getLoader(transactions)
+
+        const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
+        dynamicTable.innerHTML = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable sort-text">Token</th>
+                            <th class="sortable">Tenor</th>
+                            <th class="sortable">Amount</th>
+                            <th class="sortable">Implied Volatility</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>`
+
         getVolatilityHoldings(null).then((results) => {
-            const dynamicTable = document.querySelector(".transactions .comp-dynamic-table")
+            getLoader(transactions, false)
+            
             const dataRows = []
             results.forEach((data) => {
                 dataRows.push([

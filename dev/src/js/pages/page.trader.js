@@ -18,7 +18,7 @@ export default {
         // static methods call
         this.optAmount()
         // this.optExpiry()
-        this.activeTransactions()
+        // this.activeTransactions()
         document.querySelector(".transactions .js-refresh").addEventListener("click", () => this.activeTransactions())
         this.buttonTrade()
 
@@ -44,6 +44,7 @@ export default {
                             
                             this.optPrice()
                             this.liquidityPool()
+                            this.activeTransactions()
                             if (!this.globals.init) {
                                 this.optToken()
                             }

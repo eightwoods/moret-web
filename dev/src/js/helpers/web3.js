@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays } from "./constant"
+import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
@@ -233,7 +233,8 @@ export const getAllPools = async (tokenAddr = null) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
+    var allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
+    allPools = allPools.filter((el) => !excludedPools.includes(el));
     return allPools
 }
 
@@ -497,8 +498,9 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
 
         const oracleVol = await oracle.methods.queryVol(tenor).call()
         const oraclePrice = await oracle.methods.queryPrice().call()
-        const estimatedOptionAmount = amount / parseFloat(web3.utils.fromWei(oracleVol)) / parseFloat(web3.utils.fromWei(oraclePrice)) / 0.4
-        // console.log(oracleVol, oraclePrice, estimatedOptionAmount, amount)
+        // console.log(parseFloat(web3.utils.fromWei(oracleVol)), parseFloat(web3.utils.fromWei(oraclePrice)), parseFloat(amount))
+        const estimatedOptionAmount = parseFloat(amount) / parseFloat(web3.utils.fromWei(oracleVol)) / parseFloat(web3.utils.fromWei(oraclePrice)) / 0.4
+        // console.log(estimatedOptionAmount)
         const allPools = await getVolTradingPools(objTokenAddr)
         // console.log(allPools)
 
@@ -520,12 +522,13 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         for (let i = 0; i < allPools.length; i++) {
             const poolAddress = allPools[i]
             const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true)
+            // console.log(poolAddress, quotedPrice)
 
             if (quotedPrice[0] != -1){
                 const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
                 const quotedVolatility = parseFloat(web3.utils.fromWei(quotedPrice[3]))
-                const optionAmount = (isBuy? quotedPremium: (quotedPremium / quotedVolatility)) / amount * estimatedOptionAmount
-                const forAmount = amount / quotedVolatility
+                const optionAmount = (isBuy ? quotedPremium : (quotedPremium / quotedVolatility)) / parseFloat(amount) * estimatedOptionAmount
+                const forAmount = parseFloat(amount) / quotedVolatility
 
                 if (parseInt(bestPool, 16) == 0) {
                     volAmount = forAmount
@@ -590,9 +593,10 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
 
 export const getVolTradingPools = async (tokenAddress) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const brokerAddress = await moretContract.methods.broker().call()
-    const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const allPools = await brokerContract.methods.getAllPools(tokenAddress).call()
+    // const brokerAddress = await moretContract.methods.broker().call()
+    // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+    const allPools = await getAllPools(tokenAddress) // brokerContract.methods.getAllPools(tokenAddress).call()
+    // console.log('test', allPools)
     var volTradingPools = []
     for(let i = 0;i<allPools.length; i++){
         const eligible = await moretContract.methods.existVolTradingPool(allPools[i]).call()
@@ -705,6 +709,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     const allPools = await getAllPools(objTokenAddr)
+    console.log(allPools)
     // var grossCapitalTotal = 0
     // var netCapitalTotal = 0
     let poolTable = []
@@ -716,9 +721,10 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
         grossCapital = parseFloat(web3.utils.fromWei(grossCapital))
         let netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
         netCapital = parseFloat(web3.utils.fromWei(netCapital))
+        console.log(poolAddress, grossCapital, netCapital)
         const utilizedCapital = grossCapital - netCapital
         const utilization = Math.max(0, 1 - netCapital / grossCapital)
-
+        
         const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
         const name = await poolContract.methods.name().call()
         const symbol = await poolContract.methods.symbol().call()
