@@ -27,6 +27,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
+                            this.setPoolsAndHottubs()
                             break
                         case "sidenav-refreshprice":
                             break
@@ -47,6 +48,7 @@ export default {
         getLoader(hotTubs)
         
         const poolsTable = poolList.querySelector(".comp-dynamic-table")
+        poolsTable.removeAttribute("data-max-rows")
         poolsTable.innerHTML = `
             <div class="table-container">
                 <table>
@@ -221,7 +223,7 @@ export default {
 
         button.addEventListener("click", async(e) => {
             e.preventDefault()
-            // document.querySelector("main").setAttribute("data-execute-button", true)
+            document.querySelector("main").setAttribute("data-execute-button", true)
             button.remove()
 
             const awaitApproval = document.createElement("div")
@@ -286,16 +288,23 @@ export default {
     },
 
     executeTradeFailure(container, failureTxt) {
-        const awaitFailure = document.createElement("div")
-        awaitFailure.className = "await-failure"
-        const warningIcon = document.createElement("div")
-        warningIcon.className = "warning-icon"
-        const warningText = document.createElement("div")
-        warningText.className = "warning-text"
-        warningText.textContent = failureTxt
-        awaitFailure.appendChild(warningIcon)
-        awaitFailure.appendChild(warningText)
-        container.appendChild(awaitFailure)
+        if (document.querySelector(".overlay-popup")) {
+            console.log("executeTradeFailure()")
+            document.querySelector("main").setAttribute("data-execute-failure", true)
+
+            const awaitFailure = document.createElement("div")
+            awaitFailure.className = "await-failure"
+            const warningIcon = document.createElement("div")
+            warningIcon.className = "warning-icon"
+            const warningText = document.createElement("div")
+            warningText.className = "warning-text"
+            warningText.textContent = failureTxt
+            awaitFailure.appendChild(warningIcon)
+            awaitFailure.appendChild(warningText)
+            container.appendChild(awaitFailure)
+        }
+
+        this.clearTradeTimer()
     },
 
     executeTradeTimer(elemTimer, maxTimeOut) {

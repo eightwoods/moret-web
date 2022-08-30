@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.6d5733f7.svg" />
+    <link rel="icon" type="image/svg+xml" href="/assets/moreticon.1b0b21da.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Liquidity provider</title>
-  <script type="module" crossorigin src="/assets/main.712e0d05.js"></script>
+  <script type="module" crossorigin src="/assets/main.4c83d4e3.js"></script>
   <link rel="stylesheet" href="/assets/main.de18d30f.css">
 </head>
 <body>
@@ -13,12 +13,12 @@
     <div class="head-wrapper">
         <div class="head-contents p-t-40 p-b-40">
             <div class="head-main">
-                <div class="logo"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" /></a></div>
+                <div class="logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
                 <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/assets/btn_burgermenu.1006b152.svg" /></a></div>
             </div>
             <div class="head-nav menuPopup">
                 <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/assets/btn_close.be47e55d.svg" /></a></div>
-                <div class="nav-logo"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" width="118" /></a></div>
+                <div class="nav-logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" width="118" /></a></div>
                 <div class="nav-contents">
                     <ul class="items size-sm">
                         <li><a href="trader.html" class="btn-border">Trader</a></li>
@@ -58,7 +58,7 @@
 
             <div class="active-hottubs m-t-48 animate-panel">
                 <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Active hot tubs</a>
+                    <a href="#" class="btn btn-white btn-title size-md">Invest in Pools</a>
                 </div>
                 <div class="loader"></div>
                 <div class="hottubs-content"></div>
@@ -66,36 +66,42 @@
 
             <div class="active-vote m-t-48 animate-panel">
                 <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Active vote</a>
+                    <a href="#" class="btn btn-white btn-title size-md">Propose New Pool</a>
                 </div>
                 <div class="in-box">
-                    <div class="header-title m-b-24">Add new hedging strategies</div>
+                    <div class="header-title m-b-24">Add new liquidity pool with hedging strategies</div>
                     <div class="vote-content">
                         <div class="cont-col">
                             <div class="form">
                                 <div class="form-row">
                                     <div class="form-col">
                                         <fieldset>
+                                            <legend>Pool Name</legend>
+                                            <input type="text" name="pool-name" value="LiquidityPool" />
+                                        </fieldset>
+                                    </div>
+                                    <div class="form-col">
+                                        <fieldset>
+                                            <legend>Pool Symbol</legend>
+                                            <input type="text" name="pool-symbol" value="MoretLP" />
+                                        </fieldset>
+                                    </div>
+                                    <div class="form-col">
+                                        <fieldset>
                                             <legend>Description</legend>
-                                            <input type="text" name="description" value="Lorem ipsum" />
+                                            <input type="text" name="description" value="Lorem ipsum" onKeyPress="if(this.value.length==32) return false;" />
                                         </fieldset>
                                     </div>
                                     <div class="form-col">
                                         <fieldset>
-                                            <legend>Github link</legend>
-                                            <input type="text" name="github" value="github.com/WalletConnect/walletconnect-assets" onKeyPress="if(this.value.length==50) return false;" />
+                                            <legend>Hedging Address</legend>
+                                            <input type="text" name="address" value="0xfcbd4b191c23c438947354024962b88a29e95ba7" />
                                         </fieldset>
                                     </div>
                                     <div class="form-col">
                                         <fieldset>
-                                            <legend>Address</legend>
-                                            <input type="text" name="address" value="0xc4a9c1466e517efadaf228a61965a37da14d26fb" />
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Amount</legend>
-                                            <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
+                                            <legend>Initial Pool Amount</legend>
+                                            <input type="number" name="usdc-amount" value="1" />&nbsp;&nbsp;USDC
                                         </fieldset>
                                     </div>
                                 </div>
@@ -150,7 +156,7 @@
 <footer>
     <div class="row-top">
         <div class="contents">
-            <div class="logo m-b-52"><a href="/"><img src="/assets/logo.05dc1c08.svg" alt="Moret logo" /></a></div>
+            <div class="logo m-b-52"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
             <div class="links m-b-52">
                 <div class="link">
                     <div class="title size-md m-b-24">The company</div>
