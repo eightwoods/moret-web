@@ -53,6 +53,7 @@ export default {
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
+                            <th class="sortable sort-text">Symbol</th>
                             <th class="sortable sort-text">Market Cap</th>
                             <th class="sortable">Utilization</th>
                             <th class="sortable">Estimated Yield</th>
@@ -81,6 +82,7 @@ export default {
             results.forEach((data) => {
                 poolsData.push([
                     data.Name,
+                    data.Symbol,
                     data.MarketCap,
                     data.Utilization,
                     data.EstimatedYield

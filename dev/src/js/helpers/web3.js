@@ -736,7 +736,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
         const marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
         let bot = await marketContract.methods.hedgingBot().call()
         let description = await marketContract.methods.description().call()
-        let estyield = 0
+        let estyield = 2.2
 
         poolTable.push({
             "Name": name,
