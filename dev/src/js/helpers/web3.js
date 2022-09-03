@@ -622,12 +622,12 @@ export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount,
     if(isBuy){
         const fundingAddress = await moretContract.methods.funding().call()
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
-        await approveMaxAmount(paymentToken, account, exchangeAddress, volatilityCost['premium'])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, parseFloat(volatilityCost['premium']))
     }
     else{
         const volTokenAddress = web3.utils.toChecksumAddress(volatilityCost['voltoken'])
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), volTokenAddress)
-        await approveMaxAmount(paymentToken, account, exchangeAddress, volatilityCost['volpremium'])
+        await approveMaxAmount(paymentToken, account, exchangeAddress, parseFloat(volatilityCost['volpremium']))
     }
 }
 
