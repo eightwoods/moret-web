@@ -1,12 +1,12 @@
-export const moretAddress = "0xb12AA22d4b0749a72A1438C6794d2e723CE576d8"
+export const moretAddress = "0xD294BF485222f50c76591751B69d7A188499B145"
 
-export const exchangeAddress = "0x63464F921ae0DaEEc9F1ce5E63159558770D5E43"
+export const exchangeAddress = "0x117E34f9180696EE310fcF70858de3598F706d6b"
 
-export const marketMakerFactoryAddress = "0x49211F2B63368dD3D7f4dB39045A1f59f5449C1a"
+export const marketMakerFactoryAddress = "0xe76452511bd847379Af2328A15BAC45d684203Cb"
 
-export const poolFactoryAddress = "0x41D17CBf094D6138217B900887D6B171815dFCFB"
+export const poolFactoryAddress = "0x26a6d08B4CE66F7245bb7e4Fab02f4708a5d927D"
 
-export const poolGovFactoryAddress = "0xFDb491afAa6F26334914e67b8C587f48524D8259"
+export const poolGovFactoryAddress = "0x13df1f30f8EE5C8df0Df9E096e728AE86f8613F5"
 
 export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
