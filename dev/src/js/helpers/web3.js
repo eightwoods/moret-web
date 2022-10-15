@@ -277,9 +277,11 @@ export const getCapital = async (tokenAddr = null) => {
 export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const brokerAddress = await moretContract.methods.broker().call()
+    const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
     const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
     console.log(optionCost)
-    const fundingAddress = await moretContract.methods.funding().call()
+    const fundingAddress = await brokerContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
     var paymentTokenAddress = paymentMethod == 0 ? fundingAddress : objTokenAddr
@@ -614,13 +616,15 @@ export const getVolTradingPools = async (tokenAddress) => {
 export const approveVolatilitySpending = async (tokenAddr = null, isBuy, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    const brokerAddress = await moretContract.methods.broker().call()
+    const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
     const volatilityCost = await calcVolTokenPrice(objTokenAddr, null, isBuy, amount, expiry)
     // console.log(volatilityCost)
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
     if(isBuy){
-        const fundingAddress = await moretContract.methods.funding().call()
+        const fundingAddress = await brokerContract.methods.funding().call()
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
         await approveMaxAmount(paymentToken, account, exchangeAddress, parseFloat(volatilityCost['premium']))
     }
@@ -814,7 +818,10 @@ export const tradePool = async (type, poolAddress, amount, poolParams) => {
 export const approveInvestInPool = async (amount) =>{
     try{
         const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-        const fundingAddress = await moretContract.methods.funding().call()
+        const brokerAddress = await moretContract.methods.broker().call()
+        const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+
+        const fundingAddress = await brokerContract.methods.funding().call()
         const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
 
         var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
@@ -832,7 +839,9 @@ export const approveInvestInPool = async (amount) =>{
 // amount is the USDC amount to invest in pool
 export const investInPool = async (poolAddress, amount) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const fundingAddress = await moretContract.methods.funding().call()
+    const brokerAddress = await moretContract.methods.broker().call()
+    const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+    const fundingAddress = await brokerContract.methods.funding().call()
     const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
 
     const tokenDecimals = await paymentToken.methods.decimals().call()
@@ -991,7 +1000,7 @@ export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketM
     // let poolGovInstance = await Govern.at(poolGovAddress);
     console.log('new pool gov contract')
     
-    const fundingAddress = await marketContract.methods.funding().call()
+    const fundingAddress = await brokerContract.methods.funding().call()
     const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
     const fundingDecimals = await fundingContract.methods.decimals().call();
     var initialCapitalERC20 = initialCapital * (10 ** (Number(fundingDecimals)));
