@@ -10,7 +10,6 @@ export default {
 
     init() {
         // static methods call
-        this.setPoolsAndHottubs()
         document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setPoolsAndHottubs())
         this.setActiveVote()
 
@@ -27,6 +26,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
+                            this.setPoolsAndHottubs()
                             break
                         case "sidenav-refreshprice":
                             break
