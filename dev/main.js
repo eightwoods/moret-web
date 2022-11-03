@@ -8,6 +8,9 @@ const setup = {
     init() {
         // use for styling
         document.body.classList.add("js-enable", getDeviceType(), getMobileOS())
+
+        // no access - redirect user
+        this.setAccess()
         
         // set default active token
         if (!localStorage.getItem(tokenActive)) {
@@ -19,6 +22,21 @@ const setup = {
         this.getModules()
         this.getPages()
         this.setEvents()
+    },
+
+    setAccess() {
+        if (document.querySelector("main.home, main.no-access")) {
+            return false
+        }
+
+        fetch("https://get.geojs.io/v1/ip/geo.json")
+            .then(res => res.json())
+            .then((data) => {
+                console.log("Country", data)
+                if (data.country_code === "US") {
+                    window.location.href = "/no-access.html"
+                }
+            }).catch(err => console.error(err))
     },
 
     async getComponents() {
