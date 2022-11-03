@@ -1,4 +1,5 @@
 import Big from "big.js"
+import { computedStyle } from "../helpers/utils"
 import { calcMoneyness } from "../helpers/web3"
 import componentToggleSwitches from "./component.toggleSwitches"
 
@@ -117,6 +118,11 @@ export default {
 
         const listItems = dropdownSelect.querySelectorAll("li")
         listItems.forEach((item, index) => {
+            // scroll up onload
+            if (item.classList.contains("info-active")) {
+                this.scrollTopActiveItem(dropdownSelect, index, item)
+            }
+
             item.addEventListener("click", () => {
                 // reset input
                 const input = dropdownSelect.querySelector("input[name='info-amount']")
@@ -126,6 +132,10 @@ export default {
 
                 // set state
                 item.classList.add("info-active")
+
+                // scroll up onclick
+                this.scrollTopActiveItem(dropdownSelect, index, item)
+
                 // set value
                 this.valueFromListItem(dropdownSelect)
 
@@ -134,6 +144,12 @@ export default {
                 dropdownSelect.setAttribute("dds-updated", "")
             }, false)
         })
+    },
+
+    scrollTopActiveItem(dropdownSelect, index, item) {
+        const itemHeight = item.getBoundingClientRect().height
+        const itemMarginBottom = parseInt(computedStyle(item).getPropertyValue("margin-bottom"))
+        setTimeout(() => dropdownSelect.querySelector("ul").scrollTo(0, index * (itemHeight + itemMarginBottom)), 500)
     },
 
     valueFromListItem(dropdownSelect) {
