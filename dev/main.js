@@ -123,6 +123,11 @@ const setup = {
             const { default: traderVolatility } = await import("./src/js/pages/page.traderVolatility")
             traderVolatility.init()
         }
+
+        if (document.querySelector(".yieldfarm")) {
+            const { default: yieldFarm } = await import("./src/js/pages/page.yieldFarm")
+            yieldFarm.init()
+        }
     },
 
     setEvents() {
