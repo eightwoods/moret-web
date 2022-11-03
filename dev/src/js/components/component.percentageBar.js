@@ -1,3 +1,4 @@
+import Big from "big.js"
 import { gsap } from "gsap"
 
 export default {
@@ -23,19 +24,25 @@ export default {
     },
 
     progressBar(elem, value) {
-        if (value > 0) {
+        // if (value > 0) {
             const progressBar = elem.querySelector(".pb-progressbar")
             // always start at 0
-            gsap.set(progressBar, {width: 0})
-            // new width
+            // gsap.set(progressBar, {width: 0})
+
+            // bar width
             gsap.to(progressBar, {
                 width: `${value}%`,
                 ease: this.globals.easing,
-                duration: this.globals.duration
+                duration: this.globals.duration,
+                onUpdate: function() {
+                    // count percentage
+                    const progressBarWidth = Big(progressBar.style.width.replace("%", "")).round().toNumber()
+                    elem.querySelector(".pb-text-value").textContent = `${progressBarWidth}%`
+                }
             })
-
-            this.countPercent(elem, value)
-        }
+            
+            // this.countPercent(elem, value)
+        // }
     },
 
     countPercent(elem, value) {
