@@ -32,3 +32,5 @@ export const excludedPools = [
     "0x0c98c097bD18E0DCC013a0F946f1497bBcc5cdEa",
     "0xa1cE1d7046c19dff228D50B2B44656656FE1ce79"
 ]
+
+export const saverList = ['0xBb3957546a58dca06A08578d2A78886230c04181']

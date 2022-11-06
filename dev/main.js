@@ -124,9 +124,9 @@ const setup = {
             traderVolatility.init()
         }
 
-        if (document.querySelector(".yieldfarm")) {
-            const { default: yieldFarm } = await import("./src/js/pages/page.yieldFarm")
-            yieldFarm.init()
+        if (document.querySelector(".saver")) {
+            const { default: saver } = await import("./src/js/pages/page.saver")
+            saver.init()
         }
     },
 

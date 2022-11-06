@@ -1,17 +1,17 @@
 import Swiper from "swiper"
-import { getAllPoolsInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
+import { getAllSaverInfo, quoteInvestInSaver, quoteDivestFromSaver, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
     globals: {
-        elem: document.querySelector(".yieldfarm"),
+        elem: document.querySelector(".saver"),
     },
 
     init() {
         // static methods call
-        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setPoolsAndHottubs())
-        this.setActiveVote()
+        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setSavers())
+        // this.setActiveVote()
 
         // observe sidenav
         const sidenavOptions = {
@@ -20,13 +20,13 @@ export default {
             attributeFilter: ["sidenav-activechange", "sidenav-refreshprice"]
         }
         const sidenavObserver = new MutationObserver((mutations) => {
-            console.log("sidenav refreshed from Yield Farm!")
+            console.log("sidenav refreshed from Saver!")
 
             for (let mutation of mutations) {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            this.setPoolsAndHottubs()
+                            this.setSavers()
                             break
                         case "sidenav-refreshprice":
                             break
@@ -40,14 +40,14 @@ export default {
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
-    setPoolsAndHottubs() {
-        const poolList = document.querySelector(".pool-list")
+    setSavers() {
+        const saverList = document.querySelector(".saver-list")
         const hotTubs = document.querySelector(".active-hottubs")
-        getLoader(poolList)
+        getLoader(saverList)
         getLoader(hotTubs)
         
-        const poolsTable = poolList.querySelector(".comp-dynamic-table")
-        poolsTable.innerHTML = `
+        const saverTable = saverList.querySelector(".comp-dynamic-table")
+        saverTable.innerHTML = `
             <div class="table-container">
                 <table>
                     <thead>
@@ -55,8 +55,10 @@ export default {
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Symbol</th>
                             <th class="sortable sort-text">Market Cap</th>
-                            <th class="sortable">Utilization</th>
-                            <th class="sortable">Estimated Yield</th>
+                            <th class="sortable">Unit Price</th>
+                            <th class="sortable">Yield</th>
+                            <th class="sortable">Status</th>
+                            <th class="sortable">Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -71,21 +73,24 @@ export default {
             <div class="swiper-button-next hide-important"></div>
             <div class="swiper-button-prev hide-important"></div>`
 
-        getAllPoolsInfo(null).then((results) => {
+        getAllSaverInfo(null).then((results) => {
             // console.log(results)
-            getLoader(poolList, false)
+            getLoader(saverList, false)
             getLoader(hotTubs, false)
 
-            const poolsData = []
+            const saverData = []
             let swiperSlideElem = ""
+            const nowTime = Math.floor( Date.now() / 1000)
 
             results.forEach((data) => {
-                poolsData.push([
+                saverData.push([
                     data.Name,
                     data.Symbol,
                     data.MarketCap,
-                    data.Utilization,
-                    data.EstimatedYield
+                    data.UnitAsset,
+                    data.Yield,
+                    data.NextVintageTime > nowTime? "Closed": "Open",
+                    data.NextVintage
                 ])
                 
                 swiperSlideElem += `
@@ -93,12 +98,10 @@ export default {
                         <div class="in-box">
                             <ul class="info">
                                 <li class="info-name">Name: <span>${data.Name}</span></li>
-                                <li class="info-address hide">Address: <span>${data.Address}</span></li>
-                                <li>Description: <span>${data.Description}</span></li>
-                                <li>Dedicated hedging address: <span>${minimizeAddress(data.Bot)}</span></li>
-                                <li>AMM factor: <span>${data.AMMCurveFactor}</span></li>
-                                <li>Exercise fee: <span>${data.ExerciseFee}</span></li>
-                                <li>Minimum volatility price: <span>${data.MinVolPrice}</span></li>
+                                <li class="info-address">Address: <span>${data.Address}</span></li>
+                                <li>Upside: <span>${data.Upside}</span></li>
+                                <li>Protection Level: <span>${data.Downside}</span></li>
+                                <li>Protection Limit: <span>${data.Protection}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">
@@ -125,8 +128,8 @@ export default {
                 grabCursor: false,
             })
 
-            // init pools table
-            componentTables.setDynamic(poolsTable, poolsData)
+            // init savers table
+            componentTables.setDynamic(saverTable, saverData)
 
             // events
             if (results.length > 1) {
@@ -139,8 +142,8 @@ export default {
                 swiperBtnPrev.classList.remove("hide-important")
                 swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
 
-                // pools table rows to navigate swiper
-                poolsTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                // savers table rows to navigate swiper
+                saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
                     row.classList.add("cursor")
                     row.addEventListener("click", () => {
                         swiper.slideTo(index)
@@ -154,10 +157,10 @@ export default {
                     e.preventDefault()
                     this.setPopupInfo({
                         type: "topup",
-                        title: "Top up in liquidity pool",
-                        poolName: slide.querySelector(".info-name span").textContent.trim(),
-                        poolAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                        title: "Top up in saver",
+                        saverName: slide.querySelector(".info-name span").textContent.trim(),
+                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
+                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
                     })
                 }, false)
 
@@ -165,10 +168,10 @@ export default {
                     e.preventDefault()
                     this.setPopupInfo({
                         type: "takeout",
-                        title: "Take out from liquidity pool",
-                        poolName: slide.querySelector(".info-name span").textContent.trim(),
-                        poolAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                        title: "Take out from saver",
+                        saverName: slide.querySelector(".info-name span").textContent.trim(),
+                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
+                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
                     })
                 }, false)
             })
@@ -177,33 +180,33 @@ export default {
 
     setPopupInfo(objVal) {
         if (objVal.type === "topup") {
-            quoteInvestInPool(objVal.poolAddress, objVal.poolAmount).then((results) => {
+            quoteInvestInSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
                 const arrNames = [
-                    {name: "Name of liquidity pool:", span: objVal.poolName},
-                    {name: "Address of liquidity pool:", span: minimizeAddress(objVal.poolAddress)},
+                    { name: "Name of the saver:", span: objVal.saverName },
+                    { name: "Address of saver contract:", span: minimizeAddress(objVal.saverAddress)},
                     {name: "Top up:", span: results.invest},
-                    {name: "Liquidity pool tokens:", span: results.holding},
+                    {name: "Saver units:", span: results.holding},
                 ]
 
                 showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.poolAddress, parseFloat(objVal.poolAmount), null)
+                this.executeTrade(objVal.type, objVal.saverAddress, parseFloat(objVal.saverAmount))
             })
         } else if (objVal.type === "takeout"){
-            quoteDivestFromPool(objVal.poolAddress, objVal.poolAmount).then((results) => {
+            quoteDivestFromSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
                 const arrNames = [
-                    { name: "Name of liquidity pool:", span: objVal.poolName },
-                    { name: "Address of liquidity pool:", span: minimizeAddress(objVal.poolAddress) },
+                    { name: "Name of the saver:", span: objVal.saverName },
+                    { name: "Address of saver contract", span: minimizeAddress(objVal.saverAddress) },
                     { name: "Take out:", span: results.divest },
-                    { name: "Liquidity pool tokens:", span: results.holding },
+                    { name: "Saver units:", span: results.holding },
                 ]
 
                 showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.poolAddress, parseFloat(objVal.poolAmount), null)
+                this.executeTrade(objVal.type, objVal.saverAddress, parseFloat(objVal.saverAmount))
             })
         }
     },
 
-    executeTrade(type, poolAddress, amount, poolParams) {
+    executeTrade(type, saverAddress, amount) {
         const container = document.createElement("div")
         container.className = "executetrade"
         document.querySelector(".overlay-popup .op-content").appendChild(container)
@@ -247,7 +250,7 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer, 120)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approvePool(type, poolAddress, amount)
+            const approveAllowance = await approveSaver(type, saverAddress, amount)
             console.log('approve finished', approveAllowance)
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
@@ -261,7 +264,7 @@ export default {
                 setTimeout(async () => {
                     this.executeTradeTimer(awaitTradeTimer, type==="propose"? 300: 120)
                     console.log('prior to trade')
-                    const approveTrade = await tradePool(type, poolAddress, amount, poolParams)
+                    const approveTrade = await tradeSaver(type, saverAddress, amount)
                     console.log('trade finished', approveTrade)
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)
@@ -323,21 +326,4 @@ export default {
         console.log("clearTradeTimer()")
     },
 
-    setActiveVote() {
-        const activeVote = document.querySelector(".active-vote")
-
-        activeVote.querySelector(".js-propose").addEventListener("click", (e) => {
-            e.preventDefault()
-            const arrNames = [
-                { name: "Pool Name:", span: activeVote.querySelector("input[name='pool-name']").value },
-                { name: "Pool Symbol:", span: activeVote.querySelector("input[name='pool-symbol']").value },
-                { name: "Description:", span: activeVote.querySelector("input[name='description']").value },
-                { name: "Hedging Address:", span: activeVote.querySelector("input[name='address']").value },
-                { name: "Initial USDC Amount:", span: activeVote.querySelector("input[name='usdc-amount']").value },
-            ]
-
-            showOverlayPopup("Propose strategies", createList(arrNames, "proposestrategies"))
-            this.executeTrade("propose", null, parseFloat(activeVote.querySelector("input[name='usdc-amount']").value), { "name": activeVote.querySelector("input[name='pool-name']").value, "symbol": activeVote.querySelector("input[name='pool-symbol']").value, "description": activeVote.querySelector("input[name='description']").value, "hedgingAddress": activeVote.querySelector("input[name='address']").value })
-        })
-    },
 }

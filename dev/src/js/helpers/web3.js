@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools } from "./constant"
+import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools, saverList } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
@@ -1019,4 +1019,201 @@ export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketM
     return approveTradeLink
 }
 
-// 17. governance functions
+// 17. list all savers with their features ( to be done )
+export const getAllSaverInfo = async (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    let saverTable = []
+
+    await Promise.all(saverList.map(async (saverAddress) => {
+    // for (let i = 0; i < saverList.length; i++) {
+        // const saverAddress = saverList[i]
+        let saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        let saverUnderlying = await saverContract.methods.tokenAddress().call()
+        if(saverUnderlying == objTokenAddr){
+            const name = await saverContract.methods.name().call()
+            const symbol = await saverContract.methods.symbol().call()
+
+            // create option pv function for market cap
+            const fundingAddress = await saverContract.methods.funding().call()
+            const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+            const fundingDecimals = await fundingContract.methods.decimals().call()
+            let fundingBalance = await fundingContract.methods.balanceOf(saverAddress).call()
+
+            let totalSupply = await saverContract.methods.totalSupply().call()
+            let marketCap = parseFloat(web3.utils.fromWei(fundingBalance)) * (10 ** (18 - fundingDecimals))
+            let unitPrice = marketCap / parseFloat(web3.utils.fromWei(totalSupply))
+
+            let nextVintage = await saverContract.methods.nextVintageTime().call()
+            let params = await saverContract.methods.fiaParams().call()
+            let vintageCallStrike = await saverContract.methods.vintageCallStrike().call()
+            let vintagePutStrike = await saverContract.methods.vintagePutStrike().call()
+            let vintageSpreadStrike = await saverContract.methods.vintageSpreadStrike().call()
+            let estyield = 0.9
+
+            saverTable.push({
+                "Name": name,
+                "Symbol": symbol,
+                "Address": saverAddress,
+                "MarketCap": `$${(marketCap).toFixed(0)}`,
+                "UnitAsset": `$${(unitPrice).toFixed(2)}`,
+                "Yield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                "NextVintageTime": nextVintage,
+                "NextVintage": new Date(Number(nextVintage) * 1000).toLocaleString(),
+                "Upside": parseFloat(web3.utils.fromWei(vintageCallStrike)).toFixed(0),
+                "Downside": parseFloat(web3.utils.fromWei(vintagePutStrike)).toFixed(0),
+                "Protection": parseFloat(web3.utils.fromWei(vintageSpreadStrike)).toFixed(0),
+            })
+        }
+    }))
+
+    return saverTable
+}
+
+// 18. invest in a selected saver
+// amount is the USDC amount to invest in saver
+export const quoteInvestInSaver = async (saverAddress, amount) => {
+    try {
+        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        const saverToken = await saverContract.methods.symbol().call()
+        const premiumToken = 'USDC'
+
+        const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
+        const fundingAddress = await saverContract.methods.funding().call()
+        const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+        const fundingDecimals = await fundingContract.methods.decimals().call()
+        
+        const quoteInvest = amount / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - fundingDecimals)))
+
+        return {
+            'invest': `${Big(amount).round(5)} ${premiumToken}`,
+            'holding': `${Big(quoteInvest).round(5)} ${saverToken}`
+        }
+    }
+    catch (err){
+        console.log(err.message)
+        return err.message
+    }
+}
+
+
+export const approveSaver = async (saverAddress, amount) => {
+    try {
+        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        const fundingAddress = await saverContract.methods.funding().call()
+        const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+
+        var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+        var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+        // console.log(paymentToken, account, exchangeAddress, amount)
+        await approveMaxAmount(paymentToken, account, saverAddress, amount)
+        return 'success'
+    }
+    catch (err) {
+        return 'failure' //err.message
+    }
+}
+
+export const tradeSaver = async (type, saverAddress, amount) => {
+    let log = ""
+    switch (type) {
+        case "topup":
+            log = await investInSaver(saverAddress, amount)
+            break
+        default:
+            log = await divestFromSaver(saverAddress, amount)
+    }
+    console.log('trade', log)
+    return log
+}
+
+// saverAddress is the selected saver contract address
+// amount is the USDC amount to invest in saver
+export const investInSaver = async (saverAddress, amount) => {
+    const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+    const fundingAddress = await saverContract.methods.funding().call()
+    const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+
+    const tokenDecimals = await paymentToken.methods.decimals().call()
+    const amountInDecimals = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await saverContract.methods.invest(amountInDecimals).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    console.log('invest in saver', saverAddress, amountInDecimals)
+    let approveTradeLink = null
+    await saverContract.methods.invest(amountInDecimals).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
+}
+
+// 15. divest from a selected pool
+// amount is the USDC amount to invest in pool
+export const quoteDivestFromSaver = async (saverAddress, amount) => {
+    try {
+        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        const saverToken = await saverContract.methods.symbol().call()
+        const premiumToken = 'USDC'
+
+        const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
+        const fundingAddress = await saverContract.methods.funding().call()
+        const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+        const fundingDecimals = await fundingContract.methods.decimals().call()
+
+        const quoteDivest = amount / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - fundingDecimals)))
+
+        return {
+            'divest': `${Big(amount).round(5)} ${premiumToken}`,
+            'holding': `${Big(quoteDivest).round(5)} ${saverToken}`
+        }
+    }
+    catch (err) {
+        return err.message
+    }
+}
+
+// saverAddress is the selected saver contract address
+// amount is the USDC amount to divest from saver
+export const divestFromSaver = async (saverAddress, amount) => {
+    const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+    const fundingAddress = await saverContract.methods.funding().call()
+    const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+
+    const tokenDecimals = await paymentToken.methods.decimals().call()
+    // const amountInDecimals = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+
+    const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
+    const unitPriceInDecimals = parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - tokenDecimals))
+    const units = amount / unitPriceInDecimals
+    
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    // const amountInDecimals = web3.utils.toBN(web3.utils.toWei(poolAmount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
+    const unitsInDecimals = web3.utils.toWei(units.toFixed(18))
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await saverContract.methods.divest(unitsInDecimals).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    console.log('Divest from saver', saverAddress, amount, units)
+    let approveTradeLink = null
+    await saverContract.methods.divest(unitsInDecimals).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
+}
