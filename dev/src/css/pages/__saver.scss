@@ -1,0 +1,138 @@
+.saver {
+    .pool-info {
+        .buttons, .buttons .col:last-child {
+            display: flex;
+            gap: 12px;
+        }
+
+        .buttons {
+            @include mediaQuery($pb-sm, max) {
+                flex-wrap: wrap;
+            }
+        }
+
+        .buttons .col:last-child {
+            @include mediaQuery($pb-sm) {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    }
+
+    .active-hottubs {
+        position: relative;
+        .swiper {
+            .swiper-slide {
+                @include mediaQuery($pb-sm) {
+                    width: 440px;
+                }
+
+                ul {
+                    li {
+                        background-color: $white-2;
+                        border-radius: 8px;
+                        padding: 16px 20px;
+                        margin-bottom: 8px;
+                    }
+                }
+
+                .buttons {
+                    display: grid;
+                    gap: 12px;
+                    grid-template-columns: repeat(2, 1fr);
+                    
+                    .col {
+                        &:first-child {
+                            grid-column-end: span 2;
+                            // text-align: right;
+                            input {
+                                width: calc(100% - 55px);
+                                text-align: center;
+                                background-color: $white-8;
+                            }
+                        }
+
+                        a {
+                            display: block;
+                            text-align: center;
+                        }
+                    }
+                }
+            }
+        }
+
+        .swiper-button-next, .swiper-button-prev {
+            position: absolute;
+            top: 6px;
+        }
+
+        .swiper-button-prev {
+            right: 40px;
+        }
+
+        .swiper-button-next {
+            right: 0;
+        }
+    }
+
+    .active-vote {
+        .vote-content {
+            display: grid;
+            column-gap: 12px;
+            row-gap: 30px;
+            
+            @include mediaQuery($pb-md) {
+                display: flex;
+                align-items: flex-end;
+
+                .cont-col {
+                    &:first-child {
+                        width: 100%;
+                    }
+                    &:last-child {
+                        text-align: right;
+                    }
+                }
+            }
+
+            .form {
+                input {
+                    width: 100%;
+                }
+
+                .form-row {
+                    display: grid;
+                    gap: 12px;
+
+                    @include mediaQuery($pb-sm) {
+                        grid-template-columns: repeat(2, 1fr);
+                        // .form-col {
+                        //     &:last-child {
+                        //         grid-column-end: span 2;
+                        //     }
+                        // }
+                    }
+                    
+                    .form-col {
+                        &:last-child {
+                            input {
+                                width: calc(100% - 55px);
+                                text-align: center;
+                                background-color: $white-8;
+                            }
+                        }
+                    }
+                }
+            }
+
+            .fees {
+                .fees-info {
+                    display: flex;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+            }
+        }
+    }
+}

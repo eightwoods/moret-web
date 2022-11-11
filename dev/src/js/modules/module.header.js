@@ -22,10 +22,15 @@ export default {
 
                     const tl = gsap.timeline()
                     tl.from(logo, {opacity: 0, x: 200, delay: 0.2})
+                    
                     if (window.innerWidth < breakpoint.lgmd) {
-                        tl.from(menu, {opacity: 0, x: 200}, "-=0.25")
+                        if (menu) {
+                            tl.from(menu, {opacity: 0, x: 200}, "-=0.25")
+                        }
                     } else {
-                        tl.from(navItems, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
+                        if (navItems) {
+                            tl.from(navItems, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
+                        }
                         if (socials) {
                             tl.from(socials, {opacity: 0, x: 200, stagger: 0.1}, "-=0.25")
                         }
@@ -47,6 +52,10 @@ export default {
     },
 
     setEvents() {
+        if (document.querySelector(".no-access")) {
+            return false
+        }
+        
         const menuOpen = this.globals.elem.querySelector(".js-menuOpen")
         const menuClose = this.globals.elem.querySelector(".js-menuClose")
         const menuPopup = this.globals.elem.querySelector(".menuPopup")
