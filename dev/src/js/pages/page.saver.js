@@ -53,12 +53,12 @@ export default {
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
-                            <th class="sortable sort-text">Symbol</th>
-                            <th class="sortable sort-text">Market Cap</th>
-                            <th class="sortable">Unit Price</th>
+                            <th class="sortable sort-text">Holdings</th>
+                            <th class="sortable">NAV</th>
                             <th class="sortable">Yield</th>
-                            <th class="sortable">Status</th>
-                            <th class="sortable">Vintage</th>
+                            <th class="sortable">P&L</th>
+                            <th class="sortable sort-text">Status</th>
+                            <th class="sortable">Vintage Ends</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -85,10 +85,10 @@ export default {
             results.forEach((data) => {
                 saverData.push([
                     data.Name,
-                    data.Symbol,
-                    data.MarketCap,
+                    data.UnitHeld,
                     data.UnitAsset,
-                    data.Yield,
+                    data.StaticYield,
+                    data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
                     data.NextVintage
                 ])
@@ -98,10 +98,13 @@ export default {
                         <div class="in-box">
                             <ul class="info">
                                 <li class="info-name">Name: <span>${data.Name}</span></li>
+                                <li class="info-name">Symbol: <span>${data.Symbol}</span></li>
                                 <li class="info-address">Address: <span>${data.Address}</span></li>
-                                <li>Upside: <span>${data.Upside}</span></li>
-                                <li>Protection Level: <span>${data.Downside}</span></li>
-                                <li>Protection Limit: <span>${data.Protection}</span></li>
+                                <li>Market Cap: <span>${data.MarketCap}</span></li>
+                                <li>Vintage Start Price: <span>${data.StartLevel}</span></li>
+                                <li>Upside Potential: <span>${data.Upside}</span></li>
+                                <li>Protection Starts: <span>${data.Downside}</span></li>
+                                <li>Protection Depth: <span>${data.Protection}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">

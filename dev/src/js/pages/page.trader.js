@@ -145,6 +145,7 @@ export default {
         })
         .then(async(res) => { 
             // console.log(res)
+            // console.log(tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
             const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
             
             if (inOverlayPopup) {

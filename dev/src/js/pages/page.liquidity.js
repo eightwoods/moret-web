@@ -54,7 +54,8 @@ export default {
                         <tr>
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Symbol</th>
-                            <th class="sortable sort-text">Market Cap</th>
+                            <th class="sortable sort-text">LP Value</th>
+                            <th class="sortable sort-text">LP Tokens</th>
                             <th class="sortable">Utilization</th>
                             <th class="sortable">Estimated Yield</th>
                         </tr>
@@ -83,7 +84,8 @@ export default {
                 poolsData.push([
                     data.Name,
                     data.Symbol,
-                    data.MarketCap,
+                    data.HoldingBalance,
+                    data.Holdings,
                     data.Utilization,
                     data.EstimatedYield
                 ])
@@ -99,6 +101,10 @@ export default {
                                 <li>AMM factor: <span>${data.AMMCurveFactor}</span></li>
                                 <li>Exercise fee: <span>${data.ExerciseFee}</span></li>
                                 <li>Minimum volatility price: <span>${data.MinVolPrice}</span></li>
+                                <li>Market Cap: <span>${data.MarketCap}</span></li>
+                                <li>Utilization: <span>${data.Utilization}</span></li>
+                                <li>Unit Price: <span>${data.UnitCapital}</span></li>
+                                <li>Unit Value Withdrawable: <span>${data.UnitWithdrawable}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">
