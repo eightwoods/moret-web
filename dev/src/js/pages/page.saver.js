@@ -58,7 +58,8 @@ export default {
                             <th class="sortable">Yield</th>
                             <th class="sortable">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Vintage Ends</th>
+                            <th class="sortable">Current Vintage Ends</th>
+                            <th class="sortable">Next Vintage Starts</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -90,7 +91,8 @@ export default {
                     data.StaticYield,
                     data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
-                    data.NextVintage
+                    data.NextVintage,
+                    data.NextVintageStart
                 ])
                 
                 swiperSlideElem += `
@@ -184,6 +186,7 @@ export default {
     setPopupInfo(objVal) {
         if (objVal.type === "topup") {
             quoteInvestInSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
+                // console.log(results)
                 const arrNames = [
                     { name: "Name of the saver:", span: objVal.saverName },
                     { name: "Address of saver contract:", span: minimizeAddress(objVal.saverAddress)},
@@ -192,7 +195,7 @@ export default {
                 ]
 
                 showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, parseFloat(objVal.saverAmount))
+                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
             })
         } else if (objVal.type === "takeout"){
             quoteDivestFromSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
@@ -204,12 +207,12 @@ export default {
                 ]
 
                 showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, parseFloat(objVal.saverAmount))
+                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
             })
         }
     },
 
-    executeTrade(type, saverAddress, amount) {
+    executeTrade(type, saverAddress, funding, units) {
         const container = document.createElement("div")
         container.className = "executetrade"
         document.querySelector(".overlay-popup .op-content").appendChild(container)
@@ -253,7 +256,7 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer, 120)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approveSaver(type, saverAddress, amount)
+            const approveAllowance = await approveSaver(type, saverAddress, funding, units)
             console.log('approve finished', approveAllowance)
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
@@ -266,8 +269,8 @@ export default {
                 // execute option trade
                 setTimeout(async () => {
                     this.executeTradeTimer(awaitTradeTimer, type==="propose"? 300: 120)
-                    console.log('prior to trade')
-                    const approveTrade = await tradeSaver(type, saverAddress, amount)
+                    console.log('prior to trade', type, saverAddress, funding, units)
+                    const approveTrade = await tradeSaver(type, saverAddress, funding, units)
                     console.log('trade finished', approveTrade)
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)
