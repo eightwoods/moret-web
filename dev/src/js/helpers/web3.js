@@ -255,11 +255,11 @@ export const getCapital = async (tokenAddr = null) => {
         const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
         grossCapitalTotal = grossCapitalTotal + parseFloat(web3.utils.fromWei(grossCapital))
         netCapitalTotal = netCapitalTotal + parseFloat(web3.utils.fromWei(netCapital))
-        console.log(poolAddress, grossCapital, netCapital)
+        // console.log(poolAddress, grossCapital, netCapital)
     }
     const utilizedCapital = grossCapitalTotal - netCapitalTotal
     const utilization = Math.max(0, 1 - netCapitalTotal / grossCapitalTotal)
-    console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
+    // console.log('capital', grossCapitalTotal, netCapitalTotal, utilization, utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }))
     // return [`$${(grossCapitalTotal / 1000)}K`, utilization.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 }) + " of the liquidity pools utilized" ]
     return {
         "gross": `$${(grossCapitalTotal / 1000).toFixed(1)}K`,
@@ -522,7 +522,7 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         if (allPools.length==0){
             throw 'There is no available pool to trade volatility tokens with.'
         }
-
+        
         for (let i = 0; i < allPools.length; i++) {
             const poolAddress = allPools[i]
             const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true)
@@ -1087,7 +1087,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
                 const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
                 const optionPremium = parseFloat(web3.utils.fromWei(option.premium))
-                vintageYield = vintageYield + optionPremium / optionAmount / parseFloat(web3.utils.fromWei(spotPrice)) * (Number(option.side) == 1 ? 1: -1)
+                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : 0) / option.tenor * 86400 * 365
                 vintageTenor = Math.max(vintageTenor, Number(option.tenor))
 
                 const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
@@ -1100,7 +1100,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                     let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry)
                     
                     let optionPrice = black_scholes(option.poType == 0, parseFloat(web3.utils.fromWei(spotPrice)), optionStrike, 0, annualVol, timeToExpiry) * optionAmount
-                    // console.log(option.id, option.poType, parseFloat(web3.utils.fromWei(spotPrice)), optionStrike, 0, annualVol, timeToExpiry, optionAmount, optionPrice)
+                    // console.log(option.id, option.poType, option.side, parseFloat(web3.utils.fromWei(spotPrice)), optionStrike, annualVol, timeToExpiry, optionAmount, optionPrice, parseFloat(web3.utils.fromWei(collaterals[2])))
                     
                     optionsMV = optionsMV + optionPrice * (option.side == 0 ? 1 : -1) + parseFloat(web3.utils.fromWei(collaterals[2]))
                 }
@@ -1116,12 +1116,12 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let unitPrice = marketCap / totalUnits
             let startCap = (parseFloat(web3.utils.fromWei(vintage.startNAV)) * (10 ** (18 - fundingDecimals))) * totalUnits
             let vintagePnL = marketCap / startCap - 1
-            console.log(startCap, marketCap, unitPrice, vintagePnL)
+            console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
             let unitHeld = await saverContract.methods.balanceOf(account).call()
             
             let nextVintage = await saverContract.methods.nextVintageTime().call()
             let params = await saverContract.methods.fiaParams().call()
-            let estyield = vintageYield / vintageTenor * 86400 * 365
+            let estyield = vintageYield / startCap 
 
             saverTable.push({
                 "Name": name,
