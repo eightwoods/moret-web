@@ -55,11 +55,10 @@ export default {
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Holdings</th>
                             <th class="sortable">NAV</th>
-                            <th class="sortable">Yield</th>
+                            <th class="sortable">APY</th>
                             <th class="sortable">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Current Vintage Ends</th>
-                            <th class="sortable">Next Vintage Starts</th>
+                            <th class="sortable">Vintage Ends</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -91,8 +90,7 @@ export default {
                     data.StaticYield,
                     data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
-                    data.NextVintage,
-                    data.NextVintageStart
+                    data.NextVintage
                 ])
                 
                 swiperSlideElem += `
@@ -107,6 +105,7 @@ export default {
                                 <li>Upside Potential: <span>${data.Upside}</span></li>
                                 <li>Protection Starts: <span>${data.Downside}</span></li>
                                 <li>Protection Depth: <span>${data.Protection}</span></li>
+                                <li>Next Vintage Starts: <span>${data.NextVintageStart}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">
