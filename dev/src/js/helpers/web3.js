@@ -1118,7 +1118,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let unitPrice = marketCap / totalUnits
             let startCap = (parseFloat(web3.utils.fromWei(vintage.startNAV)) * (10 ** (18 - fundingDecimals))) * totalUnits
             let vintagePnL = marketCap / startCap - 1
-            console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
+            // console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
             let unitHeld = await saverContract.methods.balanceOf(account).call()
             let holdings = parseFloat(web3.utils.fromWei(unitHeld)) * unitPrice
             
@@ -1127,7 +1127,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let estyield = vintageYield / startCap 
             
             let nextVintageStart = Math.floor((Number(nextVintage) + Number(params.tradeWindow)) / 86400) * 86400 + Number(params.rollHour)
-            console.log(params, nextVintage, nextVintageStart)
+            // console.log(params, nextVintage, nextVintageStart)
 
             saverTable.push({
                 "Name": name,
