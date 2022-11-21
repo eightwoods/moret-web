@@ -92,6 +92,8 @@ export default {
                     data.NextVintageTime > nowTime? "Closed": "Open",
                     data.NextVintageStart
                 ])
+
+                let hide_topup = data.NextVintageTime > nowTime ? "hidden": ""
                 
                 swiperSlideElem += `
                     <div class="swiper-slide">
@@ -107,7 +109,7 @@ export default {
                                 <li>Buffer: <span>${data.Protection}</span></li>
                                 <li>Vintage unlocked at <span>${data.NextVintage}</span></li>
                             </ul>
-                            <div class="buttons m-t-24">
+                            <div class="buttons m-t-24" ${hide_topup}>
                                 <div class="col">
                                     <div class="in-border word-nowrap white-50">
                                         <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
