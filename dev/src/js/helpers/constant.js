@@ -2,11 +2,11 @@ export const moretAddress = "0x4D2E4e85fbDFBfbE04049251d375e3Faf574C0B0"
 
 export const exchangeAddress = "0xDAF3ebE73D1bcEAFFDc14f4f75F474bD71c86A3D"
 
-export const marketMakerFactoryAddress = "0x13905A5195B0DE30cCFf9675285CD7bd5b2F9ee3"
+export const marketMakerFactoryAddress = "0xd772E7fFDb924BA8998D8b64De76D3212605267F"
 
-export const poolFactoryAddress = "0xA498FE29Ab2Fb6351428d85980D2A653e0489489"
+export const poolFactoryAddress = "0xfEeC891BECAe9a497Ffefc4dAb477511205F821d"
 
-export const poolGovFactoryAddress = "0xC5599d6cc178C74349d8168eE48F40717050a79C"
+export const poolGovFactoryAddress = "0xc1CD2084Da3532C4c097AC9Ff69D99faf1df2e22"
 
 export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -25,7 +25,6 @@ export const tokens = [
     {token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"}
 ]
 
-export const excludedPools = [
-]
+export const excludedPools = ['0xE896ad64c88042F4f397DE14f3B034957969616C','0x3558246DD5A1E77e9CC11780Cd4523E35209436d']
 
-export const saverList = ['0x2285ac4A9f53aD5aC0e36CC727a5a5E5641f6296', '0x8822c9079359bb1301Ef32Eb29289Da3F25C597b','0xcfbF80A089A65e3D45C6DCe5c1B1a2377CdF8D1b']
+export const saverList = ['0x4C8fc813D2cc1b2F8977126744f6e7121D8977b5','0x16b3C53827C5a25cb2BD578DDdCB30f34E2C699a']
