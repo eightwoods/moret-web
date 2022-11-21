@@ -58,7 +58,7 @@ export default {
                             <th class="sortable">APY</th>
                             <th class="sortable">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Vintage Ends</th>
+                            <th class="sortable">Next Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -85,12 +85,12 @@ export default {
             results.forEach((data) => {
                 saverData.push([
                     data.Name,
-                    data.UnitHeld,
+                    data.Holding,
                     data.UnitAsset,
                     data.StaticYield,
                     data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
-                    data.NextVintage
+                    data.NextVintageStart
                 ])
                 
                 swiperSlideElem += `
@@ -102,10 +102,10 @@ export default {
                                 <li class="info-address">Address: <span>${data.Address}</span></li>
                                 <li>Market Cap: <span>${data.MarketCap}</span></li>
                                 <li>Vintage Start Price: <span>${data.StartLevel}</span></li>
-                                <li>Upside Potential: <span>${data.Upside}</span></li>
-                                <li>Protection Starts: <span>${data.Downside}</span></li>
-                                <li>Protection Depth: <span>${data.Protection}</span></li>
-                                <li>Next Vintage Starts: <span>${data.NextVintageStart}</span></li>
+                                <li>Upside Knockout: <span>${data.Upside}</span></li>
+                                <li>Protection Kick-in: <span>${data.Downside}</span></li>
+                                <li>Buffer: <span>${data.Protection}</span></li>
+                                <li>Vintage unlocked at <span>${data.NextVintage}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">

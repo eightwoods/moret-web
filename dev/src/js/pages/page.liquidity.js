@@ -102,9 +102,8 @@ export default {
                                 <li>Exercise fee: <span>${data.ExerciseFee}</span></li>
                                 <li>Minimum volatility price: <span>${data.MinVolPrice}</span></li>
                                 <li>Market Cap: <span>${data.MarketCap}</span></li>
-                                <li>Utilization: <span>${data.Utilization}</span></li>
-                                <li>Unit Price: <span>${data.UnitCapital}</span></li>
-                                <li>Unit Value Withdrawable: <span>${data.UnitWithdrawable}</span></li>
+                                <li>Holding: <span>${data.HoldingBalance}</span></li>
+                                <li>Withdrawable: <span>${data.HoldingNetBalance}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">

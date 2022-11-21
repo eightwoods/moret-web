@@ -316,7 +316,7 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
     var approvedAmount = await erc20Token.methods.allowance(account, spenderAddress).call()
     const tokenDecimals = await erc20Token.methods.decimals().call()
     const spendAmountInWei = web3.utils.toBN(web3.utils.toWei(spendAmount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(tokenDecimals))))
-    // console.log(approvedAmount, spendAmount, spendAmountInWei);
+    // console.log(approvedAmount, Number(tokenDecimals), spendAmount, web3.utils.fromWei(spendAmountInWei), spendAmountInWei.gt(approvedAmount), spendAmountInWei.gt(web3.utils.toBN(approvedAmount)));
     if (spendAmountInWei.gt(web3.utils.toBN(approvedAmount))) {
         var gasPriceApproval = await web3.eth.getGasPrice()
         var gasEstimatedApproval = await erc20Token.methods.approve(spenderAddress, maxAmount).estimateGas({ from: account, gasPrice: gasPriceApproval })
@@ -748,6 +748,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
         let unitNetCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
         unitNetCapital = parseFloat(web3.utils.fromWei(unitNetCapital))
         let heldCapital = unitGrossCapital * holding
+        let heldNetCapital = unitNetCapital * holding
 
         const marketAddress = await poolContract.methods.marketMaker().call()
         const marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
@@ -770,6 +771,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
             "UnitCapital": `$${(unitGrossCapital).toFixed(2)}`,
             "UnitWithdrawable": `$${(unitNetCapital).toFixed(2)}`,
             "HoldingBalance": `$${(heldCapital).toFixed(2)}`,
+            "HoldingNetBalance": `$${(heldNetCapital).toFixed(2)}`, 
             "Holdings": holding.toFixed(0),
             })
     }
@@ -1118,10 +1120,14 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let vintagePnL = marketCap / startCap - 1
             console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
             let unitHeld = await saverContract.methods.balanceOf(account).call()
+            let holdings = parseFloat(web3.utils.fromWei(unitHeld)) * unitPrice
             
             let nextVintage = await saverContract.methods.nextVintageTime().call()
             let params = await saverContract.methods.fiaParams().call()
             let estyield = vintageYield / startCap 
+            
+            let nextVintageStart = Math.floor((Number(nextVintage) + Number(params.tradeWindow)) / 86400) * 86400 + Number(params.rollHour)
+            console.log(params, nextVintage, nextVintageStart)
 
             saverTable.push({
                 "Name": name,
@@ -1129,11 +1135,12 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 "Address": saverAddress,
                 "MarketCap": `$${(marketCap).toFixed(0)}`,
                 "UnitAsset": `$${(unitPrice).toFixed(2)}`,
+                "Holding": `$${(holdings).toFixed(2)}`,
                 "UnitHeld": parseFloat(web3.utils.fromWei(unitHeld)).toFixed(1),
                 "StaticYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "ProfitLoss": vintagePnL.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "NextVintageTime": nextVintage,
-                "NextVintageStart": new Date((Number(nextVintage) + Number(params.tradeWindow)) * 1000).toLocaleString(),
+                "NextVintageStart": new Date(nextVintageStart * 1000).toLocaleString(),
                 "NextVintage": new Date(Number(nextVintage) * 1000).toLocaleString(),
                 "StartLevel": parseFloat(web3.utils.fromWei(vintage.startLevel)).toFixed(0),
                 "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)).toFixed(0),
@@ -1181,15 +1188,18 @@ export const approveSaver = async (type, saverAddress, funding, units) => {
         var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
         const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        console.log(type, saverAddress, funding, units)
         if (type === "topup") {
             const fundingAddress = await saverContract.methods.funding().call()
+            // console.log('top up', saverAddress, fundingAddress, account, funding, units)
             const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
             await approveMaxAmount(paymentToken, account, saverAddress, funding)
-            console.log('top up', saverAddress, fundingAddress, account, funding, units)
+            
             return 'success'
         } else if (type === "takeout") {
+            // console.log('take out', saverAddress, paymentToken, account, funding, units)
             await approveMaxAmount(saverContract, account, saverAddress, units)
-            console.log('take out', saverAddress, paymentToken, account, funding, units)
+            
             return 'success'
         }
         else{
@@ -1278,7 +1288,7 @@ export const divestFromSaver = async (saverAddress, units) => {
     const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
     const saverDecimals = await saverContract.methods.decimals().call()
 
-    const unitsInWei = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(saverDecimals))))
+    const unitsInWei = web3.utils.toBN(web3.utils.toWei(units.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(saverDecimals))))
     console.log('Divest from saver', saverAddress, units)
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
