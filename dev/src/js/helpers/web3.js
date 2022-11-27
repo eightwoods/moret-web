@@ -355,6 +355,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
             poolAddress, 
             tenor, 
             web3.utils.toWei(strike.toString()), 
+            0,
             web3.utils.toWei(amount.toString()), 
             isCall ? 0 : 1, 
             isBuy ? 0 : 1, 
@@ -364,7 +365,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
         var nonceNew = await web3.eth.getTransactionCount(account)
 
         let approveTradeLink = null
-        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
@@ -718,7 +719,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
     const allPools = await getAllPools(objTokenAddr)
-    console.log(allPools)
+    // console.log(allPools)
     // var grossCapitalTotal = 0
     // var netCapitalTotal = 0
     let poolTable = []
@@ -730,7 +731,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
         grossCapital = parseFloat(web3.utils.fromWei(grossCapital))
         let netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
         netCapital = parseFloat(web3.utils.fromWei(netCapital))
-        console.log(poolAddress, grossCapital, netCapital)
+        // console.log(poolAddress, grossCapital, netCapital)
         const utilizedCapital = grossCapital - netCapital
         const utilization = Math.max(0, 1 - netCapital / grossCapital)
 
