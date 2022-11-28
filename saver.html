@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/assets/moreticon.1b0b21da.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Saver</title>
-  <script type="module" crossorigin src="/assets/main.78a41c4d.js"></script>
-  <link rel="stylesheet" href="/assets/main.ccf4f836.css">
+  <script type="module" crossorigin src="/assets/main.31f236c8.js"></script>
+  <link rel="stylesheet" href="/assets/main.8007ed19.css">
 </head>
 <body>
 <header>
@@ -36,35 +36,89 @@
     <section class="saver">
         <div class="sidenav animate-panel"></div>
         <div class="content">
-            <div class="saver-list animate-panel">
-                <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Saver information</a>
-                </div>
-                <div class="pools in-box">
-                    <div class="header-title m-b-24">Saver list<span class="icon icon-refresh cursor js-refresh"></span></div>
-                    <div class="loader"></div>
-                    <div class="comp-dynamic-table" data-limitview="scroll"></div>
-                    <!-- <div class="buttons m-t-24">
-                        <div class="col">
-                            <div class="in-border display-inline word-nowrap white-50"><span class="white-100">6000</span> USDC</div>
-                        </div>
-                        <div class="col">
-                            <a href="#" class="btn btn-green js-deposit">Deposit</a>
-                            <a href="#" class="btn btn-pink js-withdraw">Withdraw</a>
-                        </div>
-                    </div> -->
-                </div>
-            </div>
-
-            <div class="active-hottubs m-t-48 animate-panel">
-                <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Invest in Savers</a>
-                </div>
-                <div class="loader"></div>
-                <div class="hottubs-content"></div>
-            </div>
-
+            <div class="title size-lg m-b-28 animate-panel">Moret token holding: 500 (1.5% of total supply)</div>
             
+            <div class="active-vote animate-panel">
+                <div class="btn-plus-subcopy m-b-24">
+                    <a href="#" class="btn btn-white btn-title size-md">Active vote</a>
+                    <p class="size-lgmd">50 Moret staked FOR/AGAINST</p>
+                </div>
+                <div class="in-box">
+                    <div class="header-title m-b-24">Add new liquidity pool</div>
+                    <div class="vote-content">
+                        <div class="info">
+                            <p class="m-b-20">SOL-USD.liquidity pool address: 0x38....938b</p>
+                            <p>Proposed by 0x38....938b at (Thursday, March 31, 2022)</p>
+                        </div>
+                        <div class="percentage-bar-multi" data-init-value-against="75" data-init-value-for="35">
+                            <div class="pbm-progress">
+                                <div class="pbm-against">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>0%</span> AGAINST</div>
+                                </div>
+                                <div class="pbm-for">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>0%</span> FOR</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <div class="col">
+                                <div class="in-border display-inline word-nowrap white-50"><span class="white-100">6000</span> USDC</div>
+                            </div>
+                            <div class="col">
+                                <a href="#" class="btn btn-green js-for">FOR</a>
+                                <a href="#" class="btn btn-pink js-against">AGAINST</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="proposals m-t-48 animate-panel">
+                <div class="btn-plus-subcopy m-b-24">
+                    <a href="#" class="btn btn-white btn-title size-md">Proposals</a>
+                    <p class="size-lgmd">Available once current vite concluds</p>
+                </div>
+                <div class="in-box m-b-24">
+                    <div class="header-title m-b-24">New liquidity pool</div>
+                    <div class="proposals-content">
+                        <div class="cont-col">
+                            <div class="display-flex m-b-24">
+                                <div class="toggle-switches ts-bg-white ts-active1" data-toggle-total="3">
+                                    <div class="ts-item">Add</div>
+                                    <div class="ts-item">Change</div>
+                                    <div class="ts-item">Remove</div>
+                                </div>
+                            </div>
+                            <div class="info">
+                                <div class="info-col">
+                                    Underlying: <div class="in-border display-inline word-nowrap m-l-12">DOT-USD</div>
+                                </div>
+                                <div class="info-col">
+                                    Address: <div class="in-border display-inline word-nowrap m-l-12 icon icon-refresh">0x38....938b</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cont-col">
+                            <div class="in-border display-inline word-nowrap white-50 m-b-12"><span class="white-100">60</span> Moret</div>
+                            <a href="#" class="btn btn-blue js-propose">Propose</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="in-box">
+                    <div class="proposals-content">
+                        <div class="cont-col">
+                            <div class="header-title m-b-24">Change protocol fees (currently 0.5%)</div>
+                            <div class="in-border display-inline word-nowrap">0.2%</div>
+                        </div>
+                        <div class="cont-col">
+                            <div class="in-border display-inline word-nowrap white-50 m-b-12"><span class="white-100">60</span> Moret</div>
+                            <a href="#" class="btn btn-blue js-propose">Propose</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 </main>
