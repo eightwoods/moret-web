@@ -1,0 +1,45 @@
+.custom-checkbox {
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-right: 14px;
+    padding-left: 14px;
+
+    .cc-item {
+        &:first-child {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            background-color: $white-8;
+            &::before {
+                content: "";
+                @include centerElement();
+                width: 18px;
+                height: 18px;
+                background-image: url("/src/img/icon_tick.svg");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: cover;
+                opacity: 0.1;
+            }
+        }
+        &:last-child {
+            user-select: none;
+        }
+    }
+
+    &.cc-checked {
+        .cc-item {
+            &:first-child {
+                background-color: $color-blue;
+                &::before {
+                    opacity: 1;
+                }
+            }
+            &:last-child {
+                color: $white;
+            }
+        }
+    }
+}

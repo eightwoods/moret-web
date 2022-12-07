@@ -10,7 +10,7 @@ export default {
 
     init() {
         // static methods call
-        // document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setSavers())
+        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setSavers())
         // this.setActiveVote()
 
         // observe sidenav
@@ -26,7 +26,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            // this.setSavers()
+                            this.setSavers()
                             break
                         case "sidenav-refreshprice":
                             break
@@ -42,9 +42,7 @@ export default {
 
     setSavers() {
         const saverList = document.querySelector(".saver-list")
-        const hotTubs = document.querySelector(".active-hottubs")
         getLoader(saverList)
-        getLoader(hotTubs)
         
         const saverTable = saverList.querySelector(".comp-dynamic-table")
         saverTable.innerHTML = `
@@ -53,7 +51,7 @@ export default {
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
-                            <th class="sortable sort-text">Holdings</th>
+                            <th class="sortable sort-text">Holding</th>
                             <th class="sortable">NAV</th>
                             <th class="sortable">APY</th>
                             <th class="sortable">P&L</th>
@@ -65,21 +63,11 @@ export default {
                 </table>
             </div>`
 
-        const poolsSwiper = hotTubs.querySelector(".hottubs-content")
-        poolsSwiper.innerHTML = `
-            <div class="swiper">
-                <div class="swiper-wrapper"></div>
-            </div>
-            <div class="swiper-button-next hide-important"></div>
-            <div class="swiper-button-prev hide-important"></div>`
-
         getAllSaverInfo(null).then((results) => {
             // console.log(results)
             getLoader(saverList, false)
-            getLoader(hotTubs, false)
 
             const saverData = []
-            let swiperSlideElem = ""
             const nowTime = Math.floor( Date.now() / 1000)
 
             results.forEach((data) => {
@@ -92,95 +80,10 @@ export default {
                     data.NextVintageTime > nowTime? "Closed": "Open",
                     data.NextVintageStart
                 ])
-
-                let hide_topup = data.NextVintageTime > nowTime ? "hidden": ""
-                
-                swiperSlideElem += `
-                    <div class="swiper-slide">
-                        <div class="in-box">
-                            <ul class="info">
-                                <li class="info-name">Name: <span>${data.Name}</span></li>
-                                <li class="info-name">Symbol: <span>${data.Symbol}</span></li>
-                                <li class="info-address">Address: <span>${data.Address}</span></li>
-                                <li>Market Cap: <span>${data.MarketCap}</span></li>
-                                <li>Vintage Start Price: <span>${data.StartLevel}</span></li>
-                                <li>Upside Knockout: <span>${data.Upside}</span></li>
-                                <li>Protection Kick-in: <span>${data.Downside}</span></li>
-                                <li>Buffer: <span>${data.Protection}</span></li>
-                                <li>Vintage unlocked at <span>${data.NextVintage}</span></li>
-                            </ul>
-                            <div class="buttons m-t-24" ${hide_topup}>
-                                <div class="col">
-                                    <div class="in-border word-nowrap white-50">
-                                        <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-green js-topup">Top-up</a>
-                                </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-pink js-takeout">Take-out</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`
-            })
-            poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
-
-            // init swiper
-            const swiper = new Swiper(".swiper", {
-                slidesPerView: "auto",
-                spaceBetween: 12,
-                grabCursor: false,
             })
 
             // init savers table
             componentTables.setDynamic(saverTable, saverData)
-
-            // events
-            if (results.length > 1) {
-                // swiper arrows
-                const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
-                swiperBtnNext.classList.remove("hide-important")
-                swiperBtnNext.addEventListener("click", () => swiper.slideNext())
-
-                const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
-                swiperBtnPrev.classList.remove("hide-important")
-                swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
-
-                // savers table rows to navigate swiper
-                saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
-                    row.classList.add("cursor")
-                    row.addEventListener("click", () => {
-                        swiper.slideTo(index)
-                    }, false)
-                })
-            }
-
-            // Top-up and Take-out
-            poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
-                slide.querySelector(".js-topup").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "topup",
-                        title: "Top up in saver",
-                        saverName: slide.querySelector(".info-name span").textContent.trim(),
-                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-
-                slide.querySelector(".js-takeout").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "takeout",
-                        title: "Take out from saver",
-                        saverName: slide.querySelector(".info-name span").textContent.trim(),
-                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-            })
         })
     },
 

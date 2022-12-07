@@ -7,13 +7,14 @@ export default {
     globals: {
         elem: document.querySelector(".trading"),
         refreshDuration: 15000,
+        elSidenav: null,
     },
 
     init() {
-        const sidenav = this.globals.elem.querySelector(".sidenav")
-        this.sideNav(sidenav)
-        this.sideNavRefreshPrice(sidenav)
-        this.sideNavLimiteView(sidenav)
+        this.elSidenav = this.globals.elem.querySelector(".sidenav")
+        this.sideNav(this.elSidenav)
+        this.sideNavRefreshPrice(this.elSidenav)
+        this.sideNavLimiteView(this.elSidenav)
         this.animateEachPanel()
     },
 
@@ -110,7 +111,8 @@ export default {
             infoItem.addEventListener("click", () => {
                 localStorage.removeItem(tokenActive)
                 localStorage.setItem(tokenActive, JSON.stringify(data))
-                this.sideNav(this.globals.elem.querySelector(".sidenav"))
+                this.sideNav(this.elSidenav)
+                this.sideNavLimiteView(this.elSidenav)
             })
         }
     },

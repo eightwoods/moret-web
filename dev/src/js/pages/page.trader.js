@@ -100,6 +100,22 @@ export default {
             expiryObserver.disconnect()
         })
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
+
+        // observe option Spread checkbox
+        const optSpreadOptions = {attributes: true, attributeFilter: ["customcheckbox-clicked"]}
+        const optSpreadObserver = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.attributeName === "customcheckbox-clicked") {
+                    const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
+                    if (mutation.target.classList.contains("cc-checked")) {
+                        optSpreadDropdownSelect.classList.remove("hide")
+                    } else {
+                        optSpreadDropdownSelect.classList.add("hide")
+                    }
+                }
+            }
+        })
+        optSpreadObserver.observe(document.querySelector(".opt-spread.custom-checkbox"), optSpreadOptions)
     },
 
     optTokenName() {
@@ -130,6 +146,10 @@ export default {
 
     optExpiry() {
         componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
+    },
+
+    optSpread() {
+        // 
     },
 
     optPrice(inOverlayPopup = false) {

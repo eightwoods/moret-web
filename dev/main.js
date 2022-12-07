@@ -40,6 +40,11 @@ const setup = {
     },
 
     async getComponents() {
+        if (document.querySelectorAll(".custom-checkbox").length) {
+            const { default: customCheckbox } = await import("./src/js/components/component.customCheckbox")
+            customCheckbox.init()
+        }
+
         if (document.querySelectorAll(".dropdown-select").length) {
             const { default: dropdownSelect } = await import("./src/js/components/component.dropdownSelect")
             dropdownSelect.init()
