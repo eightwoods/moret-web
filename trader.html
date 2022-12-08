@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/assets/moreticon.1b0b21da.svg"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
-  <script type="module" crossorigin src="/assets/main.31f236c8.js"></script>
-  <link rel="stylesheet" href="/assets/main.8007ed19.css">
+  <script type="module" crossorigin src="/assets/main.acefb71e.js"></script>
+  <link rel="stylesheet" href="/assets/main.ddd0b99a.css">
 </head>
 <body>
 <header>
@@ -57,9 +57,9 @@
                                     <div class="ts-item">Call</div>
                                     <div class="ts-item">Put</div>
                                 </div>
-                                <div class="opt-callputspread toggle-switches ts-active1">
-                                    <div class="ts-item">Call Spread</div>
-                                    <div class="ts-item">Put Spread</div>
+                                <div class="opt-spread custom-checkbox in-border white-50">
+                                    <div class="cc-item"></div>
+                                    <div class="cc-item">Spread</div>
                                 </div>
                             </div>
                             <div class="opt-token toggle-switches ts-bg-grey ts-active1" data-toggle-total="3">
@@ -94,14 +94,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="opt-spread dropdown-select">
+                            <div class="opt-spread dropdown-select hide">
                                 <div class="ds-btn in-border white-50" tabindex="0">
                                     <div class="ds-col word-nowrap">Spread: <span class="white-100 ds-value1">0</span></div>
                                     <div class="ds-col word-nowrap ds-value2">0%</div>
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
-                                        <input type="number" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" />
+                                        <input type="text" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" data-numandperc="true" />
                                         <div class="input-message">Hit ENTER key when done!</div>
                                         <ul class="info-list"></ul>
                                     </div>
