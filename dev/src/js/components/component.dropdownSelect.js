@@ -14,6 +14,9 @@ export default {
             const input = dropdownSelect.querySelector("input[name='info-amount']")
             let inputFocus = false
 
+            // only allow for numbers with/without decimal and percentage
+            const expression = new RegExp("^[0-9]*[.]{0,1}[0-9]*[%]{0,1}$")
+
             // set input field
             if (input) {
                 // input events
@@ -26,7 +29,11 @@ export default {
                     inputFocus = true
                     dropdownSelect.querySelectorAll("li").forEach((item) => item.classList.remove("info-active"))
                     if (e.target.value === "") {
-                        this.valueFromInputField(dropdownSelect, 0)
+                        if (input.dataset.numandperc) {
+                            this.valueFromInputFieldWithPerc(dropdownSelect, 0)
+                        } else {
+                            this.valueFromInputField(dropdownSelect, 0)
+                        }
                     }
                 }, false)
 
@@ -39,7 +46,17 @@ export default {
                     if (e.target.value === "") {
                         inputValue = 0
                     }
-                    this.valueFromInputField(dropdownSelect, inputValue)
+
+                    if (input.dataset.numandperc) {
+                        if (!e.target.value.match(expression)) {
+                            input.classList.add("error")
+                        } else {
+                            input.classList.remove("error")
+                            this.valueFromInputFieldWithPerc(dropdownSelect, inputValue)
+                        }
+                    } else {
+                        this.valueFromInputField(dropdownSelect, inputValue)
+                    }
                 }, false)
 
                 input.addEventListener("keydown", (e) => {
@@ -47,9 +64,15 @@ export default {
                     if (e.keyCode == 13) {
                         // for MutationObserver use
                         if (e.target.value !== "") {
-                            resetInputEvent()
-                            dropdownSelect.setAttribute("dds-selected", 0)
-                            dropdownSelect.setAttribute("dds-updated", "")
+                            if (input.dataset.numandperc) {
+                                if (!e.target.value.match(expression)) {
+                                    e.target.value = 0
+                                }
+                            } else {
+                                resetInputEvent()
+                                dropdownSelect.setAttribute("dds-selected", 0)
+                                dropdownSelect.setAttribute("dds-updated", "")
+                            }
                         }
                     }
                 }, false)
@@ -161,6 +184,11 @@ export default {
                 dropdownSelect.querySelector(".ds-value2").textContent = itemVal2
             }
         })
+    },
+
+    async valueFromInputFieldWithPerc(dropdownSelect, inputVal) {
+        dropdownSelect.querySelector(".ds-value1").textContent = inputVal
+        dropdownSelect.querySelector(".ds-value2").textContent = 0 // calculate percentage value
     },
 
     async valueFromInputField(dropdownSelect, inputVal) {

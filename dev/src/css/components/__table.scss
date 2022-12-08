@@ -10,7 +10,6 @@
             width: 100%;
 
             th, td {
-                text-align: center;
                 padding: 15px 30px;
             }
 
@@ -81,16 +80,6 @@
             @include scrollElement(x);
         }
 
-        body.mobile &, body.tablet & {
-            &::before {
-                content: "\2190  SWIPE \2192";
-                @include fontSize(10px);
-                position: absolute;
-                top: -20px;
-                right: 0;
-            }
-        }
-
         .table-arrowleft, .table-arrowright {
             display: block;
             cursor: pointer;
@@ -147,10 +136,42 @@
             }
         }
     }
+
+    &[data-align="center"] {
+        .table-container {
+            table {
+                th, td {
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+@mixin contentTextSwipe {
+    body.mobile &, body.tablet & {
+        &::before {
+            content: "\2190  SWIPE \2192";
+            @include fontSize(10px);
+            position: absolute;
+            top: -20px;
+            right: 0;
+        }
+    }
+}
+
+.comp-tables {
+    &[data-has-scroll="true"] {
+        @include contentTextSwipe;
+    }
 }
 
 .comp-dynamic-table {
     .table-container {
         display: none;
+    }
+
+    &[data-has-scroll="true"]:has(.table-container.show-important) {
+        @include contentTextSwipe;
     }
 }

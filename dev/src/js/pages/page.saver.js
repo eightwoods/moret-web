@@ -1,6 +1,7 @@
 import Swiper from "swiper"
 import { getAllSaverInfo, quoteInvestInSaver, quoteDivestFromSaver, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -10,7 +11,7 @@ export default {
 
     init() {
         // static methods call
-        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setSavers())
+        document.querySelector(".saver-list-content .js-refresh").addEventListener("click", () => this.setSavers())
         // this.setActiveVote()
 
         // observe sidenav
@@ -42,7 +43,9 @@ export default {
 
     setSavers() {
         const saverList = document.querySelector(".saver-list")
+        const saverInfo = document.querySelector(".saver-info")
         getLoader(saverList)
+        getLoader(saverInfo)
         
         const saverTable = saverList.querySelector(".comp-dynamic-table")
         saverTable.innerHTML = `
@@ -63,9 +66,13 @@ export default {
                 </table>
             </div>`
 
+        // reset
+        this.setSaverInfo()
+
         getAllSaverInfo(null).then((results) => {
             // console.log(results)
             getLoader(saverList, false)
+            getLoader(saverInfo, false)
 
             const saverData = []
             const nowTime = Math.floor( Date.now() / 1000)
@@ -80,40 +87,112 @@ export default {
                     data.NextVintageTime > nowTime? "Closed": "Open",
                     data.NextVintageStart
                 ])
+
+                // saver info data
+                this.setSaverInfo(data)
             })
 
             // init savers table
             componentTables.setDynamic(saverTable, saverData)
+
+            // events
+            if (results.length > 1) {
+                // saver table rows to inject data 
+                saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                    row.classList.add("cursor")
+                    row.addEventListener("click", () => {
+                        // saver info 
+                        this.setSaverInfo(results[index])
+                    }, false)
+                })
+            }
         })
     },
 
-    setPopupInfo(objVal) {
-        if (objVal.type === "topup") {
-            quoteInvestInSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
-                // console.log(results)
-                const arrNames = [
-                    { name: "Name of the saver:", span: objVal.saverName },
-                    { name: "Address of saver contract:", span: minimizeAddress(objVal.saverAddress)},
-                    {name: "Top up:", span: results.invest},
-                    {name: "Saver units:", span: results.holding},
-                ]
-
-                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
-            })
-        } else if (objVal.type === "takeout"){
-            quoteDivestFromSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
-                const arrNames = [
-                    { name: "Name of the saver:", span: objVal.saverName },
-                    { name: "Address of saver contract", span: minimizeAddress(objVal.saverAddress) },
-                    { name: "Take out:", span: results.divest },
-                    { name: "Saver units:", span: results.holding },
-                ]
-
-                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
-            })
+    setSaverInfo(data) {
+        const saverInfo = document.querySelector(".saver-info-content")
+        if (!data) {
+            saverInfo.textContent = ""
+            return false
         }
+        
+        const nowTime = Math.floor( Date.now() / 1000)
+        saverInfo.innerHTML = `
+            <div class="header-title m-b-24">${data.Name}</div>
+            <div class="saver-content">
+                <div class="info">
+                    <p class="m-b-20">${data.Symbol}.saver address: ${minimizeAddress(data.Address)}</p>
+                    <p>Vintage reopened at ${data.NextVintage}</p>
+                </div>
+
+                <div class="percentage-bar-multi">
+                    <div class="pbm-progress">
+                        <div class="pbm-top">
+                            <div class="pbm-progressbar"></div>
+                            <div class="pbm-value size-sm"><span>0%</span> P&L</div>
+                        </div>
+                        <div class="pbm-bottom">
+                            <div class="pbm-progressbar"></div>
+                            <div class="pbm-value size-sm"><span>0%</span> APY</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="percentage-bar-text align-center word-nowrap white-50 m-b-32">
+                    <p>$1,000.00 holding</p>
+                </div>
+
+                <div class="buttons-container"></div>
+            </div>`
+
+        if (data.NextVintageTime <= nowTime) {
+            saverInfo.querySelector(".buttons-container").innerHTML = `
+                <div class="buttons">
+                    <div class="col">
+                        <div class="in-border word-nowrap white-50">
+                            <input type="number" name="usdc-amount" value="6000" />&nbsp;&nbsp;USDC
+                        </div>
+                    </div>
+                    <div class="col">
+                        <a href="#" class="btn btn-green js-save">SAVE</a>
+                        <a href="#" class="btn btn-pink js-withdraw">WITHDRAW</a>
+                    </div>
+                </div>`
+        }
+
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.StaticYield.replace("%", ""), data.ProfitLoss.replace("%", ""))
+        
+        // click events
+        saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
+            e.preventDefault()
+            this.setPopupInfo({
+                type: "save",
+                title: "Invest to save",
+                data: data,
+            })
+        }, false)
+
+        saverInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
+            e.preventDefault()
+            this.setPopupInfo({
+                type: "withdraw",
+                title: "Invest to withdraw",
+                data: data,
+            })
+        }, false)
+    },
+
+    setPopupInfo(objVal) {
+        console.log(objVal)
+        const arrNames = [
+            {name: "Name:", span: objVal.data.Name},
+            {name: `${objVal.data.Symbol}.saver address:`, span: minimizeAddress(objVal.data.Address)},
+            {name: "Vintage reopened at", span: objVal.data.NextVintage},
+            {name: "P&L:", span: objVal.data.StaticYield},
+            {name: "APY:", span: objVal.data.ProfitLoss},
+        ]
+
+        showOverlayPopup(objVal.title, createList(arrNames, "investinsavers"))
+        // this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
     },
 
     executeTrade(type, saverAddress, funding, units) {

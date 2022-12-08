@@ -96,6 +96,8 @@ header {
                 position: absolute;
                 top: spacer(9);
                 left: 0;
+                padding-right: spacer();
+                padding-left: spacer();
                 width: 100vw;
                 height: calc(100vh - spacer(9));
                 
@@ -131,6 +133,9 @@ header {
 
                 .items-right {
                     text-align: center;
+                    .active-account {
+                        display: inline-block;
+                    }
                 }
 
                 .social, .notbtn-account {

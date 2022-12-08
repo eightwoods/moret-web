@@ -10,7 +10,7 @@
         height: 6px;
         background-color: $white-14;
 
-        .pbm-against, .pbm-for, .pbm-progressbar {
+        .pbm-top, .pbm-bottom, .pbm-progressbar {
             position: absolute;
             top: 0;
             left: 0;
@@ -40,18 +40,18 @@
             }
         }
 
-        .pbm-against {
+        .pbm-top {
             width: 0%;
             .pbm-progressbar {
-                background-color: $color-pink;
+                background-color: $color-green;
             }
             .pbm-value {
-                width: 130px;
+                width: 90px;
                 top: -35px;
-                right: -120px;
-                color: $color-pink;
+                right: -90px;
+                color: $color-green;
                 &::before {
-                    background-color: $color-pink;
+                    background-color: $color-green;
                     border-bottom-left-radius: 0;
                 }
                 &-50plus {
@@ -64,18 +64,18 @@
             }
         }
 
-        .pbm-for {
+        .pbm-bottom {
             width: 0%;
             .pbm-progressbar {
-                background-color: $color-green;
+                background-color: $color-blue;
             }
             .pbm-value {
                 width: 90px;
                 top: 12px;
                 right: -90px;
-                color: $color-green;
+                color: $color-blue;
                 &::before {
-                    background-color: $color-green;
+                    background-color: $color-blue;
                     border-top-left-radius: 0;
                 }
                 &-50plus {
