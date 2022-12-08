@@ -144,7 +144,8 @@ export default {
                 <div class="buttons-container"></div>
             </div>`
 
-        if (data.NextVintageTime <= nowTime) {
+        const showButtons = data.NextVintageTime <= nowTime
+        if (showButtons) {
             saverInfo.querySelector(".buttons-container").innerHTML = `
                 <div class="buttons">
                     <div class="col">
@@ -162,23 +163,25 @@ export default {
         compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.StaticYield.replace("%", ""), data.ProfitLoss.replace("%", ""))
         
         // click events
-        saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
-            e.preventDefault()
-            this.setPopupInfo({
-                type: "save",
-                title: "Invest to save",
-                data: data,
-            })
-        }, false)
+        if (showButtons) {
+            saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
+                e.preventDefault()
+                this.setPopupInfo({
+                    type: "save",
+                    title: "Invest to save",
+                    data: data,
+                })
+            }, false)
 
-        saverInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
-            e.preventDefault()
-            this.setPopupInfo({
-                type: "withdraw",
-                title: "Invest to withdraw",
-                data: data,
-            })
-        }, false)
+            saverInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
+                e.preventDefault()
+                this.setPopupInfo({
+                    type: "withdraw",
+                    title: "Invest to withdraw",
+                    data: data,
+                })
+            }, false)
+        }
     },
 
     setPopupInfo(objVal) {
