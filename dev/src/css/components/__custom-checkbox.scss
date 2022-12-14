@@ -17,10 +17,6 @@
                 @include centerElement();
                 width: 18px;
                 height: 18px;
-                background-image: url("/src/img/icon_tick.svg");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: cover;
                 opacity: 0.1;
             }
         }
@@ -35,6 +31,10 @@
                 background-color: $color-blue;
                 &::before {
                     opacity: 1;
+                    background-image: url("/src/img/icon_tick.svg");
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    background-size: cover;
                 }
             }
             &:last-child {

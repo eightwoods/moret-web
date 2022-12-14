@@ -1,6 +1,8 @@
 import Swiper from "swiper"
+import { tokenName, tokenPrice } from "../helpers/constant"
 import { getAllSaverInfo, quoteInvestInSaver, quoteDivestFromSaver, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
 
@@ -118,36 +120,49 @@ export default {
         
         const nowTime = Math.floor( Date.now() / 1000)
         saverInfo.innerHTML = `
-            <div class="header-title m-b-24">${data.Name}</div>
-            <div class="saver-content">
-                <div class="info">
-                    <p class="m-b-20">${data.Symbol}.saver address: ${minimizeAddress(data.Address)}</p>
-                    <p>Vintage reopened at ${data.NextVintage}</p>
-                </div>
-
-                <div class="percentage-bar-multi">
-                    <div class="pbm-progress">
-                        <div class="pbm-top">
-                            <div class="pbm-progressbar"></div>
-                            <div class="pbm-value size-sm"><span>0%</span> P&L</div>
+            <div class="saver-row">
+                <div class="saver-col">
+                    <div class="header-title m-b-24">${data.Name}</div>
+                    <div class="saver-content">
+                        <div class="info">
+                            <p class="m-b-20">${data.Symbol}.saver address: ${minimizeAddress(data.Address)}</p>
+                            <p>Vintage reopened at ${data.NextVintage}</p>
                         </div>
-                        <div class="pbm-bottom">
-                            <div class="pbm-progressbar"></div>
-                            <div class="pbm-value size-sm"><span>0%</span> APY</div>
+
+                        <div class="percentage-bar-multi">
+                            <div class="pbm-progress">
+                                <div class="pbm-top">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>0%</span> P&L</div>
+                                </div>
+                                <div class="pbm-bottom">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>0%</span> APY</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="percentage-bar-text align-center word-nowrap white-50">
+                            <p>$1,000.00 holding</p>
                         </div>
                     </div>
                 </div>
-                <div class="percentage-bar-text align-center word-nowrap white-50 m-b-32">
-                    <p>$1,000.00 holding</p>
+                <div class="saver-col">
+                    <div class="chart-comparison-legends size-sm white-50">
+                        <div class="ccl-legend">Legend 1</div>
+                        <div class="ccl-legend">Legend 2</div>
+                    </div>
+                    <div class="chart-comparison-wrapper">
+                        <div class="chart-comparison"></div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="buttons-container"></div>
-            </div>`
+            <div class="buttons-container"></div>`
 
         const showButtons = data.NextVintageTime <= nowTime
         if (showButtons) {
             saverInfo.querySelector(".buttons-container").innerHTML = `
-                <div class="buttons">
+                <div class="buttons m-t-32">
                     <div class="col">
                         <div class="in-border word-nowrap white-50">
                             <input type="number" name="usdc-amount" value="6000" />&nbsp;&nbsp;USDC
@@ -160,8 +175,14 @@ export default {
                 </div>`
         }
 
+        // initiate components
+        compChartComparison.createChart({
+            elem: saverInfo.querySelector(".chart-comparison"),
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=1d&limit=325`,
+            endpoint2: "https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1d&limit=325",
+        })
         compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.StaticYield.replace("%", ""), data.ProfitLoss.replace("%", ""))
-        
+
         // click events
         if (showButtons) {
             saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
