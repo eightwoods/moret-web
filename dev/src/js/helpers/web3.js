@@ -120,13 +120,14 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 
 // 6. calculate option prices (including vol, premium and collateral) depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
-export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     // try {
         if (strike<=0){
             throw 'Strike not set correctly.'
@@ -147,22 +148,22 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
 
         for(let i =0;i< allPools.length; i++){
             const poolAddress = allPools[i]
-            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), isCall ? 0 : 1, isBuy ? 0 : 1, false)
+            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(spread.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), type, isBuy ? 0 : 1, false)
 
             if(quotedPrice[0] != -1){
                 const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
-                // console.log(poolAddress, quotedPremium)
+                console.log(poolAddress, quotedPremium)
 
                 if (parseInt(bestPool, 16)==0){
                     premium = quotedPremium
-                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                    collateral = isBuy? 0: parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
                     price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
                     vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
                     bestPool = poolAddress
                 }
                 else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
                     premium = quotedPremium
-                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                    collateral = isBuy ? 0 : parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
                     price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
                     vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
                     bestPool = poolAddress
@@ -217,10 +218,14 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
     // }    
 }
 
-export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, amount, isCall, isBuy, isVol) => {
+// function to get option price of a specific pool
+// isBuy is true if Buy is selected, otherwise false
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
+export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, spread, amount, type, isBuy) => {
     try{
-        // console.log(poolAddress, tenor, strike, 0, amount, isCall, isBuy)
-        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, '0', amount, isCall, isBuy).call()
+        // console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
+        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, spread, amount, type, isBuy).call()
         // console.log(poolAddress, quotedPrice)
         return quotedPrice
     } catch(err){
@@ -271,17 +276,18 @@ export const getCapital = async (tokenAddr = null) => {
 
 // 8a. function to approve max amount if needed
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
-export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const approveOptionSpending = async (tokenAddr = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, type, paymentMethod, strike, spread, amount, expiry)
     console.log(optionCost)
     const fundingAddress = await brokerContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
@@ -334,14 +340,15 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
 
 // 8b. execute option trade 
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
-export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, type, paymentMethod, strike, spread, amount, expiry)
     const poolAddress = web3.utils.toChecksumAddress(optionCost['pool']) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
@@ -357,7 +364,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
             web3.utils.toWei(strike.toString()), 
             0,
             web3.utils.toWei(amount.toString()), 
-            isCall ? 0 : 1, 
+            type, 
             isBuy ? 0 : 1, 
             paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent }
         )
@@ -365,7 +372,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
         var nonceNew = await web3.eth.getTransactionCount(account)
 
         let approveTradeLink = null
-        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
@@ -455,7 +462,17 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
             let optionStrike = parseFloat(web3.utils.fromWei(option.strike));
             let optionAmount = parseFloat(web3.utils.fromWei(option.amount));
-            let optionType = option.poType == 0 ? "call" : "put";
+            let optionType = "call";
+            switch(option.poType){
+                case 1:
+                    optionType = "put";
+                    break;
+                case 2:
+                    optionType = "call spread";
+                    break;
+                default:
+                    optionType = "put spread";
+            }
             let optionMultiplier = option.side == 0 ? 1 : -1;
             let optionDelta, optionGamma, optionVega, optionTheta;
             if (secondsToExpiry > 0) {
@@ -1051,6 +1068,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
     let saverTable = []
+    console.log('saver load starts')
 
     await Promise.all(saverList.map(async (saverAddress) => {
     // for (let i = 0; i < saverList.length; i++) {
@@ -1082,15 +1100,16 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let vintageTenor = 0
             let vintageYield = 0
             
-            // console.log(options)
-            for (let j = 0; j < options.length;j++){
+            console.log(options)
+            await Promise.all(options.map(async (optionId) => {
+            // for (let j = 0; j < options.length;j++){
                 // console.log('options',j, options[j])
-                let option = await vaultContract.methods.getOption(Number(options[j])).call()
+                let option = await vaultContract.methods.getOption(Number(optionId)).call()
                 // console.log(option)
                 const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
                 const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
                 const optionPremium = parseFloat(web3.utils.fromWei(option.premium))
-                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : 0) / option.tenor * 86400 * 365
+                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : -1) / option.tenor * 86400 * 365
                 vintageTenor = Math.max(vintageTenor, Number(option.tenor))
 
                 const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
@@ -1111,7 +1130,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                     optionsMV = optionsMV + parseFloat(web3.utils.fromWei(collaterals[1]))
                 }
                 // console.log(collaterals, optionsMV)
-            }
+            }))
 
             let totalSupply = await saverContract.methods.totalSupply().call()
             let totalUnits = parseFloat(web3.utils.fromWei(totalSupply))
@@ -1124,8 +1143,10 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let holdings = parseFloat(web3.utils.fromWei(unitHeld)) * unitPrice
             
             let nextVintage = await saverContract.methods.nextVintageTime().call()
-            let params = await saverContract.methods.fiaParams().call()
             let estyield = vintageYield / startCap 
+
+            let params = await saverContract.methods.fiaParams().call()
+            let paramsMsg = `Soft Ceiling striken at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days. Buffer range ${((Number(params.putMoney) - Number(params.putSpread)) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`
             
             let nextVintageStart = Math.floor((Number(nextVintage) + Number(params.tradeWindow)) / 86400) * 86400 + Number(params.rollHour)
             // console.log(params, nextVintage, nextVintageStart)
@@ -1135,9 +1156,10 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 "Symbol": symbol,
                 "Address": saverAddress,
                 "MarketCap": `$${(marketCap).toFixed(0)}`,
-                "UnitAsset": `$${(unitPrice).toFixed(2)}`,
+                "UnitAsset": unitPrice,// `$${(unitPrice).toFixed(2)}`,
                 "Holding": `$${(holdings).toFixed(2)}`,
                 "UnitHeld": parseFloat(web3.utils.fromWei(unitHeld)).toFixed(1),
+                "Tenor": Math.ceil(vintageTenor / 3600), // convert seconds to hours
                 "StaticYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "ProfitLoss": vintagePnL.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "NextVintageTime": nextVintage,
@@ -1147,6 +1169,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)).toFixed(0),
                 "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)).toFixed(0),
                 "Protection": parseFloat(web3.utils.fromWei(vintage.putSpread)).toFixed(0),
+                "Params": paramsMsg,
             })
         }
     }))
@@ -1190,14 +1213,14 @@ export const approveSaver = async (type, saverAddress, funding, units) => {
 
         const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
         console.log(type, saverAddress, funding, units)
-        if (type === "topup") {
+        if (type === "save") {
             const fundingAddress = await saverContract.methods.funding().call()
             // console.log('top up', saverAddress, fundingAddress, account, funding, units)
             const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
             await approveMaxAmount(paymentToken, account, saverAddress, funding)
             
             return 'success'
-        } else if (type === "takeout") {
+        } else if (type === "withdraw") {
             // console.log('take out', saverAddress, paymentToken, account, funding, units)
             await approveMaxAmount(saverContract, account, saverAddress, units)
             

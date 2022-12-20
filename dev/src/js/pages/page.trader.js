@@ -134,6 +134,10 @@ export default {
         componentDropdownSelect.createListItems(document.querySelector(".opt-strike"), getStrikes(null, this.isCall()), false, resetInput)
     },
 
+    optSpread() {
+        // placeholder for prepopulating spread field
+    },
+
     optAmount() {
         const inputAmount = document.querySelector("input[name='opt-amount']")
         inputAmount.addEventListener("keydown", (e) => {
@@ -148,10 +152,6 @@ export default {
         componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
     },
 
-    optSpread() {
-        // 
-    },
-
     optPrice(inOverlayPopup = false) {
         // console.log("optPrice()")
         new Promise((resolve, reject) => {
@@ -159,14 +159,15 @@ export default {
                 resolve({
                     "strike": this.getStrikeValue(), 
                     "amount": this.getAmountValue(), 
-                    "expiry": this.getExpiryValue()
+                    "expiry": this.getExpiryValue(),
+                    "spread": this.getSpreadValue()
                 })
             }, this.globals.init ? 2000 : 500)
         })
         .then(async(res) => { 
             // console.log(res)
-            // console.log(tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
-            const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
+            // console.log(tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
+            const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.spread, res.amount, res.expiry)
             
             if (inOverlayPopup) {
                 // console.log("refresh inOverlayPopup")
@@ -250,6 +251,7 @@ export default {
                     class: "to-buy"
                 }, 
                 {name: "Strike:", span: "-", class: "to-strike"},
+                { name: "Spread:", span: "n.a.", class: "to-spread" },
                 {name: "Expiry:", span: "-", class: "to-expiry"},
                 {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
                 {name: "Implied Volatility:", span: "-", class: "to-volatility"},
@@ -262,6 +264,14 @@ export default {
             // insert data values in overlay popup
             componentDropdownSelect.insertValues(document.querySelector(".opt-strike"), document.querySelector(".overlay-popup .to-strike span"))
             componentDropdownSelect.insertValues(document.querySelector(".opt-expiry"), document.querySelector(".overlay-popup .to-expiry span"), true)
+
+            const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
+            const isSpreadHidden = optSpreadDropdownSelect.classList.contains("hide")
+            if(!isSpreadHidden){
+                // console.log(document.querySelector(".opt-spread").querySelector(".ds-value1").textContent)
+                componentDropdownSelect.insertValues(document.querySelector(".opt-spread"), document.querySelector(".overlay-popup .to-spread span"))
+            }
+
             this.optPrice(true)
             
             setTimeout(() => this.executeTrade(), 500)
@@ -305,7 +315,7 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approveOptionSpending(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+            const approveAllowance = await approveOptionSpending(null, this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getSpreadValue(), this.getAmountValue(), this.getExpiryValue())
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
             } else {
@@ -317,7 +327,7 @@ export default {
                 // execute option trade
                 setTimeout(async() => {
                     this.executeTradeTimer(awaitTradeTimer)
-                    const approveTrade = await executeOptionTrade(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+                    const approveTrade = await executeOptionTrade(null, this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getSpreadValue(), this.getAmountValue(), this.getExpiryValue())
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)
                     } else {
@@ -388,8 +398,32 @@ export default {
         return componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy"
     },
 
-    isCall() {
+    isCall(){
         return componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
+    },
+
+    getOptionType() {
+        const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
+        const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
+        const isSpreadHidden = optSpreadDropdownSelect.classList.contains("hide")
+        // console.log('spread dropdown hidden', isSpreadHidden)
+
+        if (isCall){
+            if(isSpreadHidden){
+                return 0
+            }
+            else{
+                return 2
+            }
+        }
+        else{
+            if (isSpreadHidden) {
+                return 1
+            }
+            else {
+                return 3
+            }
+        }
     },
 
     getPaymentMethodValue() {
@@ -398,6 +432,10 @@ export default {
 
     getStrikeValue() {
         return document.querySelector(".opt-strike .ds-value1").textContent.trim()
+    },
+
+    getSpreadValue() {
+        return document.querySelector(".opt-spread .ds-value1").textContent.trim()
     },
 
     getAmountValue() {

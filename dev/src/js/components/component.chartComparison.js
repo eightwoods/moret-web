@@ -1,4 +1,4 @@
-import { createChart } from 'lightweight-charts'
+import { createChart, LineStyle } from 'lightweight-charts'
 
 export default {
     globals: {
@@ -42,20 +42,25 @@ export default {
         } else {
             this.dataChart(areaSeries1, obj.endpoint1) //"https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=325"
         }
+        const lineWidth = 2
+        areaSeries1.createPriceLine({ price: obj.linedata[0], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'inception level'})
+        areaSeries1.createPriceLine({ price: obj.linedata[1], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'soft ceiling' })
+        areaSeries1.createPriceLine({ price: obj.linedata[2], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'buffer start' })
+        areaSeries1.createPriceLine({ price: obj.linedata[3], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'buffer end' })
 
-        const areaSeries2 = chart.addAreaSeries({
-            lastValueVisible: true,
-            crosshairMarkerVisible: true,
-            lineColor: "#A3FF5B",
-            topColor: "rgba(163, 255, 91, 0.5)",
-            bottomColor: "rgba(163, 255, 91, 0.1)",
-        })
+        // const areaSeries2 = chart.addAreaSeries({
+        //     lastValueVisible: true,
+        //     crosshairMarkerVisible: true,
+        //     lineColor: "#A3FF5B",
+        //     topColor: "rgba(163, 255, 91, 0.5)",
+        //     bottomColor: "rgba(163, 255, 91, 0.1)",
+        // })
         
-        if (obj.areaSeries2Data) {
-            areaSeries2.setData(obj.areaSeries2Data)
-        } else {
-            this.dataChart(areaSeries2, obj.endpoint2) //"https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1d&limit=325"
-        }
+        // if (obj.areaSeries2Data) {
+        //     areaSeries2.setData(obj.areaSeries2Data)
+        // } else {
+        //     this.dataChart(areaSeries2, obj.endpoint2) //"https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1d&limit=325"
+        // }
 
         chart.timeScale().fitContent()
         chart.resize(obj.elem.parentElement.offsetWidth, obj.elem.parentElement.offsetHeight)

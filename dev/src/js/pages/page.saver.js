@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
-import { getAllSaverInfo, quoteInvestInSaver, quoteDivestFromSaver, approveSaver, tradeSaver } from "../helpers/web3"
+import { getAllSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
@@ -48,7 +48,8 @@ export default {
         const saverInfo = document.querySelector(".saver-info")
         getLoader(saverList)
         getLoader(saverInfo)
-        
+        console.log('loader set')
+
         const saverTable = saverList.querySelector(".comp-dynamic-table")
         saverTable.innerHTML = `
             <div class="table-container">
@@ -125,7 +126,7 @@ export default {
                     <div class="header-title m-b-24">${data.Name}</div>
                     <div class="saver-content">
                         <div class="info">
-                            <p class="m-b-20">${data.Symbol}.saver address: ${minimizeAddress(data.Address)}</p>
+                            <p class="m-b-20">${data.Params}</p>
                             <p>Vintage reopened at ${data.NextVintage}</p>
                         </div>
 
@@ -133,24 +134,24 @@ export default {
                             <div class="pbm-progress">
                                 <div class="pbm-top">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>0%</span> P&L</div>
+                                    <div class="pbm-value size-sm"><span>${data.ProfitLoss}</span> P&L</div>
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>0%</span> APY</div>
+                                    <div class="pbm-value size-sm"><span>${data.StaticYield}</span> APY</div>
                                 </div>
                             </div>
                         </div>
                         <div class="percentage-bar-text align-center word-nowrap white-50">
-                            <p>$1,000.00 holding</p>
+                            <p>Current Holding ${data.UnitHeld} ${data.Symbol} = ${data.Holding}</p>
                         </div>
                     </div>
                 </div>
                 <div class="saver-col">
-                    <div class="chart-comparison-legends size-sm white-50">
-                        <div class="ccl-legend">Legend 1</div>
-                        <div class="ccl-legend">Legend 2</div>
-                    </div>
+                    <!-- <div class="chart-comparison-legends size-sm white-50">
+                        <div class="ccl-legend">${tokenName()}</div>
+                        <div class="ccl-legend">${data.Symbol}</div>
+                    </div> -->
                     <div class="chart-comparison-wrapper">
                         <div class="chart-comparison"></div>
                     </div>
@@ -169,7 +170,7 @@ export default {
                         </div>
                     </div>
                     <div class="col">
-                        <a href="#" class="btn btn-green js-save">SAVE</a>
+                        <a href="#" class="btn btn-green js-save">TOP UP</a>
                         <a href="#" class="btn btn-pink js-withdraw">WITHDRAW</a>
                     </div>
                 </div>`
@@ -178,19 +179,21 @@ export default {
         // initiate components
         compChartComparison.createChart({
             elem: saverInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=1d&limit=325`,
-            endpoint2: "https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1d&limit=325",
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=1h&limit=${data.Tenor}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1h&limit=${data.Tenor}`,
+            linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
-        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.StaticYield.replace("%", ""), data.ProfitLoss.replace("%", ""))
-
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.StaticYield.replace("%", ""))
+        
         // click events
         if (showButtons) {
             saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
                 e.preventDefault()
                 this.setPopupInfo({
                     type: "save",
-                    title: "Invest to save",
+                    title: "Top up to vault",
                     data: data,
+                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
                 })
             }, false)
 
@@ -198,8 +201,9 @@ export default {
                 e.preventDefault()
                 this.setPopupInfo({
                     type: "withdraw",
-                    title: "Invest to withdraw",
+                    title: "Withdraw from vault",
                     data: data,
+                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
                 })
             }, false)
         }
@@ -207,16 +211,17 @@ export default {
 
     setPopupInfo(objVal) {
         console.log(objVal)
+        let units = objVal.amount / objVal.data.UnitAsset
         const arrNames = [
             {name: "Name:", span: objVal.data.Name},
-            {name: `${objVal.data.Symbol}.saver address:`, span: minimizeAddress(objVal.data.Address)},
-            {name: "Vintage reopened at", span: objVal.data.NextVintage},
-            {name: "P&L:", span: objVal.data.StaticYield},
-            {name: "APY:", span: objVal.data.ProfitLoss},
+            { name: "Address:", span: objVal.data.Address }, //minimizeAddress(objVal.data.Address)
+            { name: "Unit price", span: `$${(objVal.data.UnitAsset).toFixed(2)}` },
+            { name: "Units:", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
+            { name: "Trade value:", span: `$${(objVal.amount).toFixed(2)}` },
         ]
 
         showOverlayPopup(objVal.title, createList(arrNames, "investinsavers"))
-        // this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
+        this.executeTrade(objVal.type, objVal.data.Address, objVal.amount, units)
     },
 
     executeTrade(type, saverAddress, funding, units) {
@@ -225,9 +230,9 @@ export default {
         document.querySelector(".overlay-popup .op-content").appendChild(container)
 
         let btnColor = "blue"
-        if (type === "topup") {
+        if (type === "save") {
             btnColor = "green"
-        } else if (type === "takeout") {
+        } else if (type === "withdraw") {
             btnColor = "pink"
         }
 
