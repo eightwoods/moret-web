@@ -1146,7 +1146,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let estyield = vintageYield / startCap 
 
             let params = await saverContract.methods.fiaParams().call()
-            let paramsMsg = `Soft Ceiling striken at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days. Buffer range ${((Number(params.putMoney) - Number(params.putSpread)) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`
+            let paramsMsg = `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`
             
             let nextVintageStart = Math.floor((Number(nextVintage) + Number(params.tradeWindow)) / 86400) * 86400 + Number(params.rollHour)
             // console.log(params, nextVintage, nextVintageStart)

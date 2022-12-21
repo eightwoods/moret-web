@@ -84,7 +84,7 @@ export default {
                 saverData.push([
                     data.Name,
                     data.Holding,
-                    data.UnitAsset,
+                    `$${(data.UnitAsset).toFixed(2)}`,
                     data.StaticYield,
                     data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
