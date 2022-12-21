@@ -43,9 +43,9 @@ export default {
             this.dataChart(areaSeries1, obj.endpoint1) //"https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&limit=325"
         }
         const lineWidth = 2
-        areaSeries1.createPriceLine({ price: obj.linedata[0], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'inception level'})
-        areaSeries1.createPriceLine({ price: obj.linedata[1], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'soft ceiling' })
-        areaSeries1.createPriceLine({ price: obj.linedata[2], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'buffer start' })
+        // areaSeries1.createPriceLine({ price: obj.linedata[0], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'inception level'})
+        areaSeries1.createPriceLine({ price: obj.linedata[1], color: '#f5a742', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'soft ceiling' })
+        areaSeries1.createPriceLine({ price: obj.linedata[2], color: '#42f5dd', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'buffer start' })
         areaSeries1.createPriceLine({ price: obj.linedata[3], color: '#be1238', lineWidth: lineWidth, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: 'buffer end' })
 
         // const areaSeries2 = chart.addAreaSeries({

@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools, saverList } from "./constant"
+import { moretAddress, exchangeAddress, vaultAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools, saverList } from "./constant"
 import { black_scholes } from "./pricing"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
@@ -247,8 +247,6 @@ export const getAllPools = async (tokenAddr = null) => {
 // 7. refresh total gross capital and utility in decimals
 export const getCapital = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     const allPools = await getAllPools(objTokenAddr)
@@ -392,7 +390,6 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentM
 export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, endBlock = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
@@ -439,8 +436,6 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 
 export const getActiveTransactions = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     const oracle = await getPriceOracle(objTokenAddr)
@@ -728,8 +723,6 @@ export const getVolatilityHoldings = async (tokenAddr = null) =>{
 //
 export const getAllPoolsInfo = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
@@ -801,8 +794,6 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
 // amount is the USDC amount to invest in pool
 export const quoteInvestInPool = async (poolAddress, amount) => {
     // try {
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const grossCapital = await vaultContract.methods.calcCapital(poolAddress, false, true).call()
         const grossCapitalFloat = parseFloat(web3.utils.fromWei(grossCapital))
@@ -909,8 +900,6 @@ export const investInPool = async (poolAddress, amount) => {
 // amount is the USDC amount to invest in pool
 export const quoteDivestFromPool = async (poolAddress, amount) => {
     // try {
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
         const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -936,8 +925,6 @@ export const quoteDivestFromPool = async (poolAddress, amount) => {
 // amount is the usdc amount to invest in pool
 export const approveDivestFromPool = async (poolAddress, amount) => {
     try{
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
         const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -961,7 +948,6 @@ export const approveDivestFromPool = async (poolAddress, amount) => {
 // amount is the USDC amount to invest in pool
 export const divestFromPool = async (poolAddress, amount) => {
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
     const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -1060,8 +1046,6 @@ export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketM
 // 17. list all savers with their features ( to be done )
 export const getAllSaverInfo = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
@@ -1109,7 +1093,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
                 const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
                 const optionPremium = parseFloat(web3.utils.fromWei(option.premium))
-                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : -1) / option.tenor * 86400 * 365
+                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : 0) / option.tenor * 86400 * 365
                 vintageTenor = Math.max(vintageTenor, Number(option.tenor))
 
                 const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
