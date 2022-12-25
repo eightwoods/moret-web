@@ -179,8 +179,8 @@ export default {
         // initiate components
         compChartComparison.createChart({
             elem: saverInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=1h&limit=${data.Tenor}`,
-            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=1h&limit=${data.Tenor}`,
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${data.Tenor}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
         compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.StaticYield.replace("%", ""))

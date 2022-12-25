@@ -1054,15 +1054,15 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
     let saverTable = []
     console.log('saver load starts')
 
-    await Promise.all(saverList.map(async (saverAddress) => {
+    await Promise.all(saverList.map(async (saverInfo) => {
     // for (let i = 0; i < saverList.length; i++) {
-        // const saverAddress = saverList[i]
+        const saverAddress = saverInfo.address
         let saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
-        let poolAddress = await saverContract.methods.pool().call()
-        let poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
-        let marketAddress = await poolContract.methods.marketMaker().call()
-        let marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
-        let saverUnderlying = await marketContract.methods.underlying().call()
+        // let poolAddress = await saverContract.methods.pool().call()
+        // let poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+        // let marketAddress = await poolContract.methods.marketMaker().call()
+        // let marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
+        let saverUnderlying = saverInfo.tokenAddress //await marketContract.methods.underlying().call()
         if(saverUnderlying == objTokenAddr){
             const name = await saverContract.methods.name().call()
             const symbol = await saverContract.methods.symbol().call()
@@ -1084,11 +1084,11 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
             let vintageTenor = 0
             let vintageYield = 0
             
-            console.log(options)
+            // console.log(options)
             await Promise.all(options.map(async (optionId) => {
             // for (let j = 0; j < options.length;j++){
                 // console.log('options',j, options[j])
-                let option = await vaultContract.methods.getOption(Number(optionId)).call()
+                let option = await vaultContract.methods.getOption(optionId).call()
                 // console.log(option)
                 const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
                 const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
@@ -1143,7 +1143,7 @@ export const getAllSaverInfo = async (tokenAddr = null) => {
                 "UnitAsset": unitPrice,// `$${(unitPrice).toFixed(2)}`,
                 "Holding": `$${(holdings).toFixed(2)}`,
                 "UnitHeld": parseFloat(web3.utils.fromWei(unitHeld)).toFixed(1),
-                "Tenor": Math.ceil(vintageTenor / 3600), // convert seconds to hours
+                "Tenor": Math.ceil(vintageTenor / 3600 ), // convert seconds to hours
                 "StaticYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "ProfitLoss": vintagePnL.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                 "NextVintageTime": nextVintage,
