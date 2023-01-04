@@ -34,7 +34,10 @@ const setup = {
 
         if (document.querySelector("body.os-android, body.os-ios")) {
             if (typeof window.web3 === "undefined") {
-                window.location.href = metamaskDownload
+                // window.location.href = metamaskDownload
+                alert("redirect")
+            } else {
+                alert("NO redirect")
             }
         } else if (document.querySelector("body.desktop.os-other")) {
             if (document.querySelector("body.safari")) {
