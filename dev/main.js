@@ -2,15 +2,18 @@ import "swiper/css"
 import "./main.scss"
 
 import { tokens, tokenActive } from "./src/js/helpers/constant"
-import { getDeviceType, getMobileOS } from "./src/js/helpers/utils"
+import { getDeviceType, getMobileOS, getBrowser } from "./src/js/helpers/utils"
 
 const setup = {
     init() {
         // use for styling
-        document.body.classList.add("js-enable", getDeviceType(), getMobileOS())
+        document.body.classList.add("js-enable", getDeviceType(), getMobileOS(), getBrowser())
+
+        // no metamask
+        this.getMetaMask()
 
         // no access - redirect user
-        this.setAccess()
+        this.setNoAccess()
         
         // set default active token
         if (!localStorage.getItem(tokenActive)) {
@@ -24,10 +27,27 @@ const setup = {
         this.setEvents()
     },
 
-    setAccess() {
-        if (document.querySelector("main.home, main.no-access")) {
-            return false
+    getMetaMask() {
+        const metamaskDownload = "https://metamask.io/download/"
+        if (document.querySelector("main.home, .no-metamask, .no-access")) 
+            return
+
+        if (document.querySelector("body.os-android, body.os-ios")) {
+            window.location.href = metamaskDownload
+        } else if (document.querySelector("body.desktop.os-other")) {
+            if (document.querySelector("body.safari")) {
+                window.location.href = metamaskDownload
+            } else {
+                if (!window.ethereum) {
+                    window.location.href = "/no-metamask.html"
+                }
+            }
         }
+    },
+
+    setNoAccess() {
+        if (document.querySelector("main.home, .no-metamask, .no-access")) 
+            return
 
         fetch("https://get.geojs.io/v1/ip/geo.json")
             .then(res => res.json())

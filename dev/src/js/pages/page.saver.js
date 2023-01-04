@@ -115,7 +115,7 @@ export default {
         const saverInfo = document.querySelector(".saver-info-content")
         if (!data) {
             saverInfo.textContent = ""
-            return false
+            return
         }
         
         const nowTime = Math.floor( Date.now() / 1000)

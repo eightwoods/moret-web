@@ -52,9 +52,8 @@ export default {
     },
 
     setEvents() {
-        if (document.querySelector(".no-access")) {
-            return false
-        }
+        if (document.querySelector(".no-metamask, .no-access")) 
+            return
         
         const menuOpen = this.globals.elem.querySelector(".js-menuOpen")
         const menuClose = this.globals.elem.querySelector(".js-menuClose")

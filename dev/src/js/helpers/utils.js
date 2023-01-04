@@ -43,6 +43,26 @@ export const getMobileOS = () => {
     return "os-other"
 }
 
+export const getBrowser = () => {
+    const ua = navigator.userAgent
+    let browserName
+    
+    if (ua.match(/chrome|chromium|crios/i)) {
+        browserName = "chrome"
+    } else if (ua.match(/firefox|fxios/i)) {
+        browserName = "firefox"
+    } else if (ua.match(/safari/i)) {
+        browserName = "safari"
+    } else if (ua.match(/opr\//i)) {
+        browserName = "opera"
+    } else if (ua.match(/edg/i)) {
+        browserName = "edge"
+    } else {
+        browserName = "unknown"
+    }
+    return browserName
+}
+
 export const mobileDevices = () => document.body.classList.contains("mobile") || document.body.classList.contains("tablet")
 
 export const elMouseOver = () => (mobileDevices() ? "touchstart" : "mouseenter")

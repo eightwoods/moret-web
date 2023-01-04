@@ -83,7 +83,7 @@ header {
                     display: flex;
                     column-gap: 16px;
                     align-items: center;
-                    justify-content: right;
+                    justify-content: flex-end;
 
                     &-column-gap-lg {
                         column-gap: 26px;
