@@ -33,7 +33,7 @@ const setup = {
             return
 
         if (document.querySelector("body.os-android, body.os-ios")) {
-            if (!window.ethereum) {
+            if (typeof window.web3 === "undefined") {
                 window.location.href = metamaskDownload
             }
         } else if (document.querySelector("body.desktop.os-other")) {
