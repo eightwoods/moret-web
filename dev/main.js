@@ -41,8 +41,10 @@ const setup = {
             }
         } else if (document.querySelector("body.desktop.os-other")) {
             if (document.querySelector("body.safari")) {
-                window.location.href = metamaskDownload
+                // window.location.href = metamaskDownload
+                alert("test1")
             } else {
+                alert("test2")
                 if (!window.ethereum) {
                     window.location.href = "/no-metamask.html"
                 }
