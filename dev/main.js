@@ -33,13 +33,8 @@ const setup = {
             return
 
         if (document.querySelector("body.os-android, body.os-ios")) {
-            alert(getDeviceType() +" "+ getMobileOS() +" "+ getBrowser())
-
             if (!window.ethereum) {
-                // window.location.href = metamaskDownload
-                alert("redirect")
-            } else {
-                alert("NO redirect")
+                window.location.href = metamaskDownload
             }
         } else if (document.querySelector("body.desktop.os-other")) {
             if (document.querySelector("body.safari")) {
