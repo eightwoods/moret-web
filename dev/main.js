@@ -33,7 +33,7 @@ const setup = {
             return
 
         if (document.querySelector("body.os-android, body.os-ios")) {
-            if (typeof window.web3 === "undefined") {
+            if (!window.ethereum) {
                 // window.location.href = metamaskDownload
                 alert("redirect")
             } else {
@@ -41,10 +41,8 @@ const setup = {
             }
         } else if (document.querySelector("body.desktop.os-other")) {
             if (document.querySelector("body.safari")) {
-                // window.location.href = metamaskDownload
-                alert("test1")
+                window.location.href = metamaskDownload
             } else {
-                alert("test2")
                 if (!window.ethereum) {
                     window.location.href = "/no-metamask.html"
                 }
