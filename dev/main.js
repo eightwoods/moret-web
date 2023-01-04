@@ -33,7 +33,9 @@ const setup = {
             return
 
         if (document.querySelector("body.os-android, body.os-ios")) {
-            window.location.href = metamaskDownload
+            if (!window.ethereum) {
+                window.location.href = metamaskDownload
+            }
         } else if (document.querySelector("body.desktop.os-other")) {
             if (document.querySelector("body.safari")) {
                 window.location.href = metamaskDownload
