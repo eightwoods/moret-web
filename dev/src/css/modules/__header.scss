@@ -103,7 +103,7 @@ header {
                 
                 .items {
                     text-align: center;
-                    padding-bottom: spacer(7);
+                    padding-bottom: spacer(3);
                     
                     li {
                         margin-bottom: spacer();
@@ -133,6 +133,7 @@ header {
 
                 .items-right {
                     text-align: center;
+                    padding-bottom: spacer(3);
                     .active-account {
                         display: inline-block;
                     }

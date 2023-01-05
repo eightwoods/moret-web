@@ -30,6 +30,10 @@ export default {
         const progressTop = elem.querySelector(".pbm-top")
         const progressBottom = elem.querySelector(".pbm-bottom")
 
+        if (parseInt(topVal) < parseInt(bottomVal)) {
+            progressTop.classList.add("pbm-zindex1")
+        }
+
         gsap.to(progressTop, {
             width: `${topVal}%`,
             ease: this.globals.easing,
