@@ -3,6 +3,7 @@ import path from "path"
 import fg from "fast-glob"
 import copy from "rollup-plugin-copy"
 import del from "rollup-plugin-delete"
+import handlebars from "vite-plugin-handlebars"
 
 export default {
     root: path.resolve(__dirname, "dev"),
@@ -14,6 +15,9 @@ export default {
         },
     },
     plugins: [
+        handlebars({
+            partialDirectory: path.resolve(__dirname, "dev/partials"),
+        }),
         del({ 
             targets: "assets/*", 
             hook: "buildEnd" 

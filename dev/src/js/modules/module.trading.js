@@ -1,6 +1,6 @@
 import { gsap } from "gsap"
 import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
-import { getImageUrl } from "../helpers/utils"
+import { getUrlVars, getImageUrl } from "../helpers/utils"
 import { getPrice } from "../helpers/web3"
 
 export default {
@@ -12,10 +12,22 @@ export default {
 
     init() {
         this.elSidenav = this.globals.elem.querySelector(".sidenav")
+        this.headerMenu()
         this.sideNav(this.elSidenav)
         this.sideNavRefreshPrice(this.elSidenav)
         this.sideNavLimiteView(this.elSidenav)
         this.animateEachPanel()
+    },
+
+    headerMenu() {
+        const pageUrlName = window.location.pathname.replace("/", "").replace(".html", "")
+        const navItems = this.globals.elem.parentElement.querySelectorAll(".nav-contents .items li")
+        navItems.forEach((list) => {
+            const linkUrlName = list.querySelector("a").getAttribute("href").replace(".html", "")
+            if (pageUrlName.includes(linkUrlName)) {
+                list.querySelector("a").classList.add("btn-border-active")
+            }
+        })
     },
 
     sideNav(sidenav) {
