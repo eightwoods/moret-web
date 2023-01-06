@@ -24,7 +24,8 @@ export default {
         }),
         copy({
             targets: [
-                {src: "dev/src/json/*.json", dest: "json", hook: "buildEnd"}
+                {src: "dev/src/json/*.json", dest: "json"},
+                {src: "dev/script/*", dest: "script"}
             ]
         })
     ]
