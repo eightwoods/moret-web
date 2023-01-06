@@ -94,7 +94,7 @@ header {
             @include mediaQuery($pb-lgmd, max) {
                 @include scrollElement(y);
                 position: absolute;
-                top: spacer(9);
+                top: spacer(8);
                 left: 0;
                 padding-right: spacer();
                 padding-left: spacer();

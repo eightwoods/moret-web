@@ -28,21 +28,16 @@ const setup = {
     },
 
     getMetaMask() {
-        const metamaskDownload = "https://metamask.io/download/"
         if (document.querySelector("main.home, .no-metamask, .no-access")) 
             return
 
         if (document.querySelector("body.os-android, body.os-ios")) {
             if (!window.ethereum) {
-                window.location.href = metamaskDownload
+                window.location.href = "https://metamask.io/download/"
             }
         } else if (document.querySelector("body.desktop.os-other")) {
-            if (document.querySelector("body.safari")) {
-                window.location.href = metamaskDownload
-            } else {
-                if (!window.ethereum) {
-                    window.location.href = "/no-metamask.html"
-                }
+            if (!window.ethereum) {
+                window.location.href = "/no-metamask.html"
             }
         }
     },
