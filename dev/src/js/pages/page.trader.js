@@ -1,5 +1,7 @@
-import { tokenName, tokenPrice } from "../helpers/constant" 
+import Big from "big.js"
+import { tokenName, tokenPrice, tokenAddress } from "../helpers/constant" 
 import { getLoader, createList, showOverlayPopup } from "../helpers/utils"
+import { getPrice } from "../helpers/web3"
 import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
@@ -41,6 +43,7 @@ export default {
                             document.querySelector(".opt-strike").removeAttribute("dds-selected")
                             this.optStrike(true)
                             this.optExpiry()
+                            this.optSpread(0, 5)
                             
                             this.optPrice()
                             this.liquidityPool()
@@ -102,8 +105,8 @@ export default {
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
 
         // observe option Spread checkbox
-        const optSpreadOptions = {attributes: true, attributeFilter: ["customcheckbox-clicked"]}
-        const optSpreadObserver = new MutationObserver((mutations) => {
+        const optSpreadCheckOpt = {attributes: true, attributeFilter: ["customcheckbox-clicked"]}
+        const optSpreadCheckObserver = new MutationObserver((mutations) => {
             for (let mutation of mutations) {
                 if (mutation.attributeName === "customcheckbox-clicked") {
                     const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
@@ -115,7 +118,24 @@ export default {
                 }
             }
         })
-        optSpreadObserver.observe(document.querySelector(".opt-spread.custom-checkbox"), optSpreadOptions)
+        optSpreadCheckObserver.observe(document.querySelector(".opt-spread.custom-checkbox"), optSpreadCheckOpt)
+
+        // observe option Spread dropdown input
+        const optSpreadInputOpt = {attributes: true, attributeFilter: ["numberandpercentage-updated"]}
+        const optSpreadInputObserver = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.attributeName === "numberandpercentage-updated") {
+                    const optSpreadInputVal = document.querySelector(".opt-spread.dropdown-select input").value
+                    if (optSpreadInputVal.includes("%")) {
+                        this.optSpread(0, optSpreadInputVal.replace("%", ""))
+                    } else {
+                        this.optSpread(optSpreadInputVal)
+                    }
+                    console.log(optSpreadInputVal)
+                }
+            }
+        })
+        optSpreadInputObserver.observe(document.querySelector(".opt-spread.dropdown-select input"), optSpreadInputOpt)
     },
 
     optTokenName() {
@@ -134,10 +154,6 @@ export default {
         componentDropdownSelect.createListItems(document.querySelector(".opt-strike"), getStrikes(null, this.isCall()), false, resetInput)
     },
 
-    optSpread() {
-        // placeholder for prepopulating spread field
-    },
-
     optAmount() {
         const inputAmount = document.querySelector("input[name='opt-amount']")
         inputAmount.addEventListener("keydown", (e) => {
@@ -150,6 +166,25 @@ export default {
 
     optExpiry() {
         componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
+    },
+
+    async optSpread(value1 = 0, value2 = 0) {
+        // console.log("optSpread()")
+        try {
+            const currPrice = await getPrice(tokenAddress())
+            let spreadVal1 = value1
+            let spreadVal2 = value2
+            
+            if (value1 > 0) {
+                spreadVal2 = Big(spreadVal1).div(currPrice.replace("$", "")).times(100).round(2).toNumber()
+            } else {
+                spreadVal1 = Big(currPrice.replace("$", "")).times(spreadVal2).div(100).round(2).toNumber()
+            }
+            componentDropdownSelect.setValues(document.querySelector(".opt-spread.dropdown-select"), spreadVal1, `${spreadVal2}%`)
+
+        } catch (error) {
+            console.error(error)
+        }
     },
 
     optPrice(inOverlayPopup = false) {
@@ -171,6 +206,10 @@ export default {
             
             if (inOverlayPopup) {
                 // console.log("refresh inOverlayPopup")
+                if (document.querySelector(".opt-spread.custom-checkbox.cc-checked")) {
+                    document.querySelector(".overlay-popup .to-spread span").textContent = res.spread
+                }
+
                 document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
                 document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
                 document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
@@ -251,7 +290,7 @@ export default {
                     class: "to-buy"
                 }, 
                 {name: "Strike:", span: "-", class: "to-strike"},
-                { name: "Spread:", span: "n.a.", class: "to-spread" },
+                {name: "Spread:", span: "n.a.", class: "to-spread"},
                 {name: "Expiry:", span: "-", class: "to-expiry"},
                 {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
                 {name: "Implied Volatility:", span: "-", class: "to-volatility"},
@@ -264,13 +303,6 @@ export default {
             // insert data values in overlay popup
             componentDropdownSelect.insertValues(document.querySelector(".opt-strike"), document.querySelector(".overlay-popup .to-strike span"))
             componentDropdownSelect.insertValues(document.querySelector(".opt-expiry"), document.querySelector(".overlay-popup .to-expiry span"), true)
-
-            const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
-            const isSpreadHidden = optSpreadDropdownSelect.classList.contains("hide")
-            if(!isSpreadHidden){
-                // console.log(document.querySelector(".opt-spread").querySelector(".ds-value1").textContent)
-                componentDropdownSelect.insertValues(document.querySelector(".opt-spread"), document.querySelector(".overlay-popup .to-spread span"))
-            }
 
             this.optPrice(true)
             
@@ -404,12 +436,10 @@ export default {
 
     getOptionType() {
         const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
-        const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
-        const isSpreadHidden = optSpreadDropdownSelect.classList.contains("hide")
-        // console.log('spread dropdown hidden', isSpreadHidden)
+        const isSpreadCheckboxChecked = document.querySelector(".opt-spread.custom-checkbox.cc-checked")
 
         if (isCall){
-            if(isSpreadHidden){
+            if (isSpreadCheckboxChecked) {
                 return 0
             }
             else{
@@ -417,7 +447,7 @@ export default {
             }
         }
         else{
-            if (isSpreadHidden) {
+            if (isSpreadCheckboxChecked) {
                 return 1
             }
             else {
@@ -434,15 +464,15 @@ export default {
         return document.querySelector(".opt-strike .ds-value1").textContent.trim()
     },
 
-    getSpreadValue() {
-        return document.querySelector(".opt-spread .ds-value1").textContent.trim()
-    },
-
     getAmountValue() {
         return document.querySelector("input[name='opt-amount']").value
     },
 
     getExpiryValue() {
         return document.querySelector(".opt-expiry .ds-value1").textContent.replace("Days", "").replace("Day", "").trim()
-    }
+    },
+
+    getSpreadValue() {
+        return document.querySelector(".opt-spread .ds-value1").textContent.trim()
+    },
 }

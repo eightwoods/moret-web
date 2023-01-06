@@ -13,6 +13,7 @@ export default {
                     customCheckbox.classList.add(checkedClass)
                 }
 
+                // for MutationObserver use
                 customCheckbox.setAttribute("customcheckbox-clicked", "")
             }, false)
         })
