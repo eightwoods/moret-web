@@ -246,7 +246,9 @@ export default {
                             <th class="sortable sort-text">B/S</th>
                             <th class="sortable sort-text">Expiry</th>
                             <th class="sortable">Strike</th>
+                            <th class="sortable">Spread</th>
                             <th class="sortable">Amount</th>
+                            <th class="sortable">P&L</th>
                             <th class="sortable">Delta</th>
                             <th class="sortable">Gamma</th>
                             <th class="sortable">Vega</th>
@@ -267,7 +269,9 @@ export default {
                     data.BS,
                     data.Expiry,
                     data.Strike,
+                    data.Spread,
                     data.Amount,
+                    data.PnL,
                     data.Delta,
                     data.Gamma,
                     data.Vega,
@@ -437,9 +441,9 @@ export default {
     getOptionType() {
         const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
         const isSpreadCheckboxChecked = document.querySelector(".opt-spread.custom-checkbox.cc-checked")
-
+        
         if (isCall){
-            if (isSpreadCheckboxChecked) {
+            if (isSpreadCheckboxChecked === null) {
                 return 0
             }
             else{
@@ -447,7 +451,7 @@ export default {
             }
         }
         else{
-            if (isSpreadCheckboxChecked) {
+            if (isSpreadCheckboxChecked === null) {
                 return 1
             }
             else {

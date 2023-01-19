@@ -1,5 +1,5 @@
 import Swiper from "swiper"
-import { getAllPoolsInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
+import { getAllPoolsInfo, getAllPools, getPoolInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
@@ -54,10 +54,8 @@ export default {
                         <tr>
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Symbol</th>
-                            <th class="sortable sort-text">LP Value</th>
-                            <th class="sortable sort-text">LP Tokens</th>
-                            <th class="sortable">Utilization</th>
-                            <th class="sortable">Estimated Yield</th>
+                            <th class="sortable sort-text">Description</th>
+                            <th class="sortable">Market Cap</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -83,10 +81,10 @@ export default {
             results.forEach((data) => {
                 poolsData.push([
                     data.Name,
-                    data.Symbol,
-                    data.HoldingBalance,
+                    // data.Symbol,
+                    data.HoldingNetBalance,
                     data.Holdings,
-                    data.Utilization,
+                    // data.Utilization,
                     data.EstimatedYield
                 ])
                 
@@ -97,13 +95,8 @@ export default {
                                 <li class="info-name">Name: <span>${data.Name}</span></li>
                                 <li class="info-address hide">Address: <span>${data.Address}</span></li>
                                 <li>Description: <span>${data.Description}</span></li>
-                                <li>Dedicated hedging address: <span>${minimizeAddress(data.Bot)}</span></li>
-                                <li>AMM factor: <span>${data.AMMCurveFactor}</span></li>
-                                <li>Exercise fee: <span>${data.ExerciseFee}</span></li>
-                                <li>Minimum volatility price: <span>${data.MinVolPrice}</span></li>
                                 <li>Market Cap: <span>${data.MarketCap}</span></li>
-                                <li>Holding: <span>${data.HoldingBalance}</span></li>
-                                <li>Withdrawable: <span>${data.HoldingNetBalance}</span></li>
+                                <li>Holding Value: <span>${data.HoldingNetBalance}</span></li>
                             </ul>
                             <div class="buttons m-t-24">
                                 <div class="col">

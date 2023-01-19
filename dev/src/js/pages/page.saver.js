@@ -59,7 +59,6 @@ export default {
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Holding</th>
                             <th class="sortable">NAV</th>
-                            <th class="sortable">APY</th>
                             <th class="sortable">P&L</th>
                             <th class="sortable sort-text">Status</th>
                             <th class="sortable">Next Vintage</th>
@@ -85,7 +84,7 @@ export default {
                     data.Name,
                     data.Holding,
                     `$${(data.UnitAsset).toFixed(2)}`,
-                    data.StaticYield,
+                    // data.StaticYield,
                     data.ProfitLoss,
                     data.NextVintageTime > nowTime? "Closed": "Open",
                     data.NextVintageStart
@@ -138,19 +137,18 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.StaticYield}</span> APY</div>
+                                    
                                 </div>
                             </div>
                         </div>
                         <div class="percentage-bar-text align-center word-nowrap white-50">
-                            <p>Current Holding ${data.UnitHeld} ${data.Symbol} = ${data.Holding}</p>
+                            <p>Current Holding ${data.UnitHeld} = ${data.Holding}</p>
                         </div>
                     </div>
                 </div>
                 <div class="saver-col">
                     <!-- <div class="chart-comparison-legends size-sm white-50">
                         <div class="ccl-legend">${tokenName()}</div>
-                        <div class="ccl-legend">${data.Symbol}</div>
                     </div> -->
                     <div class="chart-comparison-wrapper">
                         <div class="chart-comparison"></div>
@@ -183,7 +181,7 @@ export default {
             endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
-        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.StaticYield.replace("%", ""))
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.ProfitLoss.replace("%", ""))
         
         // click events
         if (showButtons) {

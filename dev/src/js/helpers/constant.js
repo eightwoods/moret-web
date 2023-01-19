@@ -1,14 +1,14 @@
-export const moretAddress = "0x4D2E4e85fbDFBfbE04049251d375e3Faf574C0B0"
+export const moretAddress = "0x8C0d01029203A7e4B3f497667C45dFf13d3eB4Dc"
 
-export const exchangeAddress = "0xDAF3ebE73D1bcEAFFDc14f4f75F474bD71c86A3D"
+export const exchangeAddress = "0x890428f554D69e9a3693a957c576205F35A1553B"
 
-export const vaultAddress = "0xd7be9909095292e58b5D39fDfE5A76C9D81AAc32"
+export const vaultAddress = "0xC4fCAc3609cbC0b44Fd65582932006a52e0C2fcf"
 
-export const marketMakerFactoryAddress = "0xd772E7fFDb924BA8998D8b64De76D3212605267F"
+export const marketMakerFactoryAddress = "0xF70f0B044C4a725Ce5A441e3d0A00299732898C2"
 
-export const poolFactoryAddress = "0xfEeC891BECAe9a497Ffefc4dAb477511205F821d"
+export const poolFactoryAddress = "0xfAB4cDF5670443B912e6322A367ccAc177edecd7"
 
-export const poolGovFactoryAddress = "0xc1CD2084Da3532C4c097AC9Ff69D99faf1df2e22"
+export const poolGovFactoryAddress = "0x8F0e31BC60aFf2E1EfeC97FccCCbdbF02C28c2fe"
 
 export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -27,9 +27,17 @@ export const tokens = [
     {token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"}
 ]
 
-export const excludedPools = ['0xE896ad64c88042F4f397DE14f3B034957969616C','0x3558246DD5A1E77e9CC11780Cd4523E35209436d']
+export const stableCoinAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
 
-export const saverList = [
-    {tokenAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', address: '0x4C8fc813D2cc1b2F8977126744f6e7121D8977b5'},
-    {tokenAddress: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',  address: '0x16b3C53827C5a25cb2BD578DDdCB30f34E2C699a'}
+export const excludedPools = []
+
+export const poolList = { '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619': ['0xB3efee6B983e5815AfC4a497E81150F57Fe319bb'] ,
+    '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6': ['0xcd2df8b88CF2e0af3c62C9723ca9C9392467Bb13'] }
+
+export const fixedIndexList = { '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619': ['0xCC1988a477A2d94b89F396122C8760168E98ca26'],
+    '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6': ['0xeC3aa74900ff2c6428eCB9bb2B9Ae70D31329C1E']}
+
+export const perpList = [
+    { tokenAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', addresses: ['0x3E9143070fAD24F694EbD6b2243b7fAE58be3e41'] },
+    { tokenAddress: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6', addresses: ['0x67b5d1723F83576B19CFBA032f030E2B9713d142'] }
 ]
