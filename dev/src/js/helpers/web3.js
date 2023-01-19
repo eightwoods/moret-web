@@ -795,6 +795,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
 }
 
 export const getPoolInfo = async (poolAddress, infoType) => {
+    const accountsOnEnable = await ethereum.request({method: "eth_requestAccounts"})
     const account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
@@ -1151,7 +1152,8 @@ export const getSaverInfo = async (saverAddress, infoType) => {
                 "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)).toFixed(0),
                 "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)).toFixed(0),
                 "Protection": parseFloat(web3.utils.fromWei(vintage.putSpread)).toFixed(0),
-                "Profit": (parseFloat(web3.utils.fromWei(vintage.currentPV)) / parseFloat(web3.utils.fromWei(vintage.putSpread)) - 1).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })}
+                "Profit": (parseFloat(web3.utils.fromWei(vintage.currentPV)) / parseFloat(web3.utils.fromWei(vintage.putSpread)) - 1).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })
+            }
         case 'profit':
             let vintageOpen = await saverContract.methods.nextVintageTime().call()
             let vintageParams = await saverContract.methods.fiaParams().call()

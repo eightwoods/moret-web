@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
-import { getAllSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
+import { getAllSaverInfo, getAllPools, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
@@ -48,7 +48,6 @@ export default {
         const saverInfo = document.querySelector(".saver-info")
         getLoader(saverList)
         getLoader(saverInfo)
-        console.log('loader set')
 
         const saverTable = saverList.querySelector(".comp-dynamic-table")
         saverTable.innerHTML = `
@@ -71,6 +70,78 @@ export default {
         // reset
         this.setSaverInfo()
 
+        getAllPools().then((addresses) => {
+            // console.log(addresses)
+            getLoader(saverList, false)
+            getLoader(saverInfo, false)
+
+            const saverData = []
+            const saverDataInfo = []
+            const nowTime = Math.floor(Date.now() / 1000)
+
+            addresses.forEach(async(address, index) => {
+                try {
+
+                    // const test = await getSaverInfo(address, "premium")
+                    // console.log(test)
+
+                    // saverDataInfo.push({
+                    //     "Name": await getSaverInfo(address, "name"),
+                    //     "Address": address,
+                    //     "MarketCap": 0,
+                    //     "UnitAsset": 0,
+                    //     "Holding": await getSaverInfo(address, "holding"),
+                    //     "UnitHeld": 0,
+                    //     "ProfitLoss": "0%",
+                    //     "NextVintageTime": 0,
+                    //     "NextVintageStart": 0,
+                    //     "NextVintage": 0,
+                    //     "StartLevel": 0,
+                    //     "Upside": 0,
+                    //     "Downside": 0,
+                    //     "Protection": 0,
+                    //     "Params": "-",
+                    // })
+
+                    // saverData.push([
+                    //     saverDataInfo[index].Name,
+                    //     saverDataInfo[index].Holding,
+                    //     saverDataInfo[index].UnitAsset,
+                    //     saverDataInfo[index].ProfitLoss,
+                    //     saverDataInfo[index].NextVintageTime > nowTime ? "Closed" : "Open",
+                    //     saverDataInfo[index].NextVintageStart
+                    // ])
+
+                    // saver info data
+                    // this.setSaverInfo(saverDataInfo)
+
+                    // ALL DONE!
+                    if ((index + 1) === addresses.length) {
+                        // init savers table
+                        componentTables.setDynamic(saverTable, saverData)
+
+                        /// events
+                        if (addresses.length > 1) {
+                            // saver table rows to inject data 
+                            saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                                row.classList.add("cursor")
+                                row.addEventListener("click", () => {
+                                    // saver info 
+                                    // this.setSaverInfo(saverDataInfo[index])
+                                }, false)
+                            })
+                        }
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+
+        }).catch(error => {
+            console.error(error)
+        })
+
+        /*
         getAllSaverInfo(null).then((results) => {
             // console.log(results)
             getLoader(saverList, false)
@@ -109,6 +180,7 @@ export default {
                 })
             }
         })
+        */
     },
 
     setSaverInfo(data) {
@@ -341,5 +413,4 @@ export default {
         this.globals.execIntervalId = null
         console.log("clearTradeTimer()")
     },
-
 }

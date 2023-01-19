@@ -69,107 +69,117 @@ export default {
             </div>
             <div class="swiper-button-next hide-important"></div>
             <div class="swiper-button-prev hide-important"></div>`
-
-        getAllPoolsInfo(null).then((results) => {
-            // console.log(results)
+        
+        getAllPools().then((addresses) => {
+            // console.log(addresses)
             getLoader(poolList, false)
             getLoader(hotTubs, false)
 
             const poolsData = []
             let swiperSlideElem = ""
 
-            results.forEach((data) => {
-                poolsData.push([
-                    data.Name,
-                    // data.Symbol,
-                    data.HoldingNetBalance,
-                    data.Holdings,
-                    // data.Utilization,
-                    data.EstimatedYield
-                ])
-                
-                swiperSlideElem += `
-                    <div class="swiper-slide">
-                        <div class="in-box">
-                            <ul class="info">
-                                <li class="info-name">Name: <span>${data.Name}</span></li>
-                                <li class="info-address hide">Address: <span>${data.Address}</span></li>
-                                <li>Description: <span>${data.Description}</span></li>
-                                <li>Market Cap: <span>${data.MarketCap}</span></li>
-                                <li>Holding Value: <span>${data.HoldingNetBalance}</span></li>
-                            </ul>
-                            <div class="buttons m-t-24">
-                                <div class="col">
-                                    <div class="in-border word-nowrap white-50">
-                                        <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
+            addresses.forEach(async(address, index) => {
+                try {
+                    const poolName = await getPoolInfo(address, "name")
+                    const poolSymbol = await getPoolInfo(address, "symbol")
+                    const poolDescription = "-"
+                    const poolMarketCap = await getPoolInfo(address, "fee")
+                    const poolHolding = "-"
+
+                    poolsData.push([poolName, poolSymbol, poolDescription, poolMarketCap])
+
+                    swiperSlideElem += `
+                        <div class="swiper-slide">
+                            <div class="in-box">
+                                <ul class="info">
+                                    <li class="info-name">Name: <span>${poolName}</span></li>
+                                    <li class="info-address hide">Address: <span>${address}</span></li>
+                                    <li>Description: <span>${poolDescription}</span></li>
+                                    <li>Market Cap: <span>${poolMarketCap}</span></li>
+                                    <li>Holding Value: <span>${poolHolding}</span></li>
+                                </ul>
+                                <div class="buttons m-t-24">
+                                    <div class="col">
+                                        <div class="in-border word-nowrap white-50">
+                                            <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <a href="#" class="btn btn-green js-topup">Top-up</a>
+                                    </div>
+                                    <div class="col">
+                                        <a href="#" class="btn btn-pink js-takeout">Take-out</a>
                                     </div>
                                 </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-green js-topup">Top-up</a>
-                                </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-pink js-takeout">Take-out</a>
-                                </div>
                             </div>
-                        </div>
-                    </div>`
+                        </div>`
+
+                    // ALL DONE!
+                    if ((index + 1) === addresses.length) {
+                        // insert elements into swiper
+                        poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
+                        // init swiper
+                        const swiper = new Swiper(".swiper", {
+                            slidesPerView: "auto",
+                            spaceBetween: 12,
+                            grabCursor: false,
+                        })
+
+                        // init pools table
+                        componentTables.setDynamic(poolsTable, poolsData)
+
+                        // events
+                        if (addresses.length > 1) {
+                            // swiper arrows
+                            const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
+                            swiperBtnNext.classList.remove("hide-important")
+                            swiperBtnNext.addEventListener("click", () => swiper.slideNext())
+
+                            const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
+                            swiperBtnPrev.classList.remove("hide-important")
+                            swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
+
+                            // pools table rows to navigate swiper
+                            poolsTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                                row.classList.add("cursor")
+                                row.addEventListener("click", () => {
+                                    swiper.slideTo(index)
+                                }, false)
+                            })
+                        }
+
+                        // Top-up and Take-out
+                        poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
+                            slide.querySelector(".js-topup").addEventListener("click", (e) => {
+                                e.preventDefault()
+                                this.setPopupInfo({
+                                    type: "topup",
+                                    title: "Top up in liquidity pool",
+                                    poolName: slide.querySelector(".info-name span").textContent.trim(),
+                                    poolAddress: slide.querySelector(".info-address span").textContent.trim(),
+                                    poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                                })
+                            }, false)
+
+                            slide.querySelector(".js-takeout").addEventListener("click", (e) => {
+                                e.preventDefault()
+                                this.setPopupInfo({
+                                    type: "takeout",
+                                    title: "Take out from liquidity pool",
+                                    poolName: slide.querySelector(".info-name span").textContent.trim(),
+                                    poolAddress: slide.querySelector(".info-address span").textContent.trim(),
+                                    poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                                })
+                            }, false)
+                        })
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
             })
-            poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
 
-            // init swiper
-            const swiper = new Swiper(".swiper", {
-                slidesPerView: "auto",
-                spaceBetween: 12,
-                grabCursor: false,
-            })
-
-            // init pools table
-            componentTables.setDynamic(poolsTable, poolsData)
-
-            // events
-            if (results.length > 1) {
-                // swiper arrows
-                const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
-                swiperBtnNext.classList.remove("hide-important")
-                swiperBtnNext.addEventListener("click", () => swiper.slideNext())
-
-                const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
-                swiperBtnPrev.classList.remove("hide-important")
-                swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
-
-                // pools table rows to navigate swiper
-                poolsTable.querySelectorAll("tbody tr").forEach((row, index) => {
-                    row.classList.add("cursor")
-                    row.addEventListener("click", () => {
-                        swiper.slideTo(index)
-                    }, false)
-                })
-            }
-
-            // Top-up and Take-out
-            poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
-                slide.querySelector(".js-topup").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "topup",
-                        title: "Top up in liquidity pool",
-                        poolName: slide.querySelector(".info-name span").textContent.trim(),
-                        poolAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        poolAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-
-                slide.querySelector(".js-takeout").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "takeout",
-                        title: "Take out from liquidity pool",
-                        poolName: slide.querySelector(".info-name span").textContent.trim(),
-                        poolAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        poolAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-            })
+        }).catch(error => {
+            console.error(error)
         })
     },
 
