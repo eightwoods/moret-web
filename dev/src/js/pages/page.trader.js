@@ -213,13 +213,19 @@ export default {
                 document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
                 document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
                 document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
+                document.querySelector(".overlay-popup .to-fee span").textContent = optPrice.collateral
             } else {
                 document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
                 document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
                 document.querySelector(".opt-price .info-collateral").textContent = optPrice.collateral
             }
         })
-        .catch((err) => console.warn(err))
+        .catch((err) => {
+            console.warn(err)
+            document.querySelector(".opt-price .info-volatility").textContent = '-'
+            document.querySelector(".opt-price .info-premium").textContent = '-'
+            document.querySelector(".opt-price .info-collateral").textContent = '-'
+        })
     },
 
     async liquidityPool() {
@@ -299,7 +305,8 @@ export default {
                 {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
                 {name: "Implied Volatility:", span: "-", class: "to-volatility"},
                 {name: "Premium:", span: "-", class: "to-premium"},
-                {name: "Collateral:", span: "-", class: "to-collateral"}
+                {name: "Collateral:", span: "-", class: "to-collateral"},
+                { name: "Fee:", span: "-", class: "to-fee" }
             ]
 
             showOverlayPopup("Trade overview", createList(arrNames, "tradeoverview"))
@@ -477,6 +484,13 @@ export default {
     },
 
     getSpreadValue() {
-        return document.querySelector(".opt-spread .ds-value1").textContent.trim()
+        const isSpreadCheckboxChecked = document.querySelector(".opt-spread.custom-checkbox.cc-checked")
+
+        if (isSpreadCheckboxChecked === null) {
+            return 0
+        }
+        else{
+            return document.querySelector(".opt-spread .ds-value1").textContent.trim()
+        }   
     },
 }

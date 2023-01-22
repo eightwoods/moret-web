@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
-import { getAllSaverInfo, getAllPools, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
+import { getAllSavers, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
@@ -70,7 +70,7 @@ export default {
         // reset
         this.setSaverInfo()
 
-        getAllPools().then((addresses) => {
+        getAllSavers().then((addresses) => {
             // console.log(addresses)
             getLoader(saverList, false)
             getLoader(saverInfo, false)
@@ -81,40 +81,49 @@ export default {
 
             addresses.forEach(async(address, index) => {
                 try {
+                    const name = await getSaverInfo(address, "name")
+                    console.log(name)
+                    const holding = await getSaverInfo(address, 'holding')
+                    const aum = await getSaverInfo(address, 'aum')
+                    const nav = await getSaverInfo(address, 'nav')
+                    const estYield = await getSaverInfo(address, 'yield')
+                    const vintage = await getSaverInfo(address, 'vintage')
+                    const profit = await getSaverInfo(address, 'profit')
+                    console.log(profit, estYield, vintage)
+                    const vintageTime = await getSaverInfo(address, 'time')
+                    const description = await getSaverInfo(address, 'description')
 
-                    // const test = await getSaverInfo(address, "premium")
-                    // console.log(test)
+                    saverDataInfo.push({
+                        "Name": name,
+                        "Address": address,
+                        "Description": description,
+                        "MarketCap": aum,
+                        "UnitAsset": nav,
+                        "Holding": holding,
+                        "Yield": estYield,
+                        "ProfitLoss": profit,
+                        "VintageEnds": vintageTime[0],
+                        "NextVintageStart": vintageTime[1],
+                        "VintageOpen": vintageTime[0],
+                        "StartLevel": vintage["StartLevel"],
+                        "Upside": vintage["Upside"],
+                        "Downside": vintage["Downside"],
+                        "Protection": vintage["Protection"],
+                    })
 
-                    // saverDataInfo.push({
-                    //     "Name": await getSaverInfo(address, "name"),
-                    //     "Address": address,
-                    //     "MarketCap": 0,
-                    //     "UnitAsset": 0,
-                    //     "Holding": await getSaverInfo(address, "holding"),
-                    //     "UnitHeld": 0,
-                    //     "ProfitLoss": "0%",
-                    //     "NextVintageTime": 0,
-                    //     "NextVintageStart": 0,
-                    //     "NextVintage": 0,
-                    //     "StartLevel": 0,
-                    //     "Upside": 0,
-                    //     "Downside": 0,
-                    //     "Protection": 0,
-                    //     "Params": "-",
-                    // })
-
-                    // saverData.push([
-                    //     saverDataInfo[index].Name,
-                    //     saverDataInfo[index].Holding,
-                    //     saverDataInfo[index].UnitAsset,
-                    //     saverDataInfo[index].ProfitLoss,
-                    //     saverDataInfo[index].NextVintageTime > nowTime ? "Closed" : "Open",
-                    //     saverDataInfo[index].NextVintageStart
-                    // ])
+                    saverData.push([
+                        saverDataInfo[index].Name,
+                        saverDataInfo[index].Holding,
+                        saverDataInfo[index].UnitAsset,
+                        saverDataInfo[index].ProfitLoss,
+                        saverDataInfo[index].VintageOpen ? "Open": "Closed",
+                        saverDataInfo[index].NextVintageStart
+                    ])
 
                     // saver info data
-                    // this.setSaverInfo(saverDataInfo)
+                    this.setSaverInfo(saverDataInfo[index])
 
+                    console.log(index, addresses.length)
                     // ALL DONE!
                     if ((index + 1) === addresses.length) {
                         // init savers table
@@ -140,47 +149,7 @@ export default {
         }).catch(error => {
             console.error(error)
         })
-
-        /*
-        getAllSaverInfo(null).then((results) => {
-            // console.log(results)
-            getLoader(saverList, false)
-            getLoader(saverInfo, false)
-
-            const saverData = []
-            const nowTime = Math.floor( Date.now() / 1000)
-
-            results.forEach((data) => {
-                saverData.push([
-                    data.Name,
-                    data.Holding,
-                    `$${(data.UnitAsset).toFixed(2)}`,
-                    // data.StaticYield,
-                    data.ProfitLoss,
-                    data.NextVintageTime > nowTime? "Closed": "Open",
-                    data.NextVintageStart
-                ])
-
-                // saver info data
-                this.setSaverInfo(data)
-            })
-
-            // init savers table
-            componentTables.setDynamic(saverTable, saverData)
-
-            // events
-            if (results.length > 1) {
-                // saver table rows to inject data 
-                saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
-                    row.classList.add("cursor")
-                    row.addEventListener("click", () => {
-                        // saver info 
-                        this.setSaverInfo(results[index])
-                    }, false)
-                })
-            }
-        })
-        */
+        
     },
 
     setSaverInfo(data) {
@@ -197,8 +166,8 @@ export default {
                     <div class="header-title m-b-24">${data.Name}</div>
                     <div class="saver-content">
                         <div class="info">
-                            <p class="m-b-20">${data.Params}</p>
-                            <p>Vintage reopened at ${data.NextVintage}</p>
+                            <p class="m-b-20">${data.Description}</p>
+                            <p>Vintage reopened at ${data.VintageEnds}</p>
                         </div>
 
                         <div class="percentage-bar-multi">
@@ -230,8 +199,7 @@ export default {
 
             <div class="buttons-container"></div>`
 
-        const showButtons = data.NextVintageTime <= nowTime
-        if (showButtons) {
+        if (data.VintageOpen) {
             saverInfo.querySelector(".buttons-container").innerHTML = `
                 <div class="buttons m-t-32">
                     <div class="col">
@@ -253,10 +221,12 @@ export default {
             endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
-        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.ProfitLoss.replace("%", ""))
+
+        console.log(data.ProfitLoss, data.Yield)
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.Yield.replace("%", ""))
         
         // click events
-        if (showButtons) {
+        if (data.VintageOpen) {
             saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
                 e.preventDefault()
                 this.setPopupInfo({

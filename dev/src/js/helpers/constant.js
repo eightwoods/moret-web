@@ -1,14 +1,32 @@
-export const moretAddress = "0x8C0d01029203A7e4B3f497667C45dFf13d3eB4Dc"
+export const moretAddress = "0xb781291222a1c35ACF39f886260951728ab49a40"
 
-export const exchangeAddress = "0x890428f554D69e9a3693a957c576205F35A1553B"
+export const exchangeAddress = "0x6d08ea1ceeB4B4E0270B08FE5dfbD741df410da1"
 
-export const vaultAddress = "0xC4fCAc3609cbC0b44Fd65582932006a52e0C2fcf"
+export const vaultAddress = "0x5906595607143650E3e905cf80b97e7029A3Da28"
 
-export const marketMakerFactoryAddress = "0xF70f0B044C4a725Ce5A441e3d0A00299732898C2"
+export const marketMakerFactoryAddress = "0xF7Aac55AD1267096A4f53B81dbE55469F8724478"
 
-export const poolFactoryAddress = "0xfAB4cDF5670443B912e6322A367ccAc177edecd7"
+export const poolFactoryAddress = "0x3669DA883027e4099093E10B123a7a506d47afb3"
 
-export const poolGovFactoryAddress = "0x8F0e31BC60aFf2E1EfeC97FccCCbdbF02C28c2fe"
+export const poolGovFactoryAddress = "0x3a18D72918cde10aDe74E96591A43145eA2Db113"
+
+export const excludedPools = []
+
+export const poolList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x33B53299bC6C5D3433AeF84397A1B82e6F7c7E81"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xfBa0168dD9345373E2d391Efd4d83A6322254b87"]
+}
+
+export const fixedIndexList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x5ec0A85f13ee1E4ee3bd3aaeDca69B1Be82A0bfb"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x203AE59E02769F591F2C11F114Ad038A3f842324"]
+}
+
+export const perpList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xfAa2c80fAe2a121Fea0f2306a4504657Ad4e95CA", "0x95704849AD3509552ecE76ba24bCe450f28CaD7F"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x6AF127CB075Ca07c176990655685E956Be9a0cAb' ,'0xffd4fea5541E0145faa79ddAFc62F3aC699221d2"]
+}
+
 
 export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -28,20 +46,3 @@ export const tokens = [
 ]
 
 export const stableCoinAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
-
-export const excludedPools = []
-
-export const poolList = { 
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xB3efee6B983e5815AfC4a497E81150F57Fe319bb"],
-    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xcd2df8b88CF2e0af3c62C9723ca9C9392467Bb13", "0xcd2df8b88CF2e0af3c62C9723ca9C9392467Bb13"] 
-}
-
-export const fixedIndexList = { 
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xCC1988a477A2d94b89F396122C8760168E98ca26"],
-    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xeC3aa74900ff2c6428eCB9bb2B9Ae70D31329C1E"]
-}
-
-export const perpList = [
-    { tokenAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", addresses: ["0x3E9143070fAD24F694EbD6b2243b7fAE58be3e41"] },
-    { tokenAddress: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6", addresses: ["0x67b5d1723F83576B19CFBA032f030E2B9713d142"] }
-]

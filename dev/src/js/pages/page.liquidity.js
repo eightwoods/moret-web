@@ -1,5 +1,5 @@
 import Swiper from "swiper"
-import { getAllPoolsInfo, getAllPools, getPoolInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
+import { getAllPools, getPoolInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
@@ -82,9 +82,11 @@ export default {
                 try {
                     const poolName = await getPoolInfo(address, "name")
                     const poolSymbol = await getPoolInfo(address, "symbol")
-                    const poolDescription = "-"
-                    const poolMarketCap = await getPoolInfo(address, "fee")
-                    const poolHolding = "-"
+                    const poolDescription = await getPoolInfo(address, "description")
+                    const poolMarketCap = await getPoolInfo(address, "aum")
+                    const poolPrice = await getPoolInfo(address, "navoffer")
+                    const poolHolding = await getPoolInfo(address, "holding")
+                    const poolUtilized = await getPoolInfo(address, "utilization")
 
                     poolsData.push([poolName, poolSymbol, poolDescription, poolMarketCap])
 
@@ -94,9 +96,9 @@ export default {
                                 <ul class="info">
                                     <li class="info-name">Name: <span>${poolName}</span></li>
                                     <li class="info-address hide">Address: <span>${address}</span></li>
-                                    <li>Description: <span>${poolDescription}</span></li>
-                                    <li>Market Cap: <span>${poolMarketCap}</span></li>
-                                    <li>Holding Value: <span>${poolHolding}</span></li>
+                                    <li>Unit Price: <span>${poolPrice}</span></li>
+                                    <li>Holding Value: <span>${poolHolding[1]}</span></li>
+                                    <li>LP Utilized: <span>${poolUtilized}</span></li>
                                 </ul>
                                 <div class="buttons m-t-24">
                                     <div class="col">
