@@ -1119,6 +1119,7 @@ export const getSaverInfo = async (saverAddress, infoType) => {
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    let saverPV, totalSupply
     switch (infoType){
         case 'name':
             const name = await saverContract.methods.name().call()
@@ -1127,16 +1128,19 @@ export const getSaverInfo = async (saverAddress, infoType) => {
             const symbol = await saverContract.methods.symbol().call()
             return symbol
         case 'aum':
-            let saverPV = await saverContract.methods.getPV().call()
+            saverPV = await saverContract.methods.getPV().call()
             return `$${(parseFloat(web3.utils.fromWei(saverPV))).toFixed(0)}`
         case 'nav':
-            let saverPV2 = await saverContract.methods.getPV().call()
-            let totalSupply = await saverContract.methods.totalSupply().call()
-            let nav = (parseFloat(web3.utils.fromWei(saverPV2)) / parseFloat(web3.utils.fromWei(totalSupply)))
-            return `$${isNaN(nav) ? 0 : nav.toFixed(2)}`
+            saverPV = await saverContract.methods.getPV().call()
+            totalSupply = await saverContract.methods.totalSupply().call()
+            let nav = parseFloat(web3.utils.fromWei(saverPV)) / parseFloat(web3.utils.fromWei(totalSupply))
+            return isNaN(nav) ? 1.0 : nav //`$${isNaN(nav) ? '0.0' : nav.toFixed(2)}`
         case 'holding':
-            let holding = await saverContract.methods.balanceOf(account).call()
-            return parseFloat(web3.utils.fromWei(holding)).toFixed(0)
+            saverPV = await saverContract.methods.getPV().call()
+            totalSupply = await saverContract.methods.totalSupply().call()
+            let balance = await saverContract.methods.balanceOf(account).call()
+            let holding = parseFloat(web3.utils.fromWei(saverPV)) / parseFloat(web3.utils.fromWei(totalSupply)) * parseFloat(web3.utils.fromWei(balance))
+            return `$${isNaN(holding) ? '0.0' : holding.toFixed(2)}`
         case 'description':
             let params = await saverContract.methods.fiaParams().call()
             let paramsMsg = `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`
@@ -1170,95 +1174,10 @@ export const getSaverInfo = async (saverAddress, infoType) => {
             let vintageEnds = await saverContract.methods.nextVintageTime().call()
             let vintageParams = await saverContract.methods.fiaParams().call()
             let nextVintageStart = Number(vintageEnds) + Number(vintageParams.tradeWindow)
-            return [new Date(vintageEnds * 1000).toLocaleString(), new Date(nextVintageStart * 1000).toLocaleString(), Date(vintageEnds * 1000) < Date.now()]
+            return [new Date(vintageEnds * 1000).toLocaleString(), new Date(nextVintageStart * 1000).toLocaleString(), Date(vintageEnds * 1000) < Date.now(), Math.ceil(vintageParams.callTenor / 3600)]
         default:
             return ''
     }
-}
-
-export const getAllSaverInfo = async (tokenAddr = null) => {
-    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
-
-    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
-    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-
-    let saverTable = []
-    console.log('saver load starts')
-    const saverList = await getAllSavers(objTokenAddr)
-
-    await Promise.all(saverList.map(async (saverInfo) => {
-        if (saverInfo.tokenAddress == objTokenAddr){
-            const saverAddress = saverInfo.addresses[0]
-
-            let saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
-            // const oracleAddress = await saverContract.methods.oracle().call()
-            // const oracle = await getContract(web3, getJsonUrl("VolatilityChain.json"), oracleAddress)
-            const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), stableCoinAddress)
-
-            let blockId = await web3.eth.getBlockNumber()
-            const name = await saverContract.methods.name().call(blockId)
-            
-            let saverPV = await saverContract.methods.getPV().call(blockId)
-            // const spotPrice = await oracle.methods.queryPrice().call(blockId)
-            const vintage = await saverContract.methods.vintage().call(blockId)
-
-            const fundingDecimals = await fundingContract.methods.decimals().call(blockId)
-            // let fundingBalance = await fundingContract.methods.balanceOf(saverAddress).call(blockId)
-
-            
-            
-            let totalSupply = await saverContract.methods.totalSupply().call(blockId)
-            let unitHeld = await saverContract.methods.balanceOf(account).call(blockId)
-            let nextVintage = await saverContract.methods.nextVintageTime().call(blockId)
-            let params = await saverContract.methods.fiaParams().call(blockId)
-
-            console.log(saverAddress, saverPV)
-
-            
-
-            let totalUnits = parseFloat(web3.utils.fromWei(totalSupply))
-            
-            let unitPrice = marketCap / totalUnits
-            
-            let vintagePnL = marketCap / startCap - 1
-            console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
-            
-            let holdings = parseFloat(web3.utils.fromWei(unitHeld)) * unitPrice            
-            
-            
-            let paramsMsg = `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`
-            
-            let nextVintageStart = Number(nextVintage) + Number(params.tradeWindow)
-            
-        
-            // console.log(params, nextVintage, nextVintageStart)
-
-            saverTable.push({
-                "Name": name,
-                // "Symbol": symbol,
-                "Address": saverAddress,
-                "MarketCap": `$${(marketCap).toFixed(0)}`,
-                "UnitAsset": unitPrice,// `$${(unitPrice).toFixed(2)}`,
-                "Holding": `$${(holdings).toFixed(2)}`,
-                "UnitHeld": parseFloat(web3.utils.fromWei(unitHeld)).toFixed(1),
-                // "Tenor": Math.ceil(vintageTenor / 3600 ), // convert seconds to hours
-                // "StaticYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "ProfitLoss": vintagePnL.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "NextVintageTime": nextVintage,
-                "NextVintageStart": new Date(nextVintageStart * 1000).toLocaleString(),
-                "NextVintage": new Date(Number(nextVintage) * 1000).toLocaleString(),
-                "StartLevel": parseFloat(web3.utils.fromWei(vintage.startLevel)).toFixed(0),
-                "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)).toFixed(0),
-                "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)).toFixed(0),
-                "Protection": parseFloat(web3.utils.fromWei(vintage.putSpread)).toFixed(0),
-                "Params": paramsMsg,
-            })
-        
-        }
-    }))
-
-    return saverTable
 }
 
 // 18. invest in a selected saver

@@ -82,7 +82,7 @@ export default {
             addresses.forEach(async(address, index) => {
                 try {
                     const name = await getSaverInfo(address, "name")
-                    // console.log(name)
+                    const symbol = await getSaverInfo(address, "symbol")
                     const holding = await getSaverInfo(address, "holding")
                     const aum = await getSaverInfo(address, "aum")
                     const nav = await getSaverInfo(address, "nav")
@@ -95,6 +95,7 @@ export default {
 
                     saverDataInfo.push({
                         "Name": name,
+                        "Symbol": symbol,
                         "Address": address,
                         "Description": description,
                         "MarketCap": aum,
@@ -102,19 +103,19 @@ export default {
                         "Holding": holding,
                         "Yield": estYield,
                         "ProfitLoss": profit,
-                        "VintageEnds": vintageTime[0],
                         "NextVintageStart": vintageTime[1],
                         "VintageOpen": vintageTime[0],
                         "StartLevel": vintage["StartLevel"],
                         "Upside": vintage["Upside"],
                         "Downside": vintage["Downside"],
                         "Protection": vintage["Protection"],
+                        "Tenor": vintageTime[3]
                     })
 
                     saverData.push([
                         saverDataInfo[index].Name,
                         saverDataInfo[index].Holding,
-                        saverDataInfo[index].UnitAsset,
+                        `$${saverDataInfo[index].UnitAsset}`,
                         saverDataInfo[index].ProfitLoss,
                         saverDataInfo[index].VintageOpen ? "Open": "Closed",
                         saverDataInfo[index].NextVintageStart
@@ -167,7 +168,7 @@ export default {
                     <div class="saver-content">
                         <div class="info">
                             <p class="m-b-20">${data.Description}</p>
-                            <p>Vintage reopened at ${data.VintageEnds}</p>
+                            <p>Vintage reopened at ${data.VintageOpen}</p>
                         </div>
 
                         <div class="percentage-bar-multi">
@@ -217,8 +218,8 @@ export default {
         // initiate components
         compChartComparison.createChart({
             elem: saverInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=325`,
-            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=325`,
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${data.Tenor}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
 
@@ -251,11 +252,11 @@ export default {
 
     setPopupInfo(objVal) {
         console.log(objVal)
-        let units = objVal.amount / objVal.data.UnitAsset
+        let units = objVal.data.UnitAsset == 0 ? objVal.amount: objVal.amount / objVal.data.UnitAsset
         const arrNames = [
             {name: "Name:", span: objVal.data.Name},
             { name: "Address:", span: objVal.data.Address }, //minimizeAddress(objVal.data.Address)
-            { name: "Unit price", span: `${(objVal.data.UnitAsset)}` },
+            { name: "Unit price", span: `$${(objVal.data.UnitAsset)}` },
             { name: "Units:", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
             { name: "Trade value:", span: `$${(objVal.amount).toFixed(2)}` },
         ]
