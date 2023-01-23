@@ -112,6 +112,7 @@ export default {
                     const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
                     if (mutation.target.classList.contains("cc-checked")) {
                         optSpreadDropdownSelect.classList.remove("hide")
+                        this.optPrice()
                     } else {
                         optSpreadDropdownSelect.classList.add("hide")
                     }
@@ -132,6 +133,7 @@ export default {
                         this.optSpread(optSpreadInputVal)
                     }
                     console.log(optSpreadInputVal)
+                    this.optPrice()
                 }
             }
         })
@@ -188,7 +190,7 @@ export default {
     },
 
     optPrice(inOverlayPopup = false) {
-        // console.log("optPrice()")
+        console.log("optPrice()")
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve({

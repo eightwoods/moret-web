@@ -1133,7 +1133,7 @@ export const getSaverInfo = async (saverAddress, infoType) => {
             let saverPV2 = await saverContract.methods.getPV().call()
             let totalSupply = await saverContract.methods.totalSupply().call()
             let nav = (parseFloat(web3.utils.fromWei(saverPV2)) / parseFloat(web3.utils.fromWei(totalSupply)))
-            return `$${nav.toFixed(2)}`
+            return `$${isNaN(nav) ? 0 : nav.toFixed(2)}`
         case 'holding':
             let holding = await saverContract.methods.balanceOf(account).call()
             return parseFloat(web3.utils.fromWei(holding)).toFixed(0)

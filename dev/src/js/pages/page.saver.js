@@ -82,16 +82,16 @@ export default {
             addresses.forEach(async(address, index) => {
                 try {
                     const name = await getSaverInfo(address, "name")
-                    console.log(name)
-                    const holding = await getSaverInfo(address, 'holding')
-                    const aum = await getSaverInfo(address, 'aum')
-                    const nav = await getSaverInfo(address, 'nav')
-                    const estYield = await getSaverInfo(address, 'yield')
-                    const vintage = await getSaverInfo(address, 'vintage')
-                    const profit = await getSaverInfo(address, 'profit')
-                    console.log(profit, estYield, vintage)
-                    const vintageTime = await getSaverInfo(address, 'time')
-                    const description = await getSaverInfo(address, 'description')
+                    // console.log(name)
+                    const holding = await getSaverInfo(address, "holding")
+                    const aum = await getSaverInfo(address, "aum")
+                    const nav = await getSaverInfo(address, "nav")
+                    const estYield = await getSaverInfo(address, "yield")
+                    const vintage = await getSaverInfo(address, "vintage")
+                    const profit = await getSaverInfo(address, "profit")
+                    // console.log(profit, estYield, vintage)
+                    const vintageTime = await getSaverInfo(address, "time")
+                    const description = await getSaverInfo(address, "description")
 
                     saverDataInfo.push({
                         "Name": name,
@@ -120,12 +120,12 @@ export default {
                         saverDataInfo[index].NextVintageStart
                     ])
 
-                    // saver info data
-                    this.setSaverInfo(saverDataInfo[index])
-
-                    console.log(index, addresses.length)
+                    // console.log(index, addresses.length)
                     // ALL DONE!
                     if ((index + 1) === addresses.length) {
+                        // saver info data
+                        this.setSaverInfo(saverDataInfo[0])
+
                         // init savers table
                         componentTables.setDynamic(saverTable, saverData)
 
@@ -136,7 +136,7 @@ export default {
                                 row.classList.add("cursor")
                                 row.addEventListener("click", () => {
                                     // saver info 
-                                    // this.setSaverInfo(saverDataInfo[index])
+                                    this.setSaverInfo(saverDataInfo[index])
                                 }, false)
                             })
                         }
@@ -178,12 +178,12 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    
+                                    <div class="pbm-value size-sm"><span>${data.Yield}</span> Yield</div>
                                 </div>
                             </div>
                         </div>
                         <div class="percentage-bar-text align-center word-nowrap white-50">
-                            <p>Current Holding ${data.UnitHeld} = ${data.Holding}</p>
+                            <p>Current Holding = ${data.Holding}</p>
                         </div>
                     </div>
                 </div>
@@ -217,12 +217,12 @@ export default {
         // initiate components
         compChartComparison.createChart({
             elem: saverInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${data.Tenor}`,
-            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=325`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=325`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
 
-        console.log(data.ProfitLoss, data.Yield)
+        // console.log(data.ProfitLoss, data.Yield)
         compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.Yield.replace("%", ""))
         
         // click events
@@ -255,7 +255,7 @@ export default {
         const arrNames = [
             {name: "Name:", span: objVal.data.Name},
             { name: "Address:", span: objVal.data.Address }, //minimizeAddress(objVal.data.Address)
-            { name: "Unit price", span: `$${(objVal.data.UnitAsset).toFixed(2)}` },
+            { name: "Unit price", span: `${(objVal.data.UnitAsset)}` },
             { name: "Units:", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
             { name: "Trade value:", span: `$${(objVal.amount).toFixed(2)}` },
         ]
