@@ -25,6 +25,11 @@ export default {
         }),
         copy({
             targets: [
+                {src: [
+                    "dev/favicons/*",
+                    "!dev/favicons/favicon-*.png",
+                    "!dev/favicons/safari-pinned-tab.svg",
+                ], dest: "./"},
                 {src: "dev/src/json/*.json", dest: "json"},
                 {src: "dev/script/*", dest: "script"}
             ]
