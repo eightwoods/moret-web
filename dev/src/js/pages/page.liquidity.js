@@ -84,10 +84,10 @@ export default {
                     const poolSymbol = await getPoolInfo(address, "symbol")
                     const poolDescription = await getPoolInfo(address, "description")
                     const poolMarketCap = await getPoolInfo(address, "aum")
-                    const poolPrice = await getPoolInfo(address, "navoffer")
-                    const poolHolding = await getPoolInfo(address, "holding")
-                    const poolUtilized = await getPoolInfo(address, "utilization")
-
+                    const poolPriceOffer = await getPoolInfo(address, "navoffer")
+                    const poolPriceBid = await getPoolInfo(address, "navbid")
+                    const poolBalance = await getPoolInfo(address, "balance")
+                    
                     poolsData.push([poolName, poolSymbol, poolDescription, poolMarketCap])
 
                     swiperSlideElem += `
@@ -96,9 +96,9 @@ export default {
                                 <ul class="info">
                                     <li class="info-name">Name: <span>${poolName}</span></li>
                                     <li class="info-address hide">Address: <span>${address}</span></li>
-                                    <li>Unit Price: <span>${poolPrice}</span></li>
-                                    <li>Holding Value: <span>${poolHolding[1]}</span></li>
-                                    <li>LP Utilized: <span>${poolUtilized}</span></li>
+                                    <li>Unit Price: <span>$${poolPriceOffer.toFixed(2)}</span></li>
+                                    <li>Holding Value: <span>$${(poolPriceOffer*poolBalance).toFixed(2)}</span></li>
+                                    <li>LP Utilized: <span>${(poolPriceOffer > 0 ? poolPriceBid / poolPriceOffer : 0).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })}</span></li>
                                 </ul>
                                 <div class="buttons m-t-24">
                                     <div class="col">

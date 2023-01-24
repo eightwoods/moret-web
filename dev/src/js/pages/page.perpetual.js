@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
-import { getAllSavers, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
+import { getAllPerpetuals, getPerpetualInfo, approvePerp, tradePerp } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
@@ -56,11 +56,10 @@ export default {
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
+                            <th class="sortable sort-text">Side</th>
+                            <th class="sortable sort-text">Leverage</th>
                             <th class="sortable sort-text">Holding</th>
                             <th class="sortable">NAV</th>
-                            <th class="sortable">P&L</th>
-                            <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Next Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -70,7 +69,7 @@ export default {
         // reset
         this.setPerpetualInfo()
 
-        getAllSavers().then((addresses) => {
+        getAllPerpetuals().then((addresses) => {
             // console.log(addresses)
             getLoader(perpetualList, false)
             getLoader(perpetualInfo, false)
@@ -81,44 +80,40 @@ export default {
 
             addresses.forEach(async(address, index) => {
                 try {
-                    const name = await getSaverInfo(address, "name")
-                    const symbol = await getSaverInfo(address, "symbol")
-                    const holding = await getSaverInfo(address, "holding")
-                    const aum = await getSaverInfo(address, "aum")
-                    const nav = await getSaverInfo(address, "nav")
-                    const estYield = await getSaverInfo(address, "yield")
-                    const vintage = await getSaverInfo(address, "vintage")
-                    const profit = await getSaverInfo(address, "profit")
-                    // console.log(profit, estYield, vintage)
-                    const vintageTime = await getSaverInfo(address, "time")
-                    const description = await getSaverInfo(address, "description")
-
+                    const name = await getPerpetualInfo(address, "name")
+                    const symbol = await getPerpetualInfo(address, "symbol")
+                    const aum = await getPerpetualInfo(address, "aum")
+                    const supply = await getPerpetualInfo(address, "supply")
+                    const balance = await getPerpetualInfo(address, "balance")
+                    const leverage = await getPerpetualInfo(address, "leverage")
+                    const strike = await getPerpetualInfo(address, "strike")
+                    const notional = await getPerpetualInfo(address, "notional")
+                    const params = await getPerpetualInfo(address, "params")
+                    
                     perpetualDataInfo.push({
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
-                        "Description": description,
-                        "MarketCap": aum,
-                        "UnitAsset": nav,
-                        "Holding": holding,
-                        "Yield": estYield,
-                        "ProfitLoss": profit,
-                        "NextVintageStart": vintageTime[1],
-                        "VintageOpen": vintageTime[0],
-                        "StartLevel": vintage["StartLevel"],
-                        "Upside": vintage["Upside"],
-                        "Downside": vintage["Downside"],
-                        "Protection": vintage["Protection"],
-                        "Tenor": vintageTime[3]
+                        "Description": `${params[2]} ${symbol} <br> Leverage achieved by buying ${(Number(params[3]) / 86400).toFixed(0)}-day options`,
+                        "MarketCap": `$${aum.toFixed(0)}`,
+                        "UnitAsset": supply >0 ? aum / supply : 1.0,
+                        "Holding": `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`,
+                        "Leverage": leverage,
+                        "SetLevel": params[0],
+                        "CriticalLevel": params[1],
+                        "Target": Math.ceil((params[0] + params[1])/2),
+                        "Direction": params[2],
+                        "Tenor": params[3],
+                        "Strike": strike,
+                        "Notional": notional
                     })
-
+                    
                     perpetualData.push([
                         perpetualDataInfo[index].Name,
+                        perpetualDataInfo[index].Direction,
+                        perpetualDataInfo[index].Leverage.toFixed(2) + 'x',
                         perpetualDataInfo[index].Holding,
-                        `$${perpetualDataInfo[index].UnitAsset}`,
-                        perpetualDataInfo[index].ProfitLoss,
-                        perpetualDataInfo[index].VintageOpen ? "Open": "Closed",
-                        perpetualDataInfo[index].NextVintageStart
+                        `$${perpetualDataInfo[index].UnitAsset.toFixed(2)}`
                     ])
 
                     // console.log(index, addresses.length)
@@ -168,18 +163,18 @@ export default {
                     <div class="perpetual-content">
                         <div class="info">
                             <p class="m-b-20">${data.Description}</p>
-                            <p>Vintage reopened at ${data.VintageOpen}</p>
+                            <p>Current option position ${data.Notional.toFixed(2)} ${tokenName()}, strike at $${data.Strike.toFixed(2)}</p>
                         </div>
 
                         <div class="percentage-bar-multi">
                             <div class="pbm-progress">
                                 <div class="pbm-top">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.ProfitLoss}</span> P&L</div>
+                                    <div class="pbm-value size-sm"><span>${data.Leverage}</span>x</div>
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.Yield}</span> Yield</div>
+                                    <div class="pbm-value size-sm"><span>${data.SetLevel}</span>x</div>
                                 </div>
                             </div>
                         </div>
@@ -200,65 +195,63 @@ export default {
 
             <div class="buttons-container"></div>`
 
-        if (data.VintageOpen) {
-            perpetualInfo.querySelector(".buttons-container").innerHTML = `
-                <div class="buttons m-t-32">
-                    <div class="col">
-                        <div class="in-border word-nowrap white-50">
-                            <input type="number" name="usdc-amount" value="6000" />&nbsp;&nbsp;USDC
-                        </div>
+        
+        perpetualInfo.querySelector(".buttons-container").innerHTML = `
+            <div class="buttons m-t-32">
+                <div class="col">
+                    <div class="in-border word-nowrap white-50">
+                        <input type="number" name="usdc-amount" value="6000" />&nbsp;&nbsp;USDC
                     </div>
-                    <div class="col">
-                        <a href="#" class="btn btn-green js-save">TOP UP</a>
-                        <a href="#" class="btn btn-pink js-withdraw">WITHDRAW</a>
-                    </div>
-                </div>`
-        }
+                </div>
+                <div class="col">
+                    <a href="#" class="btn btn-green js-save">TOP UP</a>
+                    <a href="#" class="btn btn-pink js-withdraw">WITHDRAW</a>
+                </div>
+            </div>`
+        
 
         // initiate components
         compChartComparison.createChart({
             elem: perpetualInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${data.Tenor}`,
-            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
-            linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${Math.ceil(data.Tenor/3600)}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${Math.ceil(data.Tenor / 3600) }`,
+            linedata: [data.Strike],
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.Yield.replace("%", ""))
+        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), data.Leverage, data.SetLevel)
         
         // click events
-        if (data.VintageOpen) {
-            perpetualInfo.querySelector(".js-save").addEventListener("click", (e) => {
-                e.preventDefault()
-                this.setPopupInfo({
-                    type: "save",
-                    title: "Top up to vault",
-                    data: data,
-                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
-                })
-            }, false)
+        perpetualInfo.querySelector(".js-save").addEventListener("click", (e) => {
+            e.preventDefault()
+            this.setPopupInfo({
+                type: "save",
+                title: "Invest in Leveraged Perpetuals",
+                data: data,
+                amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
+            })
+        }, false)
 
-            perpetualInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
-                e.preventDefault()
-                this.setPopupInfo({
-                    type: "withdraw",
-                    title: "Withdraw from vault",
-                    data: data,
-                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
-                })
-            }, false)
-        }
+        perpetualInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
+            e.preventDefault()
+            this.setPopupInfo({
+                type: "withdraw",
+                title: "Withdraw from Leveraged Perpetuals",
+                data: data,
+                amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
+            })
+        }, false)
     },
 
     setPopupInfo(objVal) {
         console.log(objVal)
         let units = objVal.data.UnitAsset == 0 ? objVal.amount: objVal.amount / objVal.data.UnitAsset
         const arrNames = [
-            {name: "Name:", span: objVal.data.Name},
-            { name: "Address:", span: objVal.data.Address }, //minimizeAddress(objVal.data.Address)
-            { name: "Unit price", span: `$${(objVal.data.UnitAsset)}` },
-            { name: "Units:", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
-            { name: "Trade value:", span: `$${(objVal.amount).toFixed(2)}` },
+            {name: "Name: ", span: objVal.data.Name},
+            { name: "Address: ", span: minimizeAddress(objVal.data.Address)},
+            { name: "Price: ", span: `$${(objVal.data.UnitAsset)}` },
+            { name: "Units: ", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
+            { name: "Trade value: ", span: `$${(objVal.amount).toFixed(2)}` },
         ]
 
         showOverlayPopup(objVal.title, createList(arrNames, "investinperpetuals"))
@@ -309,7 +302,7 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer, 120)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approveSaver(type, perpetualAddress, funding, units)
+            const approveAllowance = await approvePerp(type, perpetualAddress, funding, units)
             console.log('approve finished', approveAllowance)
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
@@ -323,7 +316,7 @@ export default {
                 setTimeout(async () => {
                     this.executeTradeTimer(awaitTradeTimer, type==="propose"? 300: 120)
                     console.log('prior to trade', type, perpetualAddress, funding, units)
-                    const approveTrade = await tradeSaver(type, perpetualAddress, funding, units)
+                    const approveTrade = await tradePerp(type, perpetualAddress, funding)
                     console.log('trade finished', approveTrade)
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)

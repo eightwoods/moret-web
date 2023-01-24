@@ -83,40 +83,38 @@ export default {
                 try {
                     const name = await getSaverInfo(address, "name")
                     const symbol = await getSaverInfo(address, "symbol")
-                    const holding = await getSaverInfo(address, "holding")
                     const aum = await getSaverInfo(address, "aum")
-                    const nav = await getSaverInfo(address, "nav")
-                    const estYield = await getSaverInfo(address, "yield")
+                    const supply = await getSaverInfo(address, "supply")
+                    const balance = await getSaverInfo(address, "balance")
+                    const params = await getSaverInfo(address, "params")
                     const vintage = await getSaverInfo(address, "vintage")
-                    const profit = await getSaverInfo(address, "profit")
-                    // console.log(profit, estYield, vintage)
-                    const vintageTime = await getSaverInfo(address, "time")
-                    const description = await getSaverInfo(address, "description")
+                    const opentime = await getSaverInfo(address, "opentime")
 
                     saverDataInfo.push({
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
-                        "Description": description,
-                        "MarketCap": aum,
-                        "UnitAsset": nav,
-                        "Holding": holding,
-                        "Yield": estYield,
-                        "ProfitLoss": profit,
-                        "NextVintageStart": vintageTime[1],
-                        "VintageOpen": vintageTime[0],
+                        "Description": `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`,
+                        "MarketCap": `$${aum.toFixed(2)}`,
+                        "UnitAsset": supply > 0? aum/ supply: 1.0,
+                        "Holding": `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`,
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "ProfitLoss": vintage.StartLevel > 0? (aum / vintage.StartLevel - 1): 0.0,
+                        "NextVintageStart": new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString(),
+                        "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
+                        "VintageOpen": opentime < Math.floor(Date.now() / 1000),
                         "StartLevel": vintage["StartLevel"],
                         "Upside": vintage["Upside"],
                         "Downside": vintage["Downside"],
                         "Protection": vintage["Protection"],
-                        "Tenor": vintageTime[3]
+                        "Tenor": params.callTenor
                     })
 
                     saverData.push([
                         saverDataInfo[index].Name,
                         saverDataInfo[index].Holding,
                         `$${saverDataInfo[index].UnitAsset}`,
-                        saverDataInfo[index].ProfitLoss,
+                        saverDataInfo[index].ProfitLoss.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                         saverDataInfo[index].VintageOpen ? "Open": "Closed",
                         saverDataInfo[index].NextVintageStart
                     ])
@@ -168,7 +166,7 @@ export default {
                     <div class="saver-content">
                         <div class="info">
                             <p class="m-b-20">${data.Description}</p>
-                            <p>Vintage reopened at ${data.VintageOpen}</p>
+                            <p>Vintage reopened at ${data.ThisVintageEnd}</p>
                         </div>
 
                         <div class="percentage-bar-multi">
@@ -218,13 +216,13 @@ export default {
         // initiate components
         compChartComparison.createChart({
             elem: saverInfo.querySelector(".chart-comparison"),
-            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${data.Tenor}`,
-            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${data.Tenor}`,
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
             linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss.replace("%", ""), data.Yield.replace("%", ""))
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss, data.Yield)
         
         // click events
         if (data.VintageOpen) {
