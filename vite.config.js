@@ -8,6 +8,7 @@ import handlebars from "vite-plugin-handlebars"
 export default {
     root: path.resolve(__dirname, "dev"),
     build: {
+        assetsInlineLimit: 0,
         outDir: path.resolve(__dirname, "./"),
         emptyOutDir: false,
         rollupOptions: {
