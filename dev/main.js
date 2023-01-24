@@ -141,6 +141,16 @@ const setup = {
             liquidity.init()
         }
 
+        if (document.querySelector(".perpetual")) {
+            const { default: perpetual } = await import("./src/js/pages/page.perpetual")
+            perpetual.init()
+        }
+
+        if (document.querySelector(".saver")) {
+            const { default: saver } = await import("./src/js/pages/page.saver")
+            saver.init()
+        }
+
         if (document.querySelector(".trader")) {
             const { default: trader } = await import("./src/js/pages/page.trader")
             trader.init()
@@ -149,11 +159,6 @@ const setup = {
         if (document.querySelector(".trader-volatility")) {
             const { default: traderVolatility } = await import("./src/js/pages/page.traderVolatility")
             traderVolatility.init()
-        }
-
-        if (document.querySelector(".saver")) {
-            const { default: saver } = await import("./src/js/pages/page.saver")
-            saver.init()
         }
     },
 

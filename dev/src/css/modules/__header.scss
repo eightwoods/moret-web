@@ -28,10 +28,10 @@ header {
         @include centerElement(y);
         width: calc(100% - spacer(9));
         margin-left: spacer(9);
-        @include mediaQuery($pb-lg, max) {
-            width: calc(100% - spacer(8));
-            margin-left: spacer(8);
-        }
+        // @include mediaQuery($pb-lg, max) {
+        //     width: calc(100% - spacer(8));
+        //     margin-left: spacer(8);
+        // }
 
         @include mediaQuery($pb-lgmd, max) {
             display: none;

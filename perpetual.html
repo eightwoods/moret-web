@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Moret | Liquidity provider</title>
+    <title>Moret | Perpetual</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="apple-mobile-web-app-title" content="Moret">
@@ -41,121 +41,28 @@
     </div>
 </header>
 <main role="main" class="trading">
-    <section class="liquidity">
+    <section class="perpetual">
         <div class="sidenav animate-panel"></div>
         <div class="content">
-            <div class="pool-list animate-panel">
+            <div class="perpetual-list animate-panel">
                 <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Pool information</a>
+                    <a href="#" class="btn btn-white btn-title size-md">Perpetual information</a>
                 </div>
-                <div class="pools in-box">
-                    <div class="header-title m-b-24">Liquidity pool list<span class="icon icon-refresh cursor js-refresh"></span></div>
+                <div class="perpetual-list-content in-box">
+                    <div class="header-title m-b-24">Perpetual list<span class="icon icon-refresh cursor js-refresh"></span></div>
                     <div class="loader"></div>
                     <div class="comp-dynamic-table" data-limitview="scroll"></div>
-                    <!-- <div class="buttons m-t-24">
-                        <div class="col">
-                            <div class="in-border display-inline word-nowrap white-50"><span class="white-100">6000</span> USDC</div>
-                        </div>
-                        <div class="col">
-                            <a href="#" class="btn btn-green js-deposit">Deposit</a>
-                            <a href="#" class="btn btn-pink js-withdraw">Withdraw</a>
-                        </div>
-                    </div> -->
                 </div>
             </div>
 
-            <div class="active-hottubs m-t-48 animate-panel">
-                <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Invest in Pools</a>
-                </div>
-                <div class="loader"></div>
-                <div class="hottubs-content"></div>
-            </div>
-
-            <div class="active-vote m-t-48 animate-panel">
-                <div class="m-b-20">
-                    <a href="#" class="btn btn-white btn-title size-md">Propose New Pool</a>
+            <div class="perpetual-info m-t-48 animate-panel">
+                <div class="btn-plus-subcopy m-b-24">
+                    <a href="#" class="btn btn-white btn-title size-md">Invest in Perpetuals</a>
                 </div>
                 <div class="in-box">
-                    <div class="header-title m-b-24">Add new liquidity pool with hedging strategies</div>
-                    <div class="vote-content">
-                        <div class="cont-col">
-                            <div class="form">
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Pool Name</legend>
-                                            <input type="text" name="pool-name" value="LiquidityPool" />
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Pool Symbol</legend>
-                                            <input type="text" name="pool-symbol" value="MoretLP" />
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Description</legend>
-                                            <input type="text" name="description" value="Lorem ipsum" onKeyPress="if(this.value.length==32) return false;" />
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Hedging Address</legend>
-                                            <input type="text" name="address" value="0xfcbd4b191c23c438947354024962b88a29e95ba7" />
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-col">
-                                        <fieldset>
-                                            <legend>Initial Pool Amount</legend>
-                                            <input type="number" name="usdc-amount" value="1" />&nbsp;&nbsp;USDC
-                                        </fieldset>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="cont-col">
-                            <a href="#" class="btn btn-blue js-propose">Propose</a>
-                        </div>
-                    </div>
+                    <div class="loader"></div>
+                    <div class="perpetual-info-content"></div>
                 </div>
-                <!-- <div class="in-box">
-                    <div class="header-title m-b-24">Update exercising fees</div>
-                    <div class="vote-content">
-                        <div class="cont-col">
-                            <div class="fees">
-                                <div class="fees-info">
-                                    <div class="fi-col">
-                                        <div class="in-border word-nowrap">0.2%</div>
-                                    </div>
-                                    <div class="fi-col">Proposed by</div>
-                                    <div class="fi-col">
-                                        <div class="in-border word-nowrap">0x38....938b</div>
-                                    </div>
-                                    <div class="fi-col">at (Thursday, March 31, 2022)</div>
-                                </div>
-                                <div class="percentage-bar-multi" data-init-value-against="75" data-init-value-for="35">
-                                    <div class="pbm-progress">
-                                        <div class="pbm-against">
-                                            <div class="pbm-progressbar"></div>
-                                            <div class="pbm-value size-sm"><span>0%</span> AGAINST</div>
-                                        </div>
-                                        <div class="pbm-for">
-                                            <div class="pbm-progressbar"></div>
-                                            <div class="pbm-value size-sm"><span>0%</span> FOR</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="fees-value">You've voted 100 ETHmp (1.2%) FOR</div>
-                            </div>
-                        </div>
-                        <div class="cont-col">
-                            <div class="in-border display-inline word-nowrap white-50 m-b-12"><span class="white-100">50</span> ETHmp</div>
-                            <a href="#" class="btn btn-blue js-propose">Propose</a>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </section>

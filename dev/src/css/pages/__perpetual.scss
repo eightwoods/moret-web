@@ -1,0 +1,52 @@
+.perpetual {
+    .perpetual-info {
+        .perpetual-row {
+            display: flex;
+            gap: spacer(2);
+            flex-wrap: wrap;
+            .perpetual-col {
+                width: 100%;
+            }
+
+            @include mediaQuery($pb-xl) {
+                flex-wrap: initial;
+                .perpetual-col {
+                    width: 50%;
+                }
+            }
+        }
+
+        .perpetual-content {
+            .percentage-bar-text {
+                margin-top: -10px;
+            }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            @include mediaQuery($pb-sm, max) {
+                flex-wrap: wrap;
+            }
+
+            .col {
+                &:first-child {
+                    input {
+                        width: calc(100% - 55px);
+                        text-align: center;
+                        background-color: $white-8;
+                    }
+                }
+
+                &:last-child {
+                    display: flex;
+                    gap: 12px;
+                    @include mediaQuery($pb-sm) {
+                        width: 100%;
+                        justify-content: flex-end;
+                    }
+                }
+            }
+        }
+    }
+}
