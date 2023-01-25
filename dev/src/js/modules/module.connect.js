@@ -122,7 +122,7 @@ export default {
                     {name: "", class: "warning-icon"}, 
                     {name: "Please switch to Polygon chain.", class: "warning-text size-lgmd"}
                 ]
-                showOverlayPopup(null, createList(arrNames, "notpolygon"), true)
+                showOverlayPopup(null, createList(arrNames, "notpolygon"), false)
             }
         }
     },

@@ -120,8 +120,13 @@ export const createList = (arrValues, containerClass) => {
     return listContainer
 }
 
-export const showOverlayPopup = (title = null, data = null, btnClose = false) => {
+export const showOverlayPopup = (title = null, data = null, btnClose = true, delCurr = false) => {
     noScroll()
+
+    // delete current popup
+    if (delCurr && document.querySelector(".overlay-popup")) {
+        document.querySelector(".overlay-popup").remove()
+    }
 
     // set elements
     const opPanel = document.createElement("div")
@@ -141,9 +146,9 @@ export const showOverlayPopup = (title = null, data = null, btnClose = false) =>
 
     const opClose = document.createElement("div")
     if (btnClose) {
-        opClose.className = "op-close hide"
-    } else {
         opClose.className = "op-close cursor"
+    } else {
+        opClose.className = "op-close hide"
     }
     opBox.appendChild(opClose)
     opClose.addEventListener("click", () => {
@@ -215,7 +220,7 @@ export const onDataLoadIncomplete = () => {
         {name: `Data load incomplete, page will refresh in ${secsDuration} secs.`, class: "warning-text"},
         {html: "<a href='#' class='btn btn-pink' onClick='location.reload(); return false;'>Refresh Now!</a>", class: "align-center p-t-20"}
     ]
-    showOverlayPopup(null, createList(arrNames, "dataloadincomplete"), true)
+    showOverlayPopup(null, createList(arrNames, "dataloadincomplete"), false, true)
 
     setTimeout(() => location.reload(), secsDuration * 1000)
 }
