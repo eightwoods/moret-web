@@ -53,13 +53,13 @@ export default {
         const textValue = elem.querySelector(".pbm-value span")
         const currValue = textValue.textContent.replace("%", "")
         const target = {val: currValue}
-
+        
         gsap.to(target, {
             val: value, 
             ease: this.globals.easing,
             duration: this.globals.duration,
             onUpdate: function() {
-                const targetValue = target.val.toFixed(0)
+                const targetValue = Number.isInteger(target.val) ? target.val.toFixed(0) : target.val
                 textValue.textContent = `${targetValue}%`
                 if (targetValue > 55) {
                     elem.querySelector(".pbm-value").classList.add("pbm-value-50plus")

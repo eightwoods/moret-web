@@ -97,6 +97,7 @@ export const createList = (arrValues, containerClass) => {
         const listItem = document.createElement("li")
 
         listItem.textContent = txtVal.name
+
         if (txtVal.class) {
             listItem.className = txtVal.class
         } else {
@@ -107,6 +108,10 @@ export const createList = (arrValues, containerClass) => {
             const span = document.createElement("span")
             span.textContent = txtVal.span
             listItem.appendChild(span)
+        }
+
+        if (txtVal.html) {
+            listItem.innerHTML = txtVal.html
         }
 
         listContainer.appendChild(listItem)
@@ -200,4 +205,17 @@ export const closeOverlayPopup = () => {
             overlayPopup.remove()
         }})
     }
+}
+
+export const onDataLoadIncomplete = () => {
+    console.log("Fail! Data load incomplete, page refresh...")
+    const secsDuration = 5
+    const arrNames = [
+        {name: "", class: "warning-icon"},
+        {name: `Data load incomplete, page will refresh in ${secsDuration} secs.`, class: "warning-text"},
+        {html: "<a href='#' class='btn btn-pink' onClick='location.reload(); return false;'>Refresh Now!</a>", class: "align-center p-t-20"}
+    ]
+    showOverlayPopup(null, createList(arrNames, "dataloadincomplete"), true)
+
+    setTimeout(() => location.reload(), secsDuration * 1000)
 }

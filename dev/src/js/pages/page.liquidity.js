@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { getAllPools, getPoolInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup, onDataLoadIncomplete } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -10,7 +10,7 @@ export default {
 
     init() {
         // static methods call
-        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setPoolsAndHottubs())
+        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setLiquidity())
         this.setActiveVote()
 
         // observe sidenav
@@ -26,7 +26,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            this.setPoolsAndHottubs()
+                            this.setLiquidity()
                             break
                         case "sidenav-refreshprice":
                             break
@@ -40,7 +40,7 @@ export default {
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
-    setPoolsAndHottubs() {
+    setLiquidity() {
         const poolList = document.querySelector(".pool-list")
         const hotTubs = document.querySelector(".active-hottubs")
         getLoader(poolList)
@@ -177,11 +177,13 @@ export default {
                     }
                 } catch (error) {
                     console.error(error)
+                    onDataLoadIncomplete()
                 }
             })
 
         }).catch(error => {
             console.error(error)
+            onDataLoadIncomplete()
         })
     },
 

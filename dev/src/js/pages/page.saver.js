@@ -1,7 +1,7 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
 import { getAllSavers, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup, onDataLoadIncomplete } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
@@ -142,11 +142,13 @@ export default {
                     }
                 } catch (error) {
                     console.error(error)
+                    onDataLoadIncomplete()
                 }
             })
 
         }).catch(error => {
             console.error(error)
+            onDataLoadIncomplete()
         })
         
     },
