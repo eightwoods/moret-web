@@ -212,15 +212,15 @@ export const closeOverlayPopup = () => {
     }
 }
 
-export const onDataLoadIncomplete = () => {
-    console.log("Fail! Data load incomplete, page refresh...")
+export const onFailDataLoad = () => {
+    console.log("Fail! refresh data load...")
     const secsDuration = 5
     const arrNames = [
         {name: "", class: "warning-icon"},
-        {name: `Data load incomplete, page will refresh in ${secsDuration} secs.`, class: "warning-text"},
+        {name: `Fail data load, page will refresh in ${secsDuration} secs.`, class: "warning-text"},
         {html: "<a href='#' class='btn btn-pink' onClick='location.reload(); return false;'>Refresh Now!</a>", class: "align-center p-t-20"}
     ]
-    showOverlayPopup(null, createList(arrNames, "dataloadincomplete"), false, true)
+    showOverlayPopup(null, createList(arrNames, "faildataload"), false, true)
 
     setTimeout(() => location.reload(), secsDuration * 1000)
 }

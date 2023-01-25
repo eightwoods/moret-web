@@ -1,7 +1,7 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
 import { getAllSavers, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup, onDataLoadIncomplete } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
@@ -44,6 +44,7 @@ export default {
     },
 
     setSavers() {
+        console.log("setSavers()")
         const saverList = document.querySelector(".saver-list")
         const saverInfo = document.querySelector(".saver-info")
         getLoader(saverList)
@@ -72,12 +73,10 @@ export default {
 
         getAllSavers().then((addresses) => {
             // console.log(addresses)
-            getLoader(saverList, false)
-            getLoader(saverInfo, false)
-
             const saverData = []
             const saverDataInfo = []
             const nowTime = Math.floor(Date.now() / 1000)
+            let counter = 0
 
             addresses.forEach(async(address, index) => {
                 try {
@@ -90,19 +89,25 @@ export default {
                     const vintage = await getSaverInfo(address, "vintage")
                     const opentime = await getSaverInfo(address, "opentime")
 
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1): 0.0
+                    const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
+                    const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
+
                     saverDataInfo.push({
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
                         "Description": `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`,
                         "MarketCap": `$${aum.toFixed(2)}`,
-                        "UnitAsset": supply > 0? aum/ supply: 1.0,
-                        "Holding": `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
                         "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                        "ProfitLoss": vintage.StartLevel > 0? (aum / vintage.StartLevel - 1): 0.0,
-                        "NextVintageStart": new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString(),
+                        "ProfitLoss": profitLossVal,
+                        "NextVintageStart": nextVintageStartVal,
                         "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
-                        "VintageOpen": opentime < Math.floor(Date.now() / 1000),
+                        "VintageOpen": vintageOpenVal,
                         "StartLevel": vintage["StartLevel"],
                         "Upside": vintage["Upside"],
                         "Downside": vintage["Downside"],
@@ -111,17 +116,20 @@ export default {
                     })
 
                     saverData.push([
-                        saverDataInfo[index].Name,
-                        saverDataInfo[index].Holding,
-                        `$${saverDataInfo[index].UnitAsset}`,
-                        saverDataInfo[index].ProfitLoss.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                        saverDataInfo[index].VintageOpen ? "Open": "Closed",
-                        saverDataInfo[index].NextVintageStart
+                        name,
+                        holdingVal,
+                        unitAssetVal,
+                        profitLossVal.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        vintageOpenVal ? "Open" : "Closed",
+                        nextVintageStartVal
                     ])
 
-                    // console.log(index, addresses.length)
                     // ALL DONE!
-                    if ((index + 1) === addresses.length) {
+                    counter++
+                    if (counter === addresses.length) {
+                        getLoader(saverList, false)
+                        getLoader(saverInfo, false)
+                        
                         // saver info data
                         this.setSaverInfo(saverDataInfo[0])
 
@@ -142,13 +150,16 @@ export default {
                     }
                 } catch (error) {
                     console.error(error)
-                    onDataLoadIncomplete()
+                    console.log("Fail! refresh data load...")
+                    const failTimeout = setTimeout(() => {
+                        this.setSavers()
+                        clearTimeout(failTimeout)
+                    }, 5000)
                 }
             })
 
         }).catch(error => {
             console.error(error)
-            onDataLoadIncomplete()
         })
         
     },

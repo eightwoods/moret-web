@@ -1,6 +1,6 @@
 import Swiper from "swiper"
 import { getAllPools, getPoolInfo, quoteInvestInPool, quoteDivestFromPool, approvePool, tradePool } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup, onDataLoadIncomplete } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import componentTables from "../components/component.tables"
 
 export default {
@@ -41,6 +41,7 @@ export default {
     },
 
     setLiquidity() {
+        console.log("setLiquidity()")
         const poolList = document.querySelector(".pool-list")
         const hotTubs = document.querySelector(".active-hottubs")
         getLoader(poolList)
@@ -72,11 +73,9 @@ export default {
         
         getAllPools().then((addresses) => {
             // console.log(addresses)
-            getLoader(poolList, false)
-            getLoader(hotTubs, false)
-
             const poolsData = []
             let swiperSlideElem = ""
+            let counter = 0
 
             addresses.forEach(async(address, index) => {
                 try {
@@ -117,7 +116,11 @@ export default {
                         </div>`
 
                     // ALL DONE!
-                    if ((index + 1) === addresses.length) {
+                    counter++
+                    if (counter === addresses.length) {
+                        getLoader(poolList, false)
+                        getLoader(hotTubs, false)
+
                         // insert elements into swiper
                         poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
                         // init swiper
@@ -177,13 +180,16 @@ export default {
                     }
                 } catch (error) {
                     console.error(error)
-                    onDataLoadIncomplete()
+                    console.log("Fail! refresh data load...")
+                    const failTimeout = setTimeout(() => {
+                        this.setLiquidity()
+                        clearTimeout(failTimeout)
+                    }, 5000)
                 }
             })
 
         }).catch(error => {
             console.error(error)
-            onDataLoadIncomplete()
         })
     },
 

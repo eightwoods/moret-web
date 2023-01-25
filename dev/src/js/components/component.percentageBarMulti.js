@@ -53,7 +53,7 @@ export default {
         const textValue = elem.querySelector(".pbm-value span")
         const currValue = textValue.textContent.replace("%", "")
         const target = {val: currValue}
-        
+
         gsap.to(target, {
             val: value, 
             ease: this.globals.easing,

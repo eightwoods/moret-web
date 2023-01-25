@@ -76,7 +76,7 @@
             }
         }
 
-        .notpolygon, .dataloadincomplete {
+        .notpolygon, .faildataload {
             @include popupWarning;
         }
 

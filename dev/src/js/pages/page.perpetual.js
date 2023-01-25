@@ -1,7 +1,7 @@
 import Swiper from "swiper"
 import { tokenName, tokenPrice } from "../helpers/constant"
 import { getAllPerpetuals, getPerpetualInfo, approvePerp, tradePerp } from "../helpers/web3"
-import { getLoader, minimizeAddress, createList, showOverlayPopup, onDataLoadIncomplete } from "../helpers/utils"
+import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
 import compChartComparison from "../components/component.chartComparison"
 import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
@@ -44,12 +44,14 @@ export default {
     },
 
     setPerpetuals() {
+        console.log("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
         getLoader(perpetualList)
         getLoader(perpetualInfo)
 
         const perpetualTable = perpetualList.querySelector(".comp-dynamic-table")
+        perpetualTable.textContent = ""
         perpetualTable.innerHTML = `
             <div class="table-container">
                 <table>
@@ -71,12 +73,10 @@ export default {
 
         getAllPerpetuals().then((addresses) => {
             // console.log(addresses)
-            getLoader(perpetualList, false)
-            getLoader(perpetualInfo, false)
-
             const perpetualData = []
             const perpetualDataInfo = []
             const nowTime = Math.floor(Date.now() / 1000)
+            let counter = 0
 
             addresses.forEach(async(address, index) => {
                 try {
@@ -89,15 +89,18 @@ export default {
                     const strike = await getPerpetualInfo(address, "strike")
                     const notional = await getPerpetualInfo(address, "notional")
                     const params = await getPerpetualInfo(address, "params")
-                    
+
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+
                     perpetualDataInfo.push({
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
-                        "Description": `${params[2]} ${symbol} <br> Leverage achieved by buying ${(Number(params[3]) / 86400).toFixed(0)}-day options`,
+                        "Description": `${params[2]} ${symbol}<br>Leverage achieved by buying ${(Number(params[3]) / 86400).toFixed(0)}-day options`,
                         "MarketCap": `$${aum.toFixed(0)}`,
-                        "UnitAsset": supply >0 ? aum / supply : 1.0,
-                        "Holding": `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
                         "Leverage": leverage,
                         "SetLevel": params[0],
                         "CriticalLevel": params[1],
@@ -107,25 +110,29 @@ export default {
                         "Strike": strike,
                         "Notional": notional
                     })
-                    
+
                     perpetualData.push([
-                        perpetualDataInfo[index].Name,
-                        perpetualDataInfo[index].Direction,
-                        perpetualDataInfo[index].Leverage.toFixed(2) + 'x',
-                        perpetualDataInfo[index].Holding,
-                        `$${perpetualDataInfo[index].UnitAsset.toFixed(2)}`
+                        name,
+                        params[2],
+                        leverage.toFixed(2) + 'x',
+                        holdingVal,
+                        `$${unitAssetVal.toFixed(2)}`
                     ])
 
-                    // console.log(index, addresses.length)
+                    
                     // ALL DONE!
-                    if ((index + 1) === addresses.length) {
+                    counter++
+                    if (counter === addresses.length) {
+                        getLoader(perpetualList, false)
+                        getLoader(perpetualInfo, false)
+
                         // perpetual info data
                         this.setPerpetualInfo(perpetualDataInfo[0])
 
                         // init perpetuals table
                         componentTables.setDynamic(perpetualTable, perpetualData)
 
-                        /// events
+                        // events
                         if (addresses.length > 1) {
                             // perpetual table rows to inject data 
                             perpetualTable.querySelectorAll("tbody tr").forEach((row, index) => {
@@ -139,13 +146,16 @@ export default {
                     }
                 } catch (error) {
                     console.error(error)
-                    onDataLoadIncomplete()
+                    console.log("Fail! refresh data load...")
+                    const failTimeout = setTimeout(() => {
+                        this.setPerpetuals()
+                        clearTimeout(failTimeout)
+                    }, 5000)
                 }
             })
 
         }).catch(error => {
             console.error(error)
-            onDataLoadIncomplete()
         })
         
     },
