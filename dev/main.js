@@ -8,7 +8,7 @@ const setup = {
     init() {
         // use for styling
         document.body.classList.add("js-enable", getDeviceType(), getMobileOS(), getBrowser())
-        alert(getDeviceType(), getMobileOS(), getBrowser())
+        alert(getDeviceType() +" "+ getMobileOS() +" "+ getBrowser())
 
         // no metamask
         this.getMetaMask()
