@@ -14,6 +14,9 @@ export default {
     init() {
         // static methods call
         document.querySelector(".saver-list-content .js-refresh").addEventListener("click", () => this.setSavers())
+        if (document.querySelector("body.mobile.unknown")) {// check for metamask app
+            this.setSavers()
+        }
         // this.setActiveVote()
 
         // observe sidenav
@@ -29,7 +32,9 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            this.setSavers()
+                            if (!document.querySelector("body.mobile.unknown")) {// check for metamask app
+                                this.setSavers()
+                            }
                             break
                         case "sidenav-refreshprice":
                             break

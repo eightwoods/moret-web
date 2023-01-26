@@ -11,6 +11,9 @@ export default {
     init() {
         // static methods call
         document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setLiquidity())
+        if (document.querySelector("body.mobile.unknown")) {// check for metamask app
+            this.setLiquidity()
+        }
         this.setActiveVote()
 
         // observe sidenav
@@ -26,7 +29,9 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            this.setLiquidity()
+                            if (!document.querySelector("body.mobile.unknown")) {// check for metamask app
+                                this.setLiquidity()
+                            }
                             break
                         case "sidenav-refreshprice":
                             break
@@ -342,6 +347,7 @@ export default {
     },
 
     setActiveVote() {
+        console.log("setActiveVote()")
         const activeVote = document.querySelector(".active-vote")
 
         activeVote.querySelector(".js-propose").addEventListener("click", (e) => {

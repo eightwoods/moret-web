@@ -15,7 +15,6 @@ export default {
         // static methods call
         document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click", () => this.setPerpetuals())
         if (document.querySelector("body.mobile.unknown")) {// check for metamask app
-            alert("01")
             this.setPerpetuals()
         }
         // this.setActiveVote()
@@ -34,7 +33,6 @@ export default {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
                             if (!document.querySelector("body.mobile.unknown")) {// check for metamask app
-                                alert("02")
                                 this.setPerpetuals()
                             }
                             break
@@ -52,7 +50,6 @@ export default {
 
     setPerpetuals() {
         console.log("setPerpetuals()")
-        alert("03 setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
         getLoader(perpetualList)
