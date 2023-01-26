@@ -139,7 +139,12 @@ export default {
                 sidenav.setAttribute("sidenav-refreshprice", "")
                 // insert tokens price
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
-                    tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                    try {
+                        tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                    } catch (error) {
+                        console.log("error refreshTokenPrice()")
+                        tokenPrice.textContent = 0
+                    }
                 })
             }, this.globals.refreshDuration)
         }

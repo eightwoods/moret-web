@@ -61,10 +61,10 @@ export default {
                         <tr>
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Holding</th>
-                            <th class="sortable">NAV</th>
-                            <th class="sortable">P&L</th>
+                            <th class="sortable sort-text">NAV</th>
+                            <th class="sortable sort-text">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Next Vintage</th>
+                            <th class="sortable sort-text">Next Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

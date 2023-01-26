@@ -1,4 +1,4 @@
-import{k as w,l as S,o as d,p as L,t as T,d as k,m as P,s as I,a as N,q as A,r as q}from"./main.88a777f7.js";import E from"./component.chartComparison.2145fb22.js";import F from"./component.percentageBarMulti.b8fb9de5.js";var U={globals:{elem:document.querySelector(".perpetual")},init(){document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click",()=>this.setPerpetuals()),document.querySelector("body.mobile.unknown")&&this.setPerpetuals();const e={childList:!0,attributes:!0,attributeFilter:["sidenav-activechange","sidenav-refreshprice"]};new MutationObserver(t=>{console.log("sidenav refreshed from Perpetual!");for(let n of t)if(n.type==="attributes")switch(n.attributeName){case"sidenav-activechange":this.setPerpetuals();break}this.globals.init=!1}).observe(this.globals.elem.querySelector(".sidenav"),e)},setPerpetuals(){console.log("setPerpetuals()");const e=document.querySelector(".perpetual-list"),a=document.querySelector(".perpetual-info");w(e),w(a);const t=e.querySelector(".comp-dynamic-table");t.textContent="",t.innerHTML=`
+import{k as w,l as S,o as d,p as L,t as T,d as k,m as P,s as I,a as N,q as A,r as q}from"./main.5479ea0c.js";import E from"./component.chartComparison.2145fb22.js";import F from"./component.percentageBarMulti.e446baf6.js";var U={globals:{elem:document.querySelector(".perpetual")},init(){document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click",()=>this.setPerpetuals()),document.querySelector("body.mobile.unknown")&&this.setPerpetuals();const e={childList:!0,attributes:!0,attributeFilter:["sidenav-activechange","sidenav-refreshprice"]};new MutationObserver(t=>{console.log("sidenav refreshed from Perpetual!");for(let n of t)if(n.type==="attributes")switch(n.attributeName){case"sidenav-activechange":this.setPerpetuals();break}this.globals.init=!1}).observe(this.globals.elem.querySelector(".sidenav"),e)},setPerpetuals(){console.log("setPerpetuals()");const e=document.querySelector(".perpetual-list"),a=document.querySelector(".perpetual-info");w(e),w(a);const t=e.querySelector(".comp-dynamic-table");t.textContent="",t.innerHTML=`
             <div class="table-container">
                 <table>
                     <thead>
@@ -7,7 +7,7 @@ import{k as w,l as S,o as d,p as L,t as T,d as k,m as P,s as I,a as N,q as A,r a
                             <th class="sortable sort-text">Side</th>
                             <th class="sortable sort-text">Leverage</th>
                             <th class="sortable sort-text">Holding</th>
-                            <th class="sortable">NAV</th>
+                            <th class="sortable sort-text">NAV</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

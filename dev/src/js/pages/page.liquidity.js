@@ -59,7 +59,7 @@ export default {
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Symbol</th>
                             <th class="sortable sort-text">Description</th>
-                            <th class="sortable">Market Cap</th>
+                            <th class="sortable sort-text">Market Cap</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

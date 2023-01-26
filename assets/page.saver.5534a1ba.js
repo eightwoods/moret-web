@@ -1,14 +1,14 @@
-import{k as f,u as $,v,p as D,t as N,d as I,s as k,a as E,x as A,y as q}from"./main.88a777f7.js";import F from"./component.chartComparison.2145fb22.js";import P from"./component.percentageBarMulti.b8fb9de5.js";var H={globals:{elem:document.querySelector(".saver")},init(){document.querySelector(".saver-list-content .js-refresh").addEventListener("click",()=>this.setSavers()),document.querySelector("body.mobile.unknown")&&this.setSavers();const e={childList:!0,attributes:!0,attributeFilter:["sidenav-activechange","sidenav-refreshprice"]};new MutationObserver(t=>{console.log("sidenav refreshed from Saver!");for(let n of t)if(n.type==="attributes")switch(n.attributeName){case"sidenav-activechange":this.setSavers();break}this.globals.init=!1}).observe(this.globals.elem.querySelector(".sidenav"),e)},setSavers(){console.log("setSavers()");const e=document.querySelector(".saver-list"),a=document.querySelector(".saver-info");f(e),f(a);const t=e.querySelector(".comp-dynamic-table");t.innerHTML=`
+import{k as f,u as $,v,p as D,t as N,d as I,s as k,a as E,x as A,y as q}from"./main.5479ea0c.js";import F from"./component.chartComparison.2145fb22.js";import P from"./component.percentageBarMulti.e446baf6.js";var H={globals:{elem:document.querySelector(".saver")},init(){document.querySelector(".saver-list-content .js-refresh").addEventListener("click",()=>this.setSavers()),document.querySelector("body.mobile.unknown")&&this.setSavers();const e={childList:!0,attributes:!0,attributeFilter:["sidenav-activechange","sidenav-refreshprice"]};new MutationObserver(t=>{console.log("sidenav refreshed from Saver!");for(let n of t)if(n.type==="attributes")switch(n.attributeName){case"sidenav-activechange":this.setSavers();break}this.globals.init=!1}).observe(this.globals.elem.querySelector(".sidenav"),e)},setSavers(){console.log("setSavers()");const e=document.querySelector(".saver-list"),a=document.querySelector(".saver-info");f(e),f(a);const t=e.querySelector(".comp-dynamic-table");t.innerHTML=`
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
                             <th class="sortable sort-text">Holding</th>
-                            <th class="sortable">NAV</th>
-                            <th class="sortable">P&L</th>
+                            <th class="sortable sort-text">NAV</th>
+                            <th class="sortable sort-text">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Next Vintage</th>
+                            <th class="sortable sort-text">Next Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

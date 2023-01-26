@@ -64,7 +64,7 @@ export default {
                             <th class="sortable sort-text">Side</th>
                             <th class="sortable sort-text">Leverage</th>
                             <th class="sortable sort-text">Holding</th>
-                            <th class="sortable">NAV</th>
+                            <th class="sortable sort-text">NAV</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
