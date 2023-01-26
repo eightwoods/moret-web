@@ -29,9 +29,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            if (!document.querySelector("body.mobile.unknown")) {// check for metamask app
-                                this.setLiquidity()
-                            }
+                            this.setLiquidity()
                             break
                         case "sidenav-refreshprice":
                             break
