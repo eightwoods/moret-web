@@ -14,6 +14,7 @@ export default {
     init() {
         // static methods call
         document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click", () => this.setPerpetuals())
+        alert("01")
         // this.setActiveVote()
 
         // observe sidenav
@@ -29,6 +30,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
+                            alert("02")
                             this.setPerpetuals()
                             break
                         case "sidenav-refreshprice":
@@ -45,7 +47,7 @@ export default {
 
     setPerpetuals() {
         console.log("setPerpetuals()")
-        alert("setPerpetuals()")
+        alert("03 setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
         getLoader(perpetualList)
