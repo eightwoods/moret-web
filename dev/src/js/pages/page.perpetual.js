@@ -13,10 +13,10 @@ export default {
 
     init() {
         // static methods call
-        const btnRefresh = document.querySelector(".perpetual-list-content .js-refresh")
-        btnRefresh.addEventListener("click", () => this.setPerpetuals())
+        document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click", () => this.setPerpetuals())
         if (document.querySelector("body.desktop.os-other")) {// check for metamask app
-            btnRefresh.click()
+            alert("01")
+            this.setPerpetuals()
         }
         // this.setActiveVote()
 
@@ -34,6 +34,7 @@ export default {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
                             if (!document.querySelector("body.desktop.os-other")) {// check for metamask app
+                                alert("02")
                                 this.setPerpetuals()
                             }
                             break
