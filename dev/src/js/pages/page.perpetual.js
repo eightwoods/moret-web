@@ -45,6 +45,7 @@ export default {
 
     setPerpetuals() {
         console.log("setPerpetuals()")
+        alert("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
         getLoader(perpetualList)
