@@ -13,8 +13,11 @@ export default {
 
     init() {
         // static methods call
-        document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click", () => this.setPerpetuals())
-        alert("01")
+        const btnRefresh = document.querySelector(".perpetual-list-content .js-refresh")
+        btnRefresh.addEventListener("click", () => this.setPerpetuals())
+        if (document.querySelector("body.desktop.os-other")) {// check for metamask app
+            btnRefresh.click()
+        }
         // this.setActiveVote()
 
         // observe sidenav
@@ -30,8 +33,9 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            alert("02")
-                            this.setPerpetuals()
+                            if (!document.querySelector("body.desktop.os-other")) {// check for metamask app
+                                this.setPerpetuals()
+                            }
                             break
                         case "sidenav-refreshprice":
                             break
