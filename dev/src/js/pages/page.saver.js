@@ -94,7 +94,7 @@ export default {
 
                     const unitAssetVal = supply > 0 ? aum / supply : 1.0
                     const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
-                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1): 0.0
+                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1) : 0.0
                     const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
                     const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
 
@@ -106,7 +106,7 @@ export default {
                         "MarketCap": `$${aum.toFixed(2)}`,
                         "UnitAsset": unitAssetVal,
                         "Holding": holdingVal,
-                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                         "ProfitLoss": profitLossVal,
                         "NextVintageStart": nextVintageStartVal,
                         "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
@@ -121,7 +121,7 @@ export default {
                     saverData.push([
                         name,
                         holdingVal,
-                        unitAssetVal,
+                        `$${unitAssetVal.toFixed(2)}`,
                         profitLossVal.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                         vintageOpenVal ? "Open" : "Closed",
                         nextVintageStartVal
@@ -189,11 +189,11 @@ export default {
                             <div class="pbm-progress">
                                 <div class="pbm-top">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.ProfitLoss}</span> P&L</div>
+                                    <div class="pbm-value size-sm"><span>${data.ProfitLoss.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> P&L</div>
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.Yield}</span> Yield</div>
+                                    <div class="pbm-value size-sm"><span>${data.Yield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> Yield</div>
                                 </div>
                             </div>
                         </div>
@@ -238,7 +238,7 @@ export default {
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss, data.Yield)
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss / data.Yield * 100, 100)
         
         // click events
         if (data.VintageOpen) {

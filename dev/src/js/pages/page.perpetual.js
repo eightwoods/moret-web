@@ -117,7 +117,7 @@ export default {
                     perpetualData.push([
                         name,
                         params[2],
-                        leverage.toFixed(2) + 'x',
+                        leverage.toFixed(1) + 'x',
                         holdingVal,
                         `$${unitAssetVal.toFixed(2)}`
                     ])
@@ -185,11 +185,11 @@ export default {
                             <div class="pbm-progress">
                                 <div class="pbm-top">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.Leverage}</span>x</div>
+                                    <div class="pbm-value size-sm"><span>${data.Leverage.toFixed(1)}</span>x</div>
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.SetLevel}</span>x</div>
+                                    <div class="pbm-value size-sm"><span>${data.SetLevel.toFixed(1)}</span>x</div>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +234,7 @@ export default {
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), data.Leverage, data.SetLevel)
+        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), (data.Leverage - data.CriticalLevel) / data.SetLevel * 100, 100)
         
         // click events
         perpetualInfo.querySelector(".js-save").addEventListener("click", (e) => {

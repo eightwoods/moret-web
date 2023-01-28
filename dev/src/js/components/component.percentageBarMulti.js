@@ -60,7 +60,7 @@ export default {
             duration: this.globals.duration,
             onUpdate: function() {
                 const targetValue = Number.isInteger(target.val) ? target.val.toFixed(0) : target.val
-                textValue.textContent = `${targetValue}%`
+                // textValue.textContent = `${targetValue}`
                 if (targetValue > 55) {
                     elem.querySelector(".pbm-value").classList.add("pbm-value-50plus")
                 }

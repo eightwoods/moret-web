@@ -100,7 +100,8 @@ export default {
                                     <li class="info-address hide">Address: <span>${address}</span></li>
                                     <li>Unit Price: <span>$${poolPriceOffer.toFixed(2)}</span></li>
                                     <li>Holding Value: <span>$${(poolPriceOffer*poolBalance).toFixed(2)}</span></li>
-                                    <li>LP Utilized: <span>${(poolPriceOffer > 0 ? poolPriceBid / poolPriceOffer : 0).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })}</span></li>
+                                    <li>Withdrawable: <span>$${(poolPriceBid * poolBalance).toFixed(2)}</span></li>
+                                    <li>LP Utilized: <span>${(poolPriceOffer > 0 ? (1-poolPriceBid / poolPriceOffer) : 0).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })}</span></li>
                                 </ul>
                                 <div class="buttons m-t-24">
                                     <div class="col">

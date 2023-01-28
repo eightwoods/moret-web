@@ -482,7 +482,8 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             }
             let optionMultiplier = option.side == 0 ? 1 : -1;
             let optionDelta, optionGamma, optionVega, optionTheta;
-            if (secondsToExpiry > 0) {
+            // if (secondsToExpiry > 0) {
+            if(Number(option.status) == 1){
                 let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
                 let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
                 optionDelta = getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
@@ -825,7 +826,7 @@ export const getPoolInfo = async (poolAddress, infoType) => {
             const minVol = await poolContract.methods.minVolPrice().call()
             return parseFloat(web3.utils.fromWei(minVol)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 })
         case 'aum':
-            const aum = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
+            const aum = await vaultContract.methods.calcCapital(poolAddress, false, false).call()
             return `$${(parseFloat(web3.utils.fromWei(aum))).toFixed(2)}`
         case 'navbid':
             const navbid = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
