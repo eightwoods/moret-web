@@ -21,7 +21,7 @@
             width: 100%;
         }
 
-        .pbm-value {
+        .pbm-value, .pbm-value-static {
             position: absolute;
             text-align: center;
             white-space: nowrap;
@@ -45,7 +45,7 @@
             .pbm-progressbar {
                 background-color: $color-green;
             }
-            .pbm-value {
+            .pbm-value, .pbm-value-static {
                 width: 90px;
                 top: -35px;
                 right: -90px;
@@ -54,12 +54,22 @@
                     background-color: $color-green;
                     border-bottom-left-radius: 0;
                 }
+            }
+            .pbm-value {
                 &-50plus {
                     right: 0;
                     &::before {
                         border-bottom-left-radius: 6px;
                         border-bottom-right-radius: 0;
                     }
+                }
+            }
+            .pbm-value-static {
+                left: 0;
+                right: auto;
+                color: $color-pink;
+                &::before {
+                    background-color: $color-pink;
                 }
             }
 
@@ -73,7 +83,7 @@
             .pbm-progressbar {
                 background-color: $color-blue;
             }
-            .pbm-value {
+            .pbm-value, .pbm-value-static {
                 width: 90px;
                 top: 12px;
                 right: -90px;
@@ -82,12 +92,22 @@
                     background-color: $color-blue;
                     border-top-left-radius: 0;
                 }
+            }
+            .pbm-value {
                 &-50plus {
                     right: 0;
                     &::before {
                         border-top-left-radius: 6px;
                         border-top-right-radius: 0;
                     }
+                }
+            }
+            .pbm-value-static {
+                left: 0;
+                right: auto;
+                color: $color-pink;
+                &::before {
+                    background-color: $color-pink;
                 }
             }
         }

@@ -125,6 +125,7 @@ export default {
                     
                     // ALL DONE!
                     counter++
+                    console.log(counter,  addresses.length)
                     if (counter === addresses.length) {
                         getLoader(perpetualList, false)
                         getLoader(perpetualInfo, false)
@@ -148,7 +149,7 @@ export default {
                         }
                     }
                 } catch (error) {
-                    console.error(error)
+                    // console.error(error)
                     console.log("Fail! refresh data load...")
                     const failTimeout = setTimeout(() => {
                         this.setPerpetuals()
@@ -189,6 +190,7 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value-static size-sm"><span>2.5x</span></div>
                                     <div class="pbm-value size-sm"><span>${data.SetLevel.toFixed(1)}</span>x</div>
                                 </div>
                             </div>
