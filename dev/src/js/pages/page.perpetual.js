@@ -17,10 +17,6 @@ export default {
         if (btnRefresh) {
             btnRefresh.addEventListener("click", () => this.setPerpetuals())
         }
-
-        if (document.querySelector("body.mobile.unknown")) {// check for metamask app
-            this.setPerpetuals()
-        }
         // this.setActiveVote()
 
         // observe sidenav
@@ -51,6 +47,7 @@ export default {
     },
 
     setPerpetuals() {
+        alert("setPerpetuals()")
         console.log("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
