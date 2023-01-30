@@ -144,7 +144,7 @@ export default {
         }
     },
 
-    limitViewScroll(table, activate = false) {
+    limitViewScroll(table) {
         const tableRows = table.querySelectorAll("tbody tr")
         const limitRows = this.globals.limitrows
 
@@ -164,7 +164,7 @@ export default {
                 if (tableBodyRows.length > 1) {
                     headCell.classList.add("sort-active")
                 } 
-                
+
                 // let toggleFlag = 1
                 headCell.addEventListener("click", () => {
                     // toggleFlag *= -1
