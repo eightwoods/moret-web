@@ -298,7 +298,7 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value-static size-sm"><span>2.5x</span></div>
+                                    <div class="pbm-value-static size-sm"><span>${data.CriticalLevel.toFixed(1)}</span>x</div>
                                     <div class="pbm-value size-sm"><span>${data.SetLevel.toFixed(1)}</span>x</div>
                                 </div>
                             </div>
@@ -344,7 +344,7 @@ export default {
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), (data.Leverage - data.CriticalLevel) / data.SetLevel * 100, 100)
+        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), (data.Leverage - data.CriticalLevel) / (data.SetLevel - data.CriticalLevel) * 100, 100)
         
         // click events
         perpetualInfo.querySelector(".js-save").addEventListener("click", (e) => {
