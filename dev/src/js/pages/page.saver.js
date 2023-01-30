@@ -9,15 +9,23 @@ import componentTables from "../components/component.tables"
 export default {
     globals: {
         elem: document.querySelector(".saver"),
+        btnRefresh: document.querySelector(".saver-list-content .js-refresh"),
+        appInit: true,
     },
 
     init() {
         // static methods call
-        document.querySelector(".saver-list-content .js-refresh").addEventListener("click", () => this.setSavers())
-        if (document.querySelector("body.mobile.unknown")) {// check for metamask app
+        this.globals.btnRefresh.addEventListener("click", () => {
             this.setSavers()
-        }
-        // this.setActiveVote()
+            this.globals.btnRefresh.classList.add("hide")
+        })
+
+        // for metamask app trigger method
+        setTimeout(() => {
+            if (this.globals.appInit) {
+                this.setSavers()
+            }
+        }, 2500)
 
         // observe sidenav
         const sidenavOptions = {
@@ -41,12 +49,14 @@ export default {
                 }
             }
 
-            this.globals.init = false
+            // this.globals.init = false
         })
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
     setSavers() {
+        this.globals.appInit = false
+
         console.log("setSavers()")
         const saverList = document.querySelector(".saver-list")
         const saverInfo = document.querySelector(".saver-info")
@@ -74,7 +84,108 @@ export default {
         // reset
         this.setSaverInfo()
 
-        getAllSavers().then((addresses) => {
+        // set vars
+        const saverDataInfo = []
+        const nowTime = Math.floor(Date.now() / 1000)
+        let succInit = true
+        let succCounter = 0
+
+        getAllSavers().forEach((address, index) => {
+            // console.log(address)
+            const setData = async () => {
+                try {
+                    const name = await getSaverInfo(address, "name")
+                    const symbol = await getSaverInfo(address, "symbol")
+                    const aum = await getSaverInfo(address, "aum")
+                    const supply = await getSaverInfo(address, "supply")
+                    const balance = await getSaverInfo(address, "balance")
+                    const params = await getSaverInfo(address, "params")
+                    const vintage = await getSaverInfo(address, "vintage")
+                    const opentime = await getSaverInfo(address, "opentime")
+
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1) : 0.0
+                    const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
+                    const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
+
+                    saverDataInfo.push({
+                        "Name": name,
+                        "Symbol": symbol,
+                        "Address": address,
+                        "Description": `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`,
+                        "MarketCap": `$${aum.toFixed(2)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "ProfitLoss": profitLossVal,
+                        "NextVintageStart": nextVintageStartVal,
+                        "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
+                        "VintageOpen": vintageOpenVal,
+                        "StartLevel": vintage["StartLevel"],
+                        "Upside": vintage["Upside"],
+                        "Downside": vintage["Downside"],
+                        "Protection": vintage["Protection"],
+                        "Tenor": params.callTenor
+                    })
+
+                    // successful data
+                    succCounter++
+
+                    // populate savers table row
+                    componentTables.setDynamic(saverTable, [
+                        name,
+                        holdingVal,
+                        `$${unitAssetVal.toFixed(2)}`,
+                        profitLossVal.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        vintageOpenVal ? "Open" : "Closed",
+                        nextVintageStartVal
+                    ], false, getAllSavers().length, succCounter)
+
+                    // initial success
+                    if (succInit) {
+                        // remove loader
+                        getLoader(saverList, false)
+                        getLoader(saverInfo, false)
+
+                        // saver info data
+                        this.setSaverInfo(saverDataInfo[0])
+
+                        // reset init
+                        succInit = false
+                    }
+
+                    // set events for table rows
+                    if (getAllSavers().length > 1) {
+                        const row = perpetualTable.querySelector(`tbody tr:nth-child(${succCounter})`)
+                        row.classList.add("cursor")
+                        row.addEventListener("click", () => {
+                            this.setSaverInfo(saverDataInfo[row.dataset.id - 1])
+                        }, false)
+                    }
+
+                    // ALL DONE!
+                    if (getAllSavers().length === succCounter) {
+                        // show refresh button
+                        this.globals.btnRefresh.classList.remove("hide")
+                    }
+
+                    console.log("Success!!! Row:", succCounter, address)
+
+                } catch {
+
+                    console.log("Failed!!! Row:", (succCounter + 1), address)
+                    const failTimeout = setTimeout(() => {
+                        setData()
+                        clearTimeout(failTimeout)
+                    }, 2500)
+                } 
+            }
+
+            setData()
+        })
+
+        /*getAllSavers().then((addresses) => {
             // console.log(addresses)
             const saverData = []
             const saverDataInfo = []
@@ -163,8 +274,7 @@ export default {
 
         }).catch(error => {
             console.error(error)
-        })
-        
+        })*/
     },
 
     setSaverInfo(data) {

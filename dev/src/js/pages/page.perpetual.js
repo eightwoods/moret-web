@@ -9,22 +9,23 @@ import componentTables from "../components/component.tables"
 export default {
     globals: {
         elem: document.querySelector(".perpetual"),
+        btnRefresh: document.querySelector(".perpetual-list-content .js-refresh"),
         appInit: true,
     },
 
     init() {
         // static methods call
-        const btnRefresh = document.querySelector(".perpetual-list-content .js-refresh")
-        if (btnRefresh) {
-            btnRefresh.addEventListener("click", () => this.setPerpetuals())
-        }
+        this.globals.btnRefresh.addEventListener("click", () => {
+            this.setPerpetuals()
+            this.globals.btnRefresh.classList.add("hide")
+        })
+
         // for metamask app trigger method
         setTimeout(() => {
             if (this.globals.appInit) {
                 this.setPerpetuals()
             }
         }, 2500)
-        // this.setActiveVote()
 
         // observe sidenav
         const sidenavOptions = {
@@ -135,6 +136,7 @@ export default {
                         `$${unitAssetVal.toFixed(2)}`
                     ], false, getAllPerpetuals().length, succCounter)
 
+                    // initial success
                     if (succInit) {
                         // remove loader
                         getLoader(perpetualList, false)
@@ -147,7 +149,7 @@ export default {
                         succInit = false
                     }
 
-                    // set events
+                    // set events for table rows
                     if (getAllPerpetuals().length > 1) {
                         const row = perpetualTable.querySelector(`tbody tr:nth-child(${succCounter})`)
                         row.classList.add("cursor")
@@ -156,12 +158,19 @@ export default {
                         }, false)
                     }
 
+                    // ALL DONE!
+                    if (getAllPerpetuals().length === succCounter) {
+                        // show refresh button
+                        this.globals.btnRefresh.classList.remove("hide")
+                    }
+
                     console.log("Success!!! Row:", succCounter, address)
                     
                 } catch {
+
                     console.log("Failed!!! Row:", (succCounter + 1), address)
                     const failTimeout = setTimeout(() => {
-                        setData(index)
+                        setData()
                         clearTimeout(failTimeout)
                     }, 2500)
                 } 
@@ -261,7 +270,6 @@ export default {
         }).catch(error => {
             console.error(error)
         })*/
-        
     },
 
     setPerpetualInfo(data) {

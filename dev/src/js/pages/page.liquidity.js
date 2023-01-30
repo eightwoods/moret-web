@@ -6,14 +6,24 @@ import componentTables from "../components/component.tables"
 export default {
     globals: {
         elem: document.querySelector(".liquidity"),
+        btnRefresh: document.querySelector(".pools .js-refresh"),
+        appInit: true,
     },
 
     init() {
         // static methods call
-        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setLiquidity())
-        if (document.querySelector("body.mobile.unknown")) {// check for metamask app
+        this.globals.btnRefresh.addEventListener("click", () => {
             this.setLiquidity()
-        }
+            this.globals.btnRefresh.classList.add("hide")
+        })
+
+        // for metamask app trigger method
+        setTimeout(() => {
+            if (this.globals.appInit) {
+                this.setLiquidity()
+            }
+        }, 2500)
+
         this.setActiveVote()
 
         // observe sidenav
@@ -38,12 +48,14 @@ export default {
                 }
             }
 
-            this.globals.init = false
+            // this.globals.init = false
         })
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
     setLiquidity() {
+        this.globals.appInit = false
+
         console.log("setLiquidity()")
         const poolList = document.querySelector(".pool-list")
         const hotTubs = document.querySelector(".active-hottubs")
@@ -73,8 +85,145 @@ export default {
             </div>
             <div class="swiper-button-next hide-important"></div>
             <div class="swiper-button-prev hide-important"></div>`
+
+        // init swiper
+        const swiper = new Swiper(".swiper", {
+            slidesPerView: "auto",
+            spaceBetween: 12,
+            grabCursor: false,
+        })
         
-        getAllPools().then((addresses) => {
+
+        // set vars
+        let succInit = true
+        let succCounter = 0
+
+        getAllPools().forEach((address, index) => {
+            // console.log(address)
+            const setData = async () => {
+                try {
+                    const poolName = await getPoolInfo(address, "name")
+                    const poolSymbol = await getPoolInfo(address, "symbol")
+                    const poolDescription = await getPoolInfo(address, "description")
+                    const poolMarketCap = await getPoolInfo(address, "aum")
+                    const poolPriceOffer = await getPoolInfo(address, "navoffer")
+                    const poolPriceBid = await getPoolInfo(address, "navbid")
+                    const poolBalance = await getPoolInfo(address, "balance")
+
+                    // successful data
+                    succCounter++
+
+                    // populate perpetuals table row
+                    componentTables.setDynamic(poolsTable, [
+                        poolName, poolSymbol, poolDescription, poolMarketCap
+                    ], false, getAllPools().length, succCounter)
+                    
+                    // insert elements into swiper
+                    poolsSwiper.querySelector(".swiper-wrapper").innerHTML += `
+                        <div class="swiper-slide">
+                            <div class="in-box">
+                                <ul class="info">
+                                    <li class="info-name">Name: <span>${poolName}</span></li>
+                                    <li class="info-address hide">Address: <span>${address}</span></li>
+                                    <li>Unit Price: <span>$${poolPriceOffer.toFixed(2)}</span></li>
+                                    <li>Holding Value: <span>$${(poolPriceOffer*poolBalance).toFixed(2)}</span></li>
+                                    <li>Withdrawable: <span>$${(poolPriceBid * poolBalance).toFixed(2)}</span></li>
+                                    <li>LP Utilized: <span>${(poolPriceOffer > 0 ? (1-poolPriceBid / poolPriceOffer) : 0).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })}</span></li>
+                                </ul>
+                                <div class="buttons m-t-24">
+                                    <div class="col">
+                                        <div class="in-border word-nowrap white-50">
+                                            <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <a href="#" class="btn btn-green js-topup">Top-up</a>
+                                    </div>
+                                    <div class="col">
+                                        <a href="#" class="btn btn-pink js-takeout">Take-out</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`
+
+                    // update swiper
+                    swiper.update()
+
+                    // initial success
+                    if (succInit) {
+                        // remove loader
+                        getLoader(poolList, false)
+                        getLoader(hotTubs, false)
+
+                        // swiper arrows
+                        const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
+                        swiperBtnNext.classList.remove("hide-important")
+                        swiperBtnNext.addEventListener("click", () => swiper.slideNext())
+
+                        const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
+                        swiperBtnPrev.classList.remove("hide-important")
+                        swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
+
+                        // reset init
+                        succInit = false
+                    }
+
+                    // set events for table rows
+                    if (getAllPools().length > 1) {
+                        const row = poolsTable.querySelector(`tbody tr:nth-child(${succCounter})`)
+                        row.classList.add("cursor")
+                        row.addEventListener("click", () => {
+                            swiper.slideTo(row.dataset.id - 1)
+                        }, false)
+                    }
+
+                    // set events for Top-up and Take-out
+                    poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
+                        slide.querySelector(".js-topup").addEventListener("click", (e) => {
+                            e.preventDefault()
+                            this.setPopupInfo({
+                                type: "topup",
+                                title: "Top up in liquidity pool",
+                                poolName: slide.querySelector(".info-name span").textContent.trim(),
+                                poolAddress: slide.querySelector(".info-address span").textContent.trim(),
+                                poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                            })
+                        }, false)
+
+                        slide.querySelector(".js-takeout").addEventListener("click", (e) => {
+                            e.preventDefault()
+                            this.setPopupInfo({
+                                type: "takeout",
+                                title: "Take out from liquidity pool",
+                                poolName: slide.querySelector(".info-name span").textContent.trim(),
+                                poolAddress: slide.querySelector(".info-address span").textContent.trim(),
+                                poolAmount: slide.querySelector("input[name='usdc-amount']").value,
+                            })
+                        }, false)
+                    })
+
+                    // ALL DONE!
+                    if (getAllPools().length === succCounter) {
+                        // show refresh button
+                        this.globals.btnRefresh.classList.remove("hide")
+                    }
+
+                    console.log("Success!!! Row:", succCounter, address)
+
+                } catch {
+
+                    console.log("Failed!!! Row:", (succCounter + 1), address)
+                    const failTimeout = setTimeout(() => {
+                        setData(index)
+                        clearTimeout(failTimeout)
+                    }, 2500)
+                } 
+            }
+
+            setData()
+        })
+        
+        /*getAllPools().then((addresses) => {
             // console.log(addresses)
             const poolsData = []
             let swiperSlideElem = ""
@@ -194,7 +343,7 @@ export default {
 
         }).catch(error => {
             console.error(error)
-        })
+        })*/
     },
 
     setPopupInfo(objVal) {

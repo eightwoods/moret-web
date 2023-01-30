@@ -139,7 +139,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
     const tenor = Math.floor(expiry * 86400)
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
 
     var bestPool = (0).toString(16)
     var premium, collateral, fee
@@ -239,7 +239,7 @@ export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor,
     
 }
 
-export const getAllPools = async (tokenAddr = null) => {
+export const getAllPools = (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     // const brokerAddress = await moretContract.methods.broker().call()
@@ -255,7 +255,7 @@ export const getCapital = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     var grossCapitalTotal = 0
     var netCapitalTotal = 0
     for (let i = 0; i < allPools.length; i++) {
@@ -455,7 +455,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     let optionTable = []
     var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
 
@@ -629,7 +629,7 @@ export const getVolTradingPools = async (tokenAddress) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     // const brokerAddress = await moretContract.methods.broker().call()
     // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const allPools = await getAllPools(tokenAddress) // brokerContract.methods.getAllPools(tokenAddress).call()
+    const allPools = getAllPools(tokenAddress) // brokerContract.methods.getAllPools(tokenAddress).call()
     // console.log('test', allPools)
     var volTradingPools = []
     for(let i = 0;i<allPools.length; i++){
@@ -744,7 +744,7 @@ export const getAllPoolsInfo = async (tokenAddr = null) => {
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     // console.log(allPools)
     // var grossCapitalTotal = 0
     // var netCapitalTotal = 0
@@ -1102,7 +1102,7 @@ export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketM
 }
 
 // 17. list all savers with their features ( to be done )
-export const getAllSavers = async (tokenAddr = null) => {
+export const getAllSavers = (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     // const brokerAddress = await moretContract.methods.broker().call()
