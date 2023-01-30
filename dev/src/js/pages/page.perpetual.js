@@ -32,7 +32,9 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            this.setPerpetuals()
+                            setTimeout(() => {
+                                this.setPerpetuals()
+                            }, document.querySelector("body.mobile.unknown") ? 1000 : 0)
                             break
                         case "sidenav-refreshprice":
                             break
@@ -47,7 +49,7 @@ export default {
     },
 
     setPerpetuals() {
-        alert("setPerpetuals()")
+        alert("setPerpetuals() v2")
         console.log("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
