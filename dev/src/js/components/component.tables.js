@@ -163,8 +163,7 @@ export default {
                 // activate
                 if (tableBodyRows.length > 1) {
                     headCell.classList.add("sort-active")
-                } 
-
+                }
                 // let toggleFlag = 1
                 headCell.addEventListener("click", () => {
                     // toggleFlag *= -1
