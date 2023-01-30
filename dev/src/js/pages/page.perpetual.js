@@ -9,6 +9,7 @@ import componentTables from "../components/component.tables"
 export default {
     globals: {
         elem: document.querySelector(".perpetual"),
+        appInit: true,
     },
 
     init() {
@@ -17,6 +18,12 @@ export default {
         if (btnRefresh) {
             btnRefresh.addEventListener("click", () => this.setPerpetuals())
         }
+        // for metamask app trigger method
+        setTimeout(() => {
+            if (this.globals.appInit) {
+                this.setPerpetuals()
+            }
+        }, 2500)
         // this.setActiveVote()
 
         // observe sidenav
@@ -32,9 +39,7 @@ export default {
                 if (mutation.type === "attributes") {
                     switch (mutation.attributeName) {
                         case "sidenav-activechange":
-                            setTimeout(() => {
-                                this.setPerpetuals()
-                            }, document.querySelector("body.mobile.unknown") ? 1000 : 0)
+                            this.setPerpetuals()
                             break
                         case "sidenav-refreshprice":
                             break
@@ -43,13 +48,14 @@ export default {
                 }
             }
 
-            this.globals.init = false
+            // this.globals.init = false
         })
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
     setPerpetuals() {
-        alert("setPerpetuals() v2")
+        this.globals.appInit = false
+
         console.log("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
         const perpetualInfo = document.querySelector(".perpetual-info")
