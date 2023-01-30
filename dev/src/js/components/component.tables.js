@@ -144,7 +144,7 @@ export default {
         }
     },
 
-    limitViewScroll(table) {
+    limitViewScroll(table, activate = false) {
         const tableRows = table.querySelectorAll("tbody tr")
         const limitRows = this.globals.limitrows
 
@@ -155,12 +155,16 @@ export default {
 
     sortableHeaders(table) {
         const tableHeadCell = table.querySelectorAll("thead th")
+        const tableBodyRows = table.querySelectorAll("tbody tr")
 
         tableHeadCell.forEach((headCell, index) => {
             // filter from here to retrieve index value
             if (headCell.classList.contains("sortable")) {
                 // activate
-                headCell.classList.add("sort-active")
+                if (tableBodyRows.length > 1) {
+                    headCell.classList.add("sort-active")
+                } 
+                
                 // let toggleFlag = 1
                 headCell.addEventListener("click", () => {
                     // toggleFlag *= -1
