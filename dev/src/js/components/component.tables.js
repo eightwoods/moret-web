@@ -13,16 +13,12 @@ export default {
         })
     },
 
-    setTable(table) {
+    setTable(table, rowsAllLoaded = true) {
         this.swipeArrows(table)
-        this.sortableHeaders(table)
-        if (table.dataset.limitview === "button") {
-            this.limitViewButton(table)
+        if (rowsAllLoaded) {
+            this.rowsAllLoaded(table)
         }
-        if (table.dataset.limitview === "scroll") {
-            this.limitViewScroll(table)
-        }
-        
+
         // on window resize
         this.hasScroll(table)
         window.addEventListener("resize", () => {
@@ -30,13 +26,39 @@ export default {
         })
     },
 
-    setDynamic(table, dataRows = [], setRows = true) {
+    rowsAllLoaded(table) {
+        this.sortableHeaders(table)
+        if (table.dataset.limitview === "button") {
+            this.limitViewButton(table)
+        }
+        if (table.dataset.limitview === "scroll") {
+            this.limitViewScroll(table)
+        }
+    },
+
+    setDynamic(table, dataRows = [], setRows = true, totalRows = 0, countRow = 0) {
         if (dataRows.length > 0) {
             table.querySelector(".table-container").classList.add("show-important")
             if (setRows) {
-                dataRows.forEach((row) => this.setRows(table, row))
+                dataRows.forEach((row, index) => this.setRows(table, row, index))
+                this.setTable(table)
+            } else {
+                this.setRows(table, dataRows, countRow)
+                if (totalRows > 0) {
+                    if (countRow === 1) {
+                        const loadingCount = document.createElement("div")
+                        loadingCount.className = "table-loadingcount align-center"
+                        table.appendChild(loadingCount)
+                        this.setTable(table, false)
+                    }
+                    // number of rows left to load
+                    table.querySelector(".table-loadingcount").innerHTML = `Loading... ${countRow} OF ${totalRows}`
+                    if (countRow === totalRows) {
+                        this.rowsAllLoaded(table)
+                        table.querySelector(".table-loadingcount").remove()
+                    }
+                }
             }
-            this.setTable(table)
         } else {
             const noData = document.createElement("div")
             noData.className = "align-center"
@@ -45,9 +67,10 @@ export default {
         }
     },
 
-    setRows(table, dataColumn = []) {
+    setRows(table, dataColumn = [], index) {
         const tbody = table.querySelector("tbody")
         const row = document.createElement("tr")
+        row.dataset.id = index
         dataColumn.forEach((data) => {
             const col = document.createElement("td")
             col.textContent = data
@@ -136,6 +159,8 @@ export default {
         tableHeadCell.forEach((headCell, index) => {
             // filter from here to retrieve index value
             if (headCell.classList.contains("sortable")) {
+                // activate
+                headCell.classList.add("sort-active")
                 // let toggleFlag = 1
                 headCell.addEventListener("click", () => {
                     // toggleFlag *= -1

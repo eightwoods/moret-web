@@ -142,7 +142,7 @@ export default {
                     try {
                         tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
                     } catch (error) {
-                        console.log("error refreshTokenPrice()")
+                        console.log("error refreshTokenPrice()", tokenPrice)
                     }
                 })
             }, this.globals.refreshDuration)

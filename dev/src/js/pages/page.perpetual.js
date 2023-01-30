@@ -13,7 +13,11 @@ export default {
 
     init() {
         // static methods call
-        document.querySelector(".perpetual-list-content .js-refresh").addEventListener("click", () => this.setPerpetuals())
+        const btnRefresh = document.querySelector(".perpetual-list-content .js-refresh")
+        if (btnRefresh) {
+            btnRefresh.addEventListener("click", () => this.setPerpetuals())
+        }
+
         if (document.querySelector("body.mobile.unknown")) {// check for metamask app
             this.setPerpetuals()
         }
@@ -54,7 +58,6 @@ export default {
         getLoader(perpetualInfo)
 
         const perpetualTable = perpetualList.querySelector(".comp-dynamic-table")
-        perpetualTable.textContent = ""
         perpetualTable.innerHTML = `
             <div class="table-container">
                 <table>
@@ -71,11 +74,99 @@ export default {
                 </table>
             </div>`
 
-        // reset
+        // init with no data
         this.setPerpetualInfo()
 
-        getAllPerpetuals().then((addresses) => {
-            // console.log(addresses)
+        // set vars
+        const perpetualDataInfo = []
+        const nowTime = Math.floor(Date.now() / 1000)
+        let succInit = true
+        let succCounter = 0
+
+        getAllPerpetuals().forEach((address, index) => {
+            // console.log(address)
+            const setData = async () => {
+                try {
+                    const name = await getPerpetualInfo(address, "name")
+                    const symbol = await getPerpetualInfo(address, "symbol")
+                    const aum = await getPerpetualInfo(address, "aum")
+                    const supply = await getPerpetualInfo(address, "supply")
+                    const balance = await getPerpetualInfo(address, "balance")
+                    const leverage = await getPerpetualInfo(address, "leverage")
+                    const strike = await getPerpetualInfo(address, "strike")
+                    const notional = await getPerpetualInfo(address, "notional")
+                    const params = await getPerpetualInfo(address, "params")
+
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+
+                    perpetualDataInfo.push({
+                        "Name": name,
+                        "Symbol": symbol,
+                        "Address": address,
+                        "Description": `${params[2]} ${symbol}<br>Leverage achieved by buying ${(Number(params[3]) / 86400).toFixed(0)}-day options`,
+                        "MarketCap": `$${aum.toFixed(0)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
+                        "Leverage": leverage,
+                        "SetLevel": params[0],
+                        "CriticalLevel": params[1],
+                        "Target": Math.ceil((params[0] + params[1])/2),
+                        "Direction": params[2],
+                        "Tenor": params[3],
+                        "Strike": strike,
+                        "Notional": notional
+                    })
+
+                    // successful data
+                    succCounter++
+
+                    // populate perpetuals table row
+                    componentTables.setDynamic(perpetualTable, [
+                        name,
+                        params[2],
+                        leverage.toFixed(1) + 'x',
+                        holdingVal,
+                        `$${unitAssetVal.toFixed(2)}`
+                    ], false, getAllPerpetuals().length, succCounter)
+
+                    if (succInit) {
+                        // remove loader
+                        getLoader(perpetualList, false)
+                        getLoader(perpetualInfo, false)
+
+                        // perpetual info data
+                        this.setPerpetualInfo(perpetualDataInfo[0])
+
+                        // reset init
+                        succInit = false
+                    }
+
+                    // set events
+                    if (getAllPerpetuals().length > 1) {
+                        const row = perpetualTable.querySelector(`tbody tr:nth-child(${succCounter})`)
+                        row.classList.add("cursor")
+                        row.addEventListener("click", () => {
+                            this.setPerpetualInfo(perpetualDataInfo[row.dataset.id - 1])
+                        }, false)
+                    }
+
+                    console.log("Success!!! Row:", succCounter, address)
+                    
+                } catch {
+                    console.log("Failed!!! Row:", (succCounter + 1), address)
+                    const failTimeout = setTimeout(() => {
+                        setData(index)
+                        clearTimeout(failTimeout)
+                    }, 2500)
+                } 
+            }
+
+            setData()
+        })
+
+        /*getAllPerpetuals().then((addresses) => {
+            console.log(addresses)
             const perpetualData = []
             const perpetualDataInfo = []
             const nowTime = Math.floor(Date.now() / 1000)
@@ -83,6 +174,9 @@ export default {
 
             addresses.forEach(async(address, index) => {
                 try {
+
+                    this.globals.testcnt++
+
                     const name = await getPerpetualInfo(address, "name")
                     const symbol = await getPerpetualInfo(address, "symbol")
                     const aum = await getPerpetualInfo(address, "aum")
@@ -124,6 +218,7 @@ export default {
 
                     
                     // ALL DONE!
+                    this.globals.testcnt++
                     counter++
                     console.log(counter,  addresses.length)
                     if (counter === addresses.length) {
@@ -150,7 +245,7 @@ export default {
                     }
                 } catch (error) {
                     // console.error(error)
-                    console.log("Fail! refresh data load...")
+                    console.log("Fail! refresh data load...", this.globals.testcnt)
                     const failTimeout = setTimeout(() => {
                         this.setPerpetuals()
                         clearTimeout(failTimeout)
@@ -160,7 +255,7 @@ export default {
 
         }).catch(error => {
             console.error(error)
-        })
+        })*/
         
     },
 

@@ -1310,7 +1310,7 @@ export const divestFromSaver = async (saverAddress, units) => {
 }
 
 // 20. list all perps with their features
-export const getAllPerpetuals = async (tokenAddr = null) => {
+export const getAllPerpetuals = (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     // const brokerAddress = await moretContract.methods.broker().call()

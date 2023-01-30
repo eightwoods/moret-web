@@ -30,8 +30,8 @@
 
                 &.sortable {
                     position: relative;
-                    cursor: pointer;
                     &::after {
+                        visibility: hidden;
                         content: "";
                         position: absolute;
                         top: 0;
@@ -57,6 +57,13 @@
                         transform: rotate(180deg);
                     }
                 }
+
+                &.sort-active {
+                    cursor: pointer;
+                    &::after {
+                        visibility: visible;
+                    }
+                }
             }
 
             tbody {
@@ -71,6 +78,12 @@
                 }
             }
         }
+    }
+
+    .table-loadingcount {
+        @include fontSize(12px);
+        color: $color-pink;
+        padding-top: 10px;
     }
 
     .table-arrowleft, .table-arrowright {
