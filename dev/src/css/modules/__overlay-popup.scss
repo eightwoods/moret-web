@@ -76,11 +76,11 @@
             }
         }
 
-        .notpolygon {
+        .notpolygon, .faildataload {
             @include popupWarning;
         }
 
-        .tradeoverview, .liquiditypool, .proposestrategies {
+        .tradeoverview, .liquiditypool, .proposestrategies, .investinsavers {
             li {
                 color: $white-50;
                 margin-bottom: 10px;

@@ -1,0 +1,32 @@
+.chart-comparison-legends {
+    display: flex;
+    gap: spacer();
+    flex-wrap: wrap;
+    padding-bottom: spacer(0.5);
+    
+    .ccl-legend {
+        position: relative;
+        padding-left: spacer() + 2;
+
+        &::before {
+            content: "";
+            @include centerElement(y);
+            left: 0;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        &:first-child {
+            &::before {
+                background-color: $color-blue;
+            }
+        }
+
+        &:last-child {
+            &::before {
+                background-color: $color-green;
+            }
+        }
+    }
+}

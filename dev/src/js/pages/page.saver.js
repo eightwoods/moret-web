@@ -1,17 +1,28 @@
 import Swiper from "swiper"
-import { getAllSaverInfo, quoteInvestInSaver, quoteDivestFromSaver, approveSaver, tradeSaver } from "../helpers/web3"
+import { tokenName, tokenPrice } from "../helpers/constant"
+import { getAllSavers, getSaverInfo, approveSaver, tradeSaver } from "../helpers/web3"
 import { getLoader, minimizeAddress, createList, showOverlayPopup } from "../helpers/utils"
+import compChartComparison from "../components/component.chartComparison"
+import compPercentageBarMulti from "../components/component.percentageBarMulti"
 import componentTables from "../components/component.tables"
 
 export default {
     globals: {
         elem: document.querySelector(".saver"),
+        btnRefresh: document.querySelector(".saver-list-content .js-refresh"),
+        appInit: true,
     },
 
     init() {
         // static methods call
-        document.querySelector(".pools .js-refresh").addEventListener("click", () => this.setSavers())
-        // this.setActiveVote()
+        this.globals.btnRefresh.addEventListener("click", () => this.setSavers())
+
+        // for metamask app trigger method
+        setTimeout(() => {
+            if (this.globals.appInit) {
+                this.setSavers()
+            }
+        }, 2500)
 
         // observe sidenav
         const sidenavOptions = {
@@ -35,17 +46,21 @@ export default {
                 }
             }
 
-            this.globals.init = false
+            // this.globals.init = false
         })
         sidenavObserver.observe(this.globals.elem.querySelector(".sidenav"), sidenavOptions)
     },
 
     setSavers() {
+        this.globals.appInit = false
+        this.globals.btnRefresh.classList.add("hide")
+
+        console.log("setSavers()")
         const saverList = document.querySelector(".saver-list")
-        const hotTubs = document.querySelector(".active-hottubs")
+        const saverInfo = document.querySelector(".saver-info")
         getLoader(saverList)
-        getLoader(hotTubs)
-        
+        getLoader(saverInfo)
+
         const saverTable = saverList.querySelector(".comp-dynamic-table")
         saverTable.innerHTML = `
             <div class="table-container">
@@ -53,164 +68,326 @@ export default {
                     <thead>
                         <tr>
                             <th class="sortable sort-text">Name</th>
-                            <th class="sortable sort-text">Holdings</th>
-                            <th class="sortable">NAV</th>
-                            <th class="sortable">APY</th>
-                            <th class="sortable">P&L</th>
+                            <th class="sortable sort-text">Holding</th>
+                            <th class="sortable sort-text">NAV</th>
+                            <th class="sortable sort-text">P&L</th>
                             <th class="sortable sort-text">Status</th>
-                            <th class="sortable">Next Vintage</th>
+                            <th class="sortable sort-text">Next Vintage</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>`
 
-        const poolsSwiper = hotTubs.querySelector(".hottubs-content")
-        poolsSwiper.innerHTML = `
-            <div class="swiper">
-                <div class="swiper-wrapper"></div>
-            </div>
-            <div class="swiper-button-next hide-important"></div>
-            <div class="swiper-button-prev hide-important"></div>`
+        // reset
+        this.setSaverInfo()
 
-        getAllSaverInfo(null).then((results) => {
-            // console.log(results)
-            getLoader(saverList, false)
-            getLoader(hotTubs, false)
+        // set vars
+        const saverDataInfo = []
+        const nowTime = Math.floor(Date.now() / 1000)
+        let succInit = true
+        let succCounter = 0
 
+        getAllSavers().forEach((address, index) => {
+            // console.log(address)
+            const setData = async () => {
+                try {
+                    const name = await getSaverInfo(address, "name")
+                    const symbol = await getSaverInfo(address, "symbol")
+                    const aum = await getSaverInfo(address, "aum")
+                    const supply = await getSaverInfo(address, "supply")
+                    const balance = await getSaverInfo(address, "balance")
+                    console.log(aum, supply, balance)
+                    const params = await getSaverInfo(address, "params")
+                    const vintage = await getSaverInfo(address, "vintage")
+                    const opentime = await getSaverInfo(address, "opentime")
+                    
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+                    const profitLossVal = vintage.startNAV > 0 ? (aum / vintage.startNAV - 1) : 0.0
+                    const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
+                    const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
+
+                    saverDataInfo.push({
+                        "Name": name,
+                        "Symbol": symbol,
+                        "Address": address,
+                        "Description": `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`,
+                        "MarketCap": `$${aum.toFixed(2)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / 12 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "ProfitLoss": profitLossVal,
+                        "NextVintageStart": nextVintageStartVal,
+                        "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
+                        "VintageOpen": vintageOpenVal,
+                        "StartLevel": vintage["StartLevel"],
+                        "Upside": vintage["Upside"],
+                        "Downside": vintage["Downside"],
+                        "Protection": vintage["Protection"],
+                        "Tenor": params.callTenor
+                    })
+
+                    // successful data
+                    succCounter++
+
+                    // populate savers table row
+                    componentTables.setDynamic(saverTable, [
+                        name,
+                        holdingVal,
+                        `$${unitAssetVal.toFixed(2)}`,
+                        profitLossVal.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        vintageOpenVal ? "Open" : "Closed",
+                        nextVintageStartVal
+                    ], false, getAllSavers().length, succCounter)
+
+                    // initial success
+                    if (succInit) {
+                        // remove loader
+                        getLoader(saverList, false)
+                        getLoader(saverInfo, false)
+
+                        // saver info data
+                        this.setSaverInfo(saverDataInfo[0])
+
+                        // reset init
+                        succInit = false
+                    }
+
+                    // set events for table rows
+                    if (getAllSavers().length > 1) {
+                        const row = perpetualTable.querySelector(`tbody tr:nth-child(${succCounter})`)
+                        row.classList.add("cursor")
+                        row.addEventListener("click", () => {
+                            this.setSaverInfo(saverDataInfo[row.dataset.id - 1])
+                        }, false)
+                    }
+
+                    // ALL DONE!
+                    if (getAllSavers().length === succCounter) {
+                        // show refresh button
+                        this.globals.btnRefresh.classList.remove("hide")
+                    }
+
+                    console.log("Success!!! Row:", succCounter, address)
+
+                } catch {
+
+                    if (getAllSavers().length > parseInt(saverTable.querySelectorAll("tbody tr").length)) {
+                        console.log("Failed!!! Row:", (succCounter + 1), address)
+                        const failTimeout = setTimeout(() => {
+                            setData()
+                            clearTimeout(failTimeout)
+                        }, 2500)
+                    }
+                } 
+            }
+
+            setData()
+        })
+
+        /*getAllSavers().then((addresses) => {
+            // console.log(addresses)
             const saverData = []
-            let swiperSlideElem = ""
-            const nowTime = Math.floor( Date.now() / 1000)
+            const saverDataInfo = []
+            const nowTime = Math.floor(Date.now() / 1000)
+            let counter = 0
 
-            results.forEach((data) => {
-                saverData.push([
-                    data.Name,
-                    data.Holding,
-                    data.UnitAsset,
-                    data.StaticYield,
-                    data.ProfitLoss,
-                    data.NextVintageTime > nowTime? "Closed": "Open",
-                    data.NextVintageStart
-                ])
+            addresses.forEach(async(address, index) => {
+                try {
+                    const name = await getSaverInfo(address, "name")
+                    const symbol = await getSaverInfo(address, "symbol")
+                    const aum = await getSaverInfo(address, "aum")
+                    const supply = await getSaverInfo(address, "supply")
+                    const balance = await getSaverInfo(address, "balance")
+                    const params = await getSaverInfo(address, "params")
+                    const vintage = await getSaverInfo(address, "vintage")
+                    const opentime = await getSaverInfo(address, "opentime")
 
-                let hide_topup = data.NextVintageTime > nowTime ? "hidden": ""
-                
-                swiperSlideElem += `
-                    <div class="swiper-slide">
-                        <div class="in-box">
-                            <ul class="info">
-                                <li class="info-name">Name: <span>${data.Name}</span></li>
-                                <li class="info-name">Symbol: <span>${data.Symbol}</span></li>
-                                <li class="info-address">Address: <span>${data.Address}</span></li>
-                                <li>Market Cap: <span>${data.MarketCap}</span></li>
-                                <li>Vintage Start Price: <span>${data.StartLevel}</span></li>
-                                <li>Upside Knockout: <span>${data.Upside}</span></li>
-                                <li>Protection Kick-in: <span>${data.Downside}</span></li>
-                                <li>Buffer: <span>${data.Protection}</span></li>
-                                <li>Vintage unlocked at <span>${data.NextVintage}</span></li>
-                            </ul>
-                            <div class="buttons m-t-24" ${hide_topup}>
-                                <div class="col">
-                                    <div class="in-border word-nowrap white-50">
-                                        <input type="number" name="usdc-amount" value="50" />&nbsp;&nbsp;USDC
-                                    </div>
+                    const unitAssetVal = supply > 0 ? aum / supply : 1.0
+                    const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
+                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1) : 0.0
+                    const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
+                    const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
+
+                    saverDataInfo.push({
+                        "Name": name,
+                        "Symbol": symbol,
+                        "Address": address,
+                        "Description": `Soft Ceiling at ${(Number(params.callMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.callTenor) / 86400} days <br>Buffer range ${(Number(params.putSpread) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} to ${(Number(params.putMoney) / Number(params.multiplier)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })} rolled every ${Number(params.putTenor) / 86400} days`,
+                        "MarketCap": `$${aum.toFixed(2)}`,
+                        "UnitAsset": unitAssetVal,
+                        "Holding": holdingVal,
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "ProfitLoss": profitLossVal,
+                        "NextVintageStart": nextVintageStartVal,
+                        "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
+                        "VintageOpen": vintageOpenVal,
+                        "StartLevel": vintage["StartLevel"],
+                        "Upside": vintage["Upside"],
+                        "Downside": vintage["Downside"],
+                        "Protection": vintage["Protection"],
+                        "Tenor": params.callTenor
+                    })
+
+                    saverData.push([
+                        name,
+                        holdingVal,
+                        `$${unitAssetVal.toFixed(2)}`,
+                        profitLossVal.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        vintageOpenVal ? "Open" : "Closed",
+                        nextVintageStartVal
+                    ])
+
+                    // ALL DONE!
+                    counter++
+                    if (counter === addresses.length) {
+                        getLoader(saverList, false)
+                        getLoader(saverInfo, false)
+                        
+                        // saver info data
+                        this.setSaverInfo(saverDataInfo[0])
+
+                        // init savers table
+                        componentTables.setDynamic(saverTable, saverData)
+
+                        /// events
+                        if (addresses.length > 1) {
+                            // saver table rows to inject data 
+                            saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
+                                row.classList.add("cursor")
+                                row.addEventListener("click", () => {
+                                    // saver info 
+                                    this.setSaverInfo(saverDataInfo[index])
+                                }, false)
+                            })
+                        }
+                    }
+                } catch (error) {
+                    console.error(error)
+                    console.log("Fail! refresh data load...")
+                    const failTimeout = setTimeout(() => {
+                        this.setSavers()
+                        clearTimeout(failTimeout)
+                    }, 5000)
+                }
+            })
+
+        }).catch(error => {
+            console.error(error)
+        })*/
+    },
+
+    setSaverInfo(data) {
+        const saverInfo = document.querySelector(".saver-info-content")
+        if (!data) {
+            saverInfo.textContent = ""
+            return
+        }
+        
+        const nowTime = Math.floor( Date.now() / 1000)
+        saverInfo.innerHTML = `
+            <div class="saver-row">
+                <div class="saver-col">
+                    <div class="header-title m-b-24">${data.Name}</div>
+                    <div class="saver-content">
+                        <div class="info">
+                            <p class="m-b-20">${data.Description}</p>
+                            <p>Vintage reopened at ${data.ThisVintageEnd}</p>
+                        </div>
+
+                        <div class="percentage-bar-multi">
+                            <div class="pbm-progress">
+                                <div class="pbm-top">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>${data.ProfitLoss.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> P&L</div>
                                 </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-green js-topup">Top-up</a>
-                                </div>
-                                <div class="col">
-                                    <a href="#" class="btn btn-pink js-takeout">Take-out</a>
+                                <div class="pbm-bottom">
+                                    <div class="pbm-progressbar"></div>
+                                    <div class="pbm-value size-sm"><span>${data.Yield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> MPY</div>
                                 </div>
                             </div>
                         </div>
-                    </div>`
-            })
-            poolsSwiper.querySelector(".swiper-wrapper").innerHTML = swiperSlideElem
+                        <div class="percentage-bar-text align-center word-nowrap white-50">
+                            <p>Current Holding = ${data.Holding}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="saver-col">
+                    <!-- <div class="chart-comparison-legends size-sm white-50">
+                        <div class="ccl-legend">${tokenName()}</div>
+                    </div> -->
+                    <div class="chart-comparison-wrapper">
+                        <div class="chart-comparison"></div>
+                    </div>
+                </div>
+            </div>
 
-            // init swiper
-            const swiper = new Swiper(".swiper", {
-                slidesPerView: "auto",
-                spaceBetween: 12,
-                grabCursor: false,
-            })
+            <div class="buttons-container"></div>`
 
-            // init savers table
-            componentTables.setDynamic(saverTable, saverData)
+        if (data.VintageOpen) {
+            saverInfo.querySelector(".buttons-container").innerHTML = `
+                <div class="buttons m-t-32">
+                    <div class="col">
+                        <div class="in-border word-nowrap white-50">
+                            <input type="number" name="usdc-amount" value="6000" />&nbsp;&nbsp;USDC
+                        </div>
+                    </div>
+                    <div class="col">
+                        <a href="#" class="btn btn-green js-save">TOP UP</a>
+                        <a href="#" class="btn btn-pink js-withdraw">WITHDRAW</a>
+                    </div>
+                </div>`
+        }
 
-            // events
-            if (results.length > 1) {
-                // swiper arrows
-                const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
-                swiperBtnNext.classList.remove("hide-important")
-                swiperBtnNext.addEventListener("click", () => swiper.slideNext())
-
-                const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
-                swiperBtnPrev.classList.remove("hide-important")
-                swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
-
-                // savers table rows to navigate swiper
-                saverTable.querySelectorAll("tbody tr").forEach((row, index) => {
-                    row.classList.add("cursor")
-                    row.addEventListener("click", () => {
-                        swiper.slideTo(index)
-                    }, false)
-                })
-            }
-
-            // Top-up and Take-out
-            poolsSwiper.querySelectorAll(".swiper-slide").forEach((slide) => {
-                slide.querySelector(".js-topup").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "topup",
-                        title: "Top up in saver",
-                        saverName: slide.querySelector(".info-name span").textContent.trim(),
-                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-
-                slide.querySelector(".js-takeout").addEventListener("click", (e) => {
-                    e.preventDefault()
-                    this.setPopupInfo({
-                        type: "takeout",
-                        title: "Take out from saver",
-                        saverName: slide.querySelector(".info-name span").textContent.trim(),
-                        saverAddress: slide.querySelector(".info-address span").textContent.trim(),
-                        saverAmount: slide.querySelector("input[name='usdc-amount']").value,
-                    })
-                }, false)
-            })
+        // initiate components
+        compChartComparison.createChart({
+            elem: saverInfo.querySelector(".chart-comparison"),
+            endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
+            endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
+            linedata: [data.StartLevel, data.Upside, data.Protection],
         })
+
+        // console.log(data.ProfitLoss, data.Yield)
+        compPercentageBarMulti.progressBar(saverInfo.querySelector(".percentage-bar-multi"), data.ProfitLoss / data.Yield * 100, 100)
+        
+        // click events
+        if (data.VintageOpen) {
+            saverInfo.querySelector(".js-save").addEventListener("click", (e) => {
+                e.preventDefault()
+                this.setPopupInfo({
+                    type: "save",
+                    title: "Top up to vault",
+                    data: data,
+                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
+                })
+            }, false)
+
+            saverInfo.querySelector(".js-withdraw").addEventListener("click", (e) => {
+                e.preventDefault()
+                this.setPopupInfo({
+                    type: "withdraw",
+                    title: "Withdraw from vault",
+                    data: data,
+                    amount: parseFloat(document.querySelector("input[name='usdc-amount']").value),
+                })
+            }, false)
+        }
     },
 
     setPopupInfo(objVal) {
-        if (objVal.type === "topup") {
-            quoteInvestInSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
-                // console.log(results)
-                const arrNames = [
-                    { name: "Name of the saver:", span: objVal.saverName },
-                    { name: "Address of saver contract:", span: minimizeAddress(objVal.saverAddress)},
-                    {name: "Top up:", span: results.invest},
-                    {name: "Saver units:", span: results.holding},
-                ]
+        console.log(objVal)
+        let units = objVal.data.UnitAsset == 0 ? objVal.amount: objVal.amount / objVal.data.UnitAsset
+        const arrNames = [
+            {name: "Name:", span: objVal.data.Name},
+            { name: "Address:", span: objVal.data.Address }, //minimizeAddress(objVal.data.Address)
+            { name: "Unit price", span: `$${(objVal.data.UnitAsset)}` },
+            { name: "Units:", span: `${(units).toFixed(2)} ${objVal.data.Symbol}` },
+            { name: "Trade value:", span: `$${(objVal.amount).toFixed(2)}` },
+        ]
 
-                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
-            })
-        } else if (objVal.type === "takeout"){
-            quoteDivestFromSaver(objVal.saverAddress, objVal.saverAmount).then((results) => {
-                const arrNames = [
-                    { name: "Name of the saver:", span: objVal.saverName },
-                    { name: "Address of saver contract", span: minimizeAddress(objVal.saverAddress) },
-                    { name: "Take out:", span: results.divest },
-                    { name: "Saver units:", span: results.holding },
-                ]
-
-                showOverlayPopup(objVal.title, createList(arrNames, "liquiditypool"))
-                this.executeTrade(objVal.type, objVal.saverAddress, results.funding, results.units)
-            })
-        }
+        showOverlayPopup(objVal.title, createList(arrNames, "investinsavers"))
+        this.executeTrade(objVal.type, objVal.data.Address, objVal.amount, units)
     },
 
     executeTrade(type, saverAddress, funding, units) {
@@ -219,9 +396,9 @@ export default {
         document.querySelector(".overlay-popup .op-content").appendChild(container)
 
         let btnColor = "blue"
-        if (type === "topup") {
+        if (type === "save") {
             btnColor = "green"
-        } else if (type === "takeout") {
+        } else if (type === "withdraw") {
             btnColor = "pink"
         }
 
@@ -332,5 +509,4 @@ export default {
         this.globals.execIntervalId = null
         console.log("clearTradeTimer()")
     },
-
 }

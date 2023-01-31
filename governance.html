@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/moreticon.1b0b21da.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Governance</title>
-  <script type="module" crossorigin src="/assets/main.78a41c4d.js"></script>
-  <link rel="stylesheet" href="/assets/main.ccf4f836.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-title" content="Moret">
+    <link rel="apple-touch-icon" href="moret_icon.png">
+    <link rel="icon" type="image/png" href="moret_icon.png"/>
+    <script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <!-- <script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script> -->
+  <script type="module" crossorigin src="/assets/main.27b7157e.js"></script>
+  <link rel="stylesheet" href="/assets/main.9a247e4e.css">
 </head>
 <body>
 <header>
     <div class="head-wrapper">
         <div class="head-contents p-t-40 p-b-40">
             <div class="head-main">
-                <div class="logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
+                <div class="logo"><a href="/"><img src="/assets/moret_logo.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
                 <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/assets/btn_burgermenu.1006b152.svg" /></a></div>
             </div>
             <div class="head-nav menuPopup">
                 <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/assets/btn_close.be47e55d.svg" /></a></div>
-                <div class="nav-logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" width="118" /></a></div>
+                <div class="nav-logo"><a href="/"><img src="/assets/moret_logo.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
                 <div class="nav-contents">
                     <ul class="items size-sm">
                         <li><a href="trader.html" class="btn-border">Trader</a></li>
@@ -50,15 +54,15 @@
                             <p class="m-b-20">SOL-USD.liquidity pool address: 0x38....938b</p>
                             <p>Proposed by 0x38....938b at (Thursday, March 31, 2022)</p>
                         </div>
-                        <div class="percentage-bar-multi" data-init-value-against="75" data-init-value-for="35">
+                        <div class="percentage-bar-multi" data-init-value-top="75" data-init-value-bottom="35">
                             <div class="pbm-progress">
-                                <div class="pbm-against">
+                                <div class="pbm-top">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>0%</span> AGAINST</div>
+                                    <div class="pbm-value size-sm"><span>0%</span> TOP</div>
                                 </div>
-                                <div class="pbm-for">
+                                <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>0%</span> FOR</div>
+                                    <div class="pbm-value size-sm"><span>0%</span> BOT</div>
                                 </div>
                             </div>
                         </div>
@@ -126,7 +130,7 @@
 <footer>
     <div class="row-top">
         <div class="contents">
-            <div class="logo m-b-52"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
+            <div class="logo m-b-52"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" height="25"/></a></div>
             <div class="links m-b-52">
                 <div class="link">
                     <div class="title size-md m-b-24">The company</div>
@@ -175,6 +179,5 @@
     </div>
 </footer>
 
-<script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </body>
 </html>

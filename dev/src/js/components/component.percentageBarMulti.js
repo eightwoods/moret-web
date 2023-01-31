@@ -14,8 +14,8 @@ export default {
                     if (entry.intersectionRatio) {
                         this.progressBar(
                             percentageBar, 
-                            percentageBar.dataset.initValueAgainst, 
-                            percentageBar.dataset.initValueFor
+                            percentageBar.dataset.initValueTop, 
+                            percentageBar.dataset.initValueBottom
                         )
                         observer.unobserve(entry.target)
                     }
@@ -26,23 +26,27 @@ export default {
         })
     },
 
-    progressBar(elem, againstVal, forVal) {
-        const progressAgainst = elem.querySelector(".pbm-against")
-        const progressFor = elem.querySelector(".pbm-for")
+    progressBar(elem, topVal, bottomVal) {
+        const progressTop = elem.querySelector(".pbm-top")
+        const progressBottom = elem.querySelector(".pbm-bottom")
 
-        gsap.to(progressAgainst, {
-            width: `${againstVal}%`,
+        if (parseInt(topVal) < parseInt(bottomVal)) {
+            progressTop.classList.add("pbm-zindex1")
+        }
+
+        gsap.to(progressTop, {
+            width: `${topVal}%`,
             ease: this.globals.easing,
             duration: this.globals.duration
         })
-        this.countPercent(progressAgainst, againstVal)
+        this.countPercent(progressTop, topVal)
 
-        gsap.to(progressFor, {
-            width: `${forVal}%`,
+        gsap.to(progressBottom, {
+            width: `${bottomVal}%`,
             ease: this.globals.easing,
             duration: this.globals.duration
         })
-        this.countPercent(progressFor, forVal)
+        this.countPercent(progressBottom, bottomVal)
     },
 
     countPercent(elem, value) {
@@ -55,8 +59,8 @@ export default {
             ease: this.globals.easing,
             duration: this.globals.duration,
             onUpdate: function() {
-                const targetValue = target.val.toFixed(0)
-                textValue.textContent = `${targetValue}%`
+                const targetValue = Number.isInteger(target.val) ? target.val.toFixed(0) : target.val
+                // textValue.textContent = `${targetValue}`
                 if (targetValue > 55) {
                     elem.querySelector(".pbm-value").classList.add("pbm-value-50plus")
                 }

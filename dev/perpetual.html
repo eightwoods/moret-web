@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Moret | Perpetual</title>
+    {{> head }}
+</head>
+<body>
+{{> header-trading }}
+
+<main role="main" class="trading">
+    <section class="perpetual">
+        <div class="sidenav animate-panel"></div>
+        <div class="content">
+            <div class="perpetual-list animate-panel">
+                <div class="m-b-20">
+                    <a href="#" class="btn btn-white btn-title size-md">Perpetual information</a>
+                </div>
+                <div class="perpetual-list-content in-box">
+                    <div class="header-title m-b-24">Perpetual list<span class="icon icon-refresh cursor js-refresh hide"></span></div>
+                    <div class="loader"></div>
+                    <div class="comp-dynamic-table" data-limitview="scroll"></div>
+                </div>
+            </div>
+
+            <div class="perpetual-info m-t-48 animate-panel">
+                <div class="btn-plus-subcopy m-b-24">
+                    <a href="#" class="btn btn-white btn-title size-md">Invest in Perpetuals</a>
+                </div>
+                <div class="in-box">
+                    <div class="loader"></div>
+                    <div class="perpetual-info-content"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+{{> footer }}
+</body>
+</html>

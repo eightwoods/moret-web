@@ -2,15 +2,18 @@ import "swiper/css"
 import "./main.scss"
 
 import { tokens, tokenActive } from "./src/js/helpers/constant"
-import { getDeviceType, getMobileOS } from "./src/js/helpers/utils"
+import { getDeviceType, getMobileOS, getBrowser } from "./src/js/helpers/utils"
 
 const setup = {
     init() {
         // use for styling
-        document.body.classList.add("js-enable", getDeviceType(), getMobileOS())
+        document.body.classList.add("js-enable", getDeviceType(), getMobileOS(), getBrowser())
+
+        // no metamask
+        this.getMetaMask()
 
         // no access - redirect user
-        this.setAccess()
+        this.setNoAccess()
         
         // set default active token
         if (!localStorage.getItem(tokenActive)) {
@@ -24,10 +27,24 @@ const setup = {
         this.setEvents()
     },
 
-    setAccess() {
-        if (document.querySelector("main.home, main.no-access")) {
-            return false
+    getMetaMask() {
+        if (document.querySelector("main.home, .no-metamask, .no-access")) 
+            return
+
+        if (document.querySelector("body.os-android, body.os-ios")) {
+            if (!window.ethereum) {
+                window.location.href = "https://metamask.io/download/"
+            }
+        } else if (document.querySelector("body.desktop.os-other")) {
+            if (!window.ethereum) {
+                window.location.href = "/no-metamask.html"
+            }
         }
+    },
+
+    setNoAccess() {
+        if (document.querySelector("main.home, .no-metamask, .no-access")) 
+            return
 
         fetch("https://get.geojs.io/v1/ip/geo.json")
             .then(res => res.json())
@@ -40,6 +57,16 @@ const setup = {
     },
 
     async getComponents() {
+        if (document.querySelectorAll(".chart-comparison").length) {
+            const { default: chartComparison } = await import("./src/js/components/component.chartComparison")
+            chartComparison.init()
+        }
+
+        if (document.querySelectorAll(".custom-checkbox").length) {
+            const { default: customCheckbox } = await import("./src/js/components/component.customCheckbox")
+            customCheckbox.init()
+        }
+
         if (document.querySelectorAll(".dropdown-select").length) {
             const { default: dropdownSelect } = await import("./src/js/components/component.dropdownSelect")
             dropdownSelect.init()
@@ -114,6 +141,16 @@ const setup = {
             liquidity.init()
         }
 
+        if (document.querySelector(".perpetual")) {
+            const { default: perpetual } = await import("./src/js/pages/page.perpetual")
+            perpetual.init()
+        }
+
+        if (document.querySelector(".saver")) {
+            const { default: saver } = await import("./src/js/pages/page.saver")
+            saver.init()
+        }
+
         if (document.querySelector(".trader")) {
             const { default: trader } = await import("./src/js/pages/page.trader")
             trader.init()
@@ -122,11 +159,6 @@ const setup = {
         if (document.querySelector(".trader-volatility")) {
             const { default: traderVolatility } = await import("./src/js/pages/page.traderVolatility")
             traderVolatility.init()
-        }
-
-        if (document.querySelector(".saver")) {
-            const { default: saver } = await import("./src/js/pages/page.saver")
-            saver.init()
         }
     },
 

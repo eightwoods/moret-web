@@ -1,6 +1,6 @@
 import Big from "big.js"
-import { moretAddress, exchangeAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, expirationDays, excludedPools, saverList } from "./constant"
-import { black_scholes } from "./pricing"
+import Web3 from "web3"
+import { moretAddress, exchangeAddress, vaultAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, stableCoinAddress, expirationDays, excludedPools, poolList, fixedIndexList, perpList } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
 
@@ -120,93 +120,100 @@ export const getVolTokenName = async(tokenAddr = null, expiry) => {
 
 // 6. calculate option prices (including vol, premium and collateral) depending on parameters:
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
 // outputReceipt is true if the output is used in receipt popup; it is false if the output is used on trading page
-export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     // try {
-        if (strike<=0){
-            throw 'Strike not set correctly.'
-        }
-        if(expiry <= 0){
-            throw 'Expiry not set correctly'
-        }
+    if (strike<=0){
+        throw 'Strike not set correctly.'
+    }
+    if(expiry <= 0){
+        throw 'Expiry not set correctly'
+    }
 
 
-        const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const tenor = Math.floor(expiry * 86400)
-        const allPools = await getAllPools(objTokenAddr)
-        var bestPool = (0).toString(16)
-        var premium, collateral
-        var vol = 0
-        var price = 0
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
+    const tenor = Math.floor(expiry * 86400)
+    const allPools = getAllPools(objTokenAddr)
 
-        for(let i =0;i< allPools.length; i++){
-            const poolAddress = allPools[i]
-            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), isCall ? 0 : 1, isBuy ? 0 : 1, false)
+    var bestPool = (0).toString(16)
+    var premium, collateral, fee
+    var vol = 0
+    var price = 0
 
-            if(quotedPrice[0] != -1){
-                const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
-                // console.log(poolAddress, quotedPremium)
+    for(let i =0;i< allPools.length; i++){
+        const poolAddress = allPools[i]
+        const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(spread.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), type, isBuy ? 0 : 1)
+        console.log(quotedPrice)
 
-                if (parseInt(bestPool, 16)==0){
-                    premium = quotedPremium
-                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-                    price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-                    vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-                    bestPool = poolAddress
-                }
-                else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
-                    premium = quotedPremium
-                    collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
-                    price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
-                    vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
-                    bestPool = poolAddress
-                }
+        if(quotedPrice[0] != -1){
+            const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
+            
+            if (parseInt(bestPool, 16)==0){
+                premium = quotedPremium
+                collateral = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                fee = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[4])))
+                bestPool = poolAddress
             }
-        }
-
-        if(vol==0 || price ==0)
-        {
-            throw 'There is no available liquidity pool.'
-        }
-
-        var premiumToken = "USDC"
-        var collateralToken = "USDC"
-        if (paymentMethod == 0){ 
-            // do nothing
-        }
-        else if (paymentMethod == 1){
-            premium = premium / price
-            collateral = collateral / price
-            premiumToken = collateralToken = token
-        }
-        else if (paymentMethod == 2){
-            premium = premium / vol 
-            premiumToken = await getVolTokenName(objTokenAddr, expiry)
-            // note that if vol token is used to pay premium, USDC will be used as collateral
-        }
-
-        if (token) {
-            return {
-                "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
-                "premium": `${Big(premium).round(5)} ${premiumToken}`,
-                "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
-                "error": ''
+            else if ((isBuy && (quotedPremium < premium)) || (!(isBuy) && (quotedPremium > premium)) ){
+                premium = quotedPremium
+                collateral = isBuy ? 0 : parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[1])))
+                price = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[2])))
+                vol = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[3])))
+                fee = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[4])))
+                bestPool = poolAddress
             }
-        } else {
-            return {
-                "volatility": vol,
-                "premium": premium,
-                "collateral": collateral,
-                "pool": bestPool,
-                "error": ''
-            }
+
+            // console.log(poolAddress, isBuy, type, paymentMethod, strike, spread, premium, collateral, price, vol)
         }
+    }
+
+    if(vol==0 || price ==0)
+    {
+        throw 'There is no available liquidity pool.'
+    }
+
+    var premiumToken = "USDC"
+    var collateralToken = "USDC"
+    if (paymentMethod == 0){ 
+        // do nothing
+    }
+    else if (paymentMethod == 1){
+        premium = premium / price
+        collateral = collateral / price
+        premiumToken = collateralToken = token
+    }
+    else if (paymentMethod == 2){
+        premium = premium / vol 
+        premiumToken = await getVolTokenName(objTokenAddr, expiry)
+        // note that if vol token is used to pay premium, USDC will be used as collateral
+    }
+
+    if (token) {
+        return {
+            "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
+            "premium": `${Big(premium).round(5)} ${premiumToken}`,
+            "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
+            "fee": `${Big(collateral).round(2)} ${collateralToken}`,
+            "error": ''
+        }
+    } else {
+        return {
+            "volatility": vol,
+            "premium": premium,
+            "collateral": collateral,
+            "pool": bestPool,
+            "error": ''
+        }
+    }
     // } catch(err) {
     //     return {
     //         "volatility": "-",
@@ -217,10 +224,14 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, isCa
     // }    
 }
 
-export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, amount, isCall, isBuy, isVol) => {
+// function to get option price of a specific pool
+// isBuy is true if Buy is selected, otherwise false
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
+export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, spread, amount, type, isBuy) => {
     try{
-        // console.log(poolAddress, tenor, strike, 0, amount, isCall, isBuy)
-        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, '0', amount, isCall, isBuy).call()
+        console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
+        const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, spread, amount, type, isBuy).call()
         // console.log(poolAddress, quotedPrice)
         return quotedPrice
     } catch(err){
@@ -229,24 +240,23 @@ export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor,
     
 }
 
-export const getAllPools = async (tokenAddr = null) => {
+export const getAllPools = (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
-    const brokerAddress = await moretContract.methods.broker().call()
-    const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    var allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
-    allPools = allPools.filter((el) => !excludedPools.includes(el));
-    return allPools
+    // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    // const brokerAddress = await moretContract.methods.broker().call()
+    // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+    // var allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
+    // allPools = allPools.filter((el) => !excludedPools.includes(el));
+    // return allPools
+    return (objTokenAddr in poolList) ? poolList[objTokenAddr] : [] 
 }
 
 // 7. refresh total gross capital and utility in decimals
 export const getCapital = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     var grossCapitalTotal = 0
     var netCapitalTotal = 0
     for (let i = 0; i < allPools.length; i++) {
@@ -271,17 +281,18 @@ export const getCapital = async (tokenAddr = null) => {
 
 // 8a. function to approve max amount if needed
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
-export const approveOptionSpending = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const approveOptionSpending = async (tokenAddr = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     const brokerAddress = await moretContract.methods.broker().call()
     const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, type, paymentMethod, strike, spread, amount, expiry)
     console.log(optionCost)
     const fundingAddress = await brokerContract.methods.funding().call()
     const tenor = Math.floor(expiry * 86400) // convert to seconds
@@ -334,14 +345,15 @@ export const approveMaxAmount = async (erc20Token, account, spenderAddress, spen
 
 // 8b. execute option trade 
 // isBuy is true if Buy is selected, otherwise false
-// isCall is true if Call is selected, false if Put is selected
+// type is 0 if Call, 2 if Put, 3 if Call Spread and 4 if Put Spread
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 // strike is in integer
+// spread is in integer
 // amount is in float
 // expiry is in number of days
-export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymentMethod, strike, amount, expiry) => {
+export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentMethod, strike, spread, amount, expiry) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, isCall, paymentMethod, strike, amount, expiry)
+    const optionCost = await calcOptionPrice(objTokenAddr, null, isBuy, type, paymentMethod, strike, spread, amount, expiry)
     const poolAddress = web3.utils.toChecksumAddress(optionCost['pool']) 
     const tenor = Math.floor(expiry * 86400) // convert to seconds
 
@@ -357,7 +369,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
             web3.utils.toWei(strike.toString()), 
             0,
             web3.utils.toWei(amount.toString()), 
-            isCall ? 0 : 1, 
+            type, 
             isBuy ? 0 : 1, 
             paymentMethod).estimateGas({ from: account, gasPrice: gasPriceCurrent }
         )
@@ -365,7 +377,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
         var nonceNew = await web3.eth.getTransactionCount(account)
 
         let approveTradeLink = null
-        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), isCall ? 0 : 1, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
@@ -385,7 +397,6 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, isCall, paymen
 export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, endBlock = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
@@ -409,17 +420,21 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
         const optionId = resEvents[i].returnValues._optionId
         const option = await vaultContract.methods.getOption(optionId).call()
         const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
+        const optionSpread = parseFloat(web3.utils.fromWei(option.spread))
         const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
         const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
         const timeToExpiry = secondsToExpiry / (3600 * 24 * 365)
         const impliedVol = secondsToExpiry <= 0 ? 0 : await oracle.methods.queryVol(secondsToExpiry).call()
+        const value = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
         // console.log(i, secondsToExpiry, timeToExpiry)
         optionTable.push({
             "Type": option.poType == 0 ? "Call" : "Put",
             "BS": option.side == 0 ? "Buy" : "Sell",
             "Expiry": new Date(option.maturity * 1000).toLocaleString(),
             "Strike": optionStrike.toFixed(0),
+            "Spread": optionSpread.toFixed(0),
             "Amount": optionAmount.toFixed(3),
+            "Value": parseFloat(web3.utils.fromWei(value)).toFixed(3),
             "Delta": (timeToExpiry <= 0 ? 0 : getDelta(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0, option.poType == 0 ? 'call' : 'put') * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
             "Gamma": (timeToExpiry <= 0 ? 0 : getGamma(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
             "Vega": (timeToExpiry <= 0 ? 0 : getVega(tokenPriceNumber, optionStrike, timeToExpiry, parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry), 0) * (option.side == 0 ? 1 : -1) * optionAmount).toFixed(3),
@@ -432,8 +447,6 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 
 export const getActiveTransactions = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     const oracle = await getPriceOracle(objTokenAddr)
@@ -443,7 +456,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
     
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     let optionTable = []
     var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
 
@@ -454,24 +467,41 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let secondsToExpiry = Math.floor(option.maturity - ts);
             let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
             let optionStrike = parseFloat(web3.utils.fromWei(option.strike));
-            let optionAmount = parseFloat(web3.utils.fromWei(option.amount));
-            let optionType = option.poType == 0 ? "call" : "put";
+            let optionSpread = parseFloat(web3.utils.fromWei(option.spread))
+            let optionAmount = parseFloat(web3.utils.fromWei(option.amount))
+            let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
+            let optionType = "call";
+            switch(option.poType){
+                case 1:
+                    optionType = "put";
+                    break;
+                case 2:
+                    optionType = "call spread";
+                    break;
+                default:
+                    optionType = "put spread";
+            }
             let optionMultiplier = option.side == 0 ? 1 : -1;
             let optionDelta, optionGamma, optionVega, optionTheta;
-            if (secondsToExpiry > 0) {
+            // if (secondsToExpiry > 0) {
+            if(Number(option.status) == 1){
                 let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
                 let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
                 optionDelta = getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
                 optionGamma = getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
+                let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                let optionPnL = (parseFloat(web3.utils.fromWei(optionValue._toHolder)) - optionPremium) * optionMultiplier
             
                 optionTable.push({
                     "Type": option.poType == 0 ? "Call" : "Put",
                     "BS": option.side == 0 ? "Buy" : "Sell",
                     "Expiry": new Date(option.maturity * 1000).toLocaleString(),
                     "Strike": optionStrike.toFixed(0),
+                    "Spread": optionSpread.toFixed(0),
                     "Amount": optionAmount.toFixed(3),
+                    "PnL": optionPnL.toFixed(3),
                     "Delta": optionDelta.toFixed(3),
                     "Gamma": optionGamma.toFixed(3),
                     "Vega": optionVega.toFixed(3),
@@ -526,7 +556,7 @@ export const calcVolTokenPrice = async (tokenAddr = null, token = null, isBuy, a
         
         for (let i = 0; i < allPools.length; i++) {
             const poolAddress = allPools[i]
-            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1, true)
+            const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, oraclePrice, web3.utils.toWei(estimatedOptionAmount.toFixed(18), 'ether'), 0, isBuy ? 0 : 1)
             // console.log(poolAddress, quotedPrice)
 
             if (quotedPrice[0] != -1){
@@ -600,7 +630,7 @@ export const getVolTradingPools = async (tokenAddress) => {
     const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
     // const brokerAddress = await moretContract.methods.broker().call()
     // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
-    const allPools = await getAllPools(tokenAddress) // brokerContract.methods.getAllPools(tokenAddress).call()
+    const allPools = getAllPools(tokenAddress) // brokerContract.methods.getAllPools(tokenAddress).call()
     // console.log('test', allPools)
     var volTradingPools = []
     for(let i = 0;i<allPools.length; i++){
@@ -707,85 +737,122 @@ export const getVolatilityHoldings = async (tokenAddr = null) =>{
     return volatilityTable
 }
 
-// 13. list all pools with their features ( to be done )
-//
+// 13. list all pools with their features 
 export const getAllPoolsInfo = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
 
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
-    const allPools = await getAllPools(objTokenAddr)
+    const allPools = getAllPools(objTokenAddr)
     // console.log(allPools)
     // var grossCapitalTotal = 0
     // var netCapitalTotal = 0
     let poolTable = []
 
-    // await Promise.all(allPools.map(async (poolAddress) => {
-    for (let i = 0; i < allPools.length; i++) {
-        const poolAddress = allPools[i]
-        let grossCapital = await vaultContract.methods.calcCapital(poolAddress, false, false).call()
-        grossCapital = parseFloat(web3.utils.fromWei(grossCapital))
-        let netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
-        netCapital = parseFloat(web3.utils.fromWei(netCapital))
-        // console.log(poolAddress, grossCapital, netCapital)
-        const utilizedCapital = grossCapital - netCapital
-        const utilization = Math.max(0, 1 - netCapital / grossCapital)
-
+    await Promise.all(allPools.map(async (poolAddress) => {
+    // for (let i = 0; i < allPools.length; i++) {
+        // const poolAddress = allPools[i]
         const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
-        const name = await poolContract.methods.name().call()
-        const symbol = await poolContract.methods.symbol().call()
-        let curveFactor = await poolContract.methods.volCapacityFactor().call()
-        let exerciseFee = await poolContract.methods.exerciseFee().call()
-        let minVol = await poolContract.methods.minVolPrice().call()
-
-        let holding = await poolContract.methods.balanceOf(account).call()
-        holding = parseFloat(web3.utils.fromWei(holding))
-        let unitGrossCapital = await vaultContract.methods.calcCapital(poolAddress, false, true).call()
-        unitGrossCapital = parseFloat(web3.utils.fromWei(unitGrossCapital))
-        let unitNetCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
-        unitNetCapital = parseFloat(web3.utils.fromWei(unitNetCapital))
-        let heldCapital = unitGrossCapital * holding
-        let heldNetCapital = unitNetCapital * holding
-
         const marketAddress = await poolContract.methods.marketMaker().call()
         const marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
-        let bot = await marketContract.methods.hedgingBot().call()
-        let description = await marketContract.methods.description().call()
+
+        let blockId = await web3.eth.getBlockNumber()
+        
+        let netCapital = await vaultContract.methods.calcCapital(poolAddress, true, false).call(blockId)
+        let supply = await poolContract.methods.totalSupply().call(blockId)
+        // console.log(poolAddress, grossCapital, netCapital)
+        const name = await poolContract.methods.name().call(blockId)
+        // const symbol = await poolContract.methods.symbol().call(blockId)
+        // let bot = await marketContract.methods.hedgingBot().call(blockId)
+        let description = await marketContract.methods.description().call(blockId)
+        
+        let holding = await poolContract.methods.balanceOf(account).call(blockId)
+        // let unitGrossCapital = await vaultContract.methods.calcCapital(poolAddress, false, true).call(blockId)
+        // let unitNetCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call(blockId)
+
+        // grossCapital = parseFloat(web3.utils.fromWei(grossCapital))
+        netCapital = parseFloat(web3.utils.fromWei(netCapital))
+        // const utilization = Math.max(0, 1 - netCapital / grossCapital)
+        holding = parseFloat(web3.utils.fromWei(holding))
+        // unitGrossCapital = parseFloat(web3.utils.fromWei(unitGrossCapital))
+        let unitNetCapital = netCapital / parseFloat(web3.utils.fromWei(supply))
+        // let heldCapital = unitGrossCapital * holding
+        let heldNetCapital = unitNetCapital * holding
+
+        
         let estyield = 2.2
 
         poolTable.push({
             "Name": name,
-            "Symbol": symbol,
             "Address": poolAddress,
             "Description": web3.utils.hexToAscii(description),
-            "MarketCap": `$${(grossCapital).toFixed(0)}`,
-            "Utilization": utilization.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-            "AMMCurveFactor": parseFloat(web3.utils.fromWei(curveFactor)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-            "ExerciseFee": parseFloat(web3.utils.fromWei(exerciseFee)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 }),
-            "MinVolPrice": parseFloat(web3.utils.fromWei(minVol)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 }),
-            "Bot": bot.toString(),
-            "EstimatedYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-            "UnitCapital": `$${(unitGrossCapital).toFixed(2)}`,
+            "MarketCap": `$${(netCapital).toFixed(0)}`,
+            // "EstimatedYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
             "UnitWithdrawable": `$${(unitNetCapital).toFixed(2)}`,
-            "HoldingBalance": `$${(heldCapital).toFixed(2)}`,
+            // "HoldingBalance": `$${(heldCapital).toFixed(2)}`,
             "HoldingNetBalance": `$${(heldNetCapital).toFixed(2)}`, 
             "Holdings": holding.toFixed(0),
             })
-    }
+    }))
     
     return poolTable
+}
+
+export const getPoolInfo = async (poolAddress, infoType) => {
+    const accountsOnEnable = await ethereum.request({method: "eth_requestAccounts"})
+    const account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+    const poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
+    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    switch (infoType){
+        case 'name':
+            const name = await poolContract.methods.name().call()
+            return name
+        case 'symbol':
+            const symbol = await poolContract.methods.symbol().call()
+            return symbol
+        case 'description':
+            let marketAddress = await poolContract.methods.marketMaker().call()
+            let marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
+            const description = await marketContract.methods.description().call()
+            return web3.utils.hexToAscii(description)
+        case 'curve':
+            const curveFactor = await poolContract.methods.volCapacityFactor().call()
+            return parseFloat(web3.utils.fromWei(curveFactor)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })
+        case 'fee':
+            const exerciseFee = await poolContract.methods.exerciseFee().call()
+            return parseFloat(web3.utils.fromWei(exerciseFee)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 })
+        case 'minvol':
+            const minVol = await poolContract.methods.minVolPrice().call()
+            return parseFloat(web3.utils.fromWei(minVol)).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 2 })
+        case 'aum':
+            const aum = await vaultContract.methods.calcCapital(poolAddress, false, false).call()
+            return `$${(parseFloat(web3.utils.fromWei(aum))).toFixed(2)}`
+        case 'navbid':
+            const navbid = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+            return parseFloat(web3.utils.fromWei(navbid)) //`$${(parseFloat(web3.utils.fromWei(navbid))).toFixed(2)}`
+        case 'navoffer':
+            const navoffer = await vaultContract.methods.calcCapital(poolAddress, false, true).call()
+            return parseFloat(web3.utils.fromWei(navoffer)) //`$${(parseFloat(web3.utils.fromWei(navoffer))).toFixed(2)}`
+        // case 'utilization':
+        //     const grossExpo = await vaultContract.methods.calcCapital(poolAddress, false, false).call()
+        //     const netExpo = await vaultContract.methods.calcCapital(poolAddress, true, false).call()
+        //     return Math.max(0, 1 - parseFloat(web3.utils.fromWei(netExpo)) / parseFloat(web3.utils.fromWei(grossExpo))).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 })
+        case 'balance':
+            const balance = await poolContract.methods.balanceOf(account).call()
+            return parseFloat(web3.utils.fromWei(balance))
+            // const nav = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
+            // return [`${(parseFloat(web3.utils.fromWei(holding))).toFixed(2)}`, `$${(parseFloat(web3.utils.fromWei(nav)) * parseFloat(web3.utils.fromWei(holding))).toFixed(2)}`]
+        default:
+            return ''
+    }
 }
 
 // 14. invest in a selected pool
 // amount is the USDC amount to invest in pool
 export const quoteInvestInPool = async (poolAddress, amount) => {
     // try {
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const grossCapital = await vaultContract.methods.calcCapital(poolAddress, false, true).call()
         const grossCapitalFloat = parseFloat(web3.utils.fromWei(grossCapital))
@@ -892,8 +959,6 @@ export const investInPool = async (poolAddress, amount) => {
 // amount is the USDC amount to invest in pool
 export const quoteDivestFromPool = async (poolAddress, amount) => {
     // try {
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
         const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -919,8 +984,6 @@ export const quoteDivestFromPool = async (poolAddress, amount) => {
 // amount is the usdc amount to invest in pool
 export const approveDivestFromPool = async (poolAddress, amount) => {
     try{
-        const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-        const vaultAddress = await exchangeContract.methods.vault().call()
         const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
         const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
         const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -944,7 +1007,6 @@ export const approveDivestFromPool = async (poolAddress, amount) => {
 // amount is the USDC amount to invest in pool
 export const divestFromPool = async (poolAddress, amount) => {
     const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
     const netCapital = await vaultContract.methods.calcCapital(poolAddress, true, true).call()
     const netCapitalFloat = parseFloat(web3.utils.fromWei(netCapital))
@@ -1041,163 +1103,101 @@ export const createPool = async (tokenAddr = null, poolName, poolSymbol, marketM
 }
 
 // 17. list all savers with their features ( to be done )
-export const getAllSaverInfo = async (tokenAddr = null) => {
+export const getAllSavers = (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
-    const exchangeContract = await getContract(web3, getJsonUrl("Exchange.json"), exchangeAddress)
-    const vaultAddress = await exchangeContract.methods.vault().call()
-    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    // const brokerAddress = await moretContract.methods.broker().call()
+    // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+    // var allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
+    // allPools = allPools.filter((el) => !excludedPools.includes(el));
+    // return allPools
+    return (objTokenAddr in fixedIndexList) ? fixedIndexList[objTokenAddr] : []
+}
 
+export const getSaverInfo = async (saverAddress, infoType) => {
     var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
     var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
-
-    let saverTable = []
-
-    await Promise.all(saverList.map(async (saverAddress) => {
-    // for (let i = 0; i < saverList.length; i++) {
-        // const saverAddress = saverList[i]
-        let saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
-        let poolAddress = await saverContract.methods.pool().call()
-        let poolContract = await getContract(web3, getJsonUrl("Pool.json"), poolAddress)
-        let marketAddress = await poolContract.methods.marketMaker().call()
-        let marketContract = await getContract(web3, getJsonUrl("MarketMaker.json"), marketAddress)
-        let saverUnderlying = await marketContract.methods.underlying().call()
-        if(saverUnderlying == objTokenAddr){
+    const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
+    const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    switch (infoType){
+        case 'name':
             const name = await saverContract.methods.name().call()
+            return name
+        case 'symbol':
             const symbol = await saverContract.methods.symbol().call()
-            const oracleAddress = await saverContract.methods.oracle().call()
-            const oracle = await getContract(web3, getJsonUrl("VolatilityChain.json"), oracleAddress)
-            const spotPrice = await oracle.methods.queryPrice().call()
-            const vintage = await saverContract.methods.vintage().call()
-            // console.log(saverAddress, vintage)
-
-            // create option pv function for market cap
-            const fundingAddress = await saverContract.methods.funding().call()
-            const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
-            const fundingDecimals = await fundingContract.methods.decimals().call()
-            let fundingBalance = await fundingContract.methods.balanceOf(saverAddress).call()
-
-            let poolAddress = await saverContract.methods.pool().call()
-            let options = await vaultContract.methods.getHolderOptions(poolAddress, saverAddress).call()
-            let optionsMV = 0
-            let vintageTenor = 0
-            let vintageYield = 0
-            
-            // console.log(options)
-            for (let j = 0; j < options.length;j++){
-                // console.log('options',j, options[j])
-                let option = await vaultContract.methods.getOption(Number(options[j])).call()
-                // console.log(option)
-                const optionStrike = parseFloat(web3.utils.fromWei(option.strike))
-                const optionAmount = parseFloat(web3.utils.fromWei(option.amount))
-                const optionPremium = parseFloat(web3.utils.fromWei(option.premium))
-                vintageYield = vintageYield + optionPremium * (Number(option.side) == 1 ? 1 : 0) / option.tenor * 86400 * 365
-                vintageTenor = Math.max(vintageTenor, Number(option.tenor))
-
-                const secondsToExpiry = Math.floor((option.maturity * 1000 - Date.now()) / 1000)
-                const timeToExpiry = secondsToExpiry / (3600 * 24 * 365)
-                let collaterals = await vaultContract.methods.getContractPayoff(option.id).call()
-                // console.log(saverAddress, option.id, timeToExpiry, collaterals)
-
-                if (timeToExpiry>0){
-                    let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call()
-                    let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry)
-                    
-                    let optionPrice = black_scholes(option.poType == 0, parseFloat(web3.utils.fromWei(spotPrice)), optionStrike, 0, annualVol, timeToExpiry) * optionAmount
-                    // console.log(option.id, option.poType, option.side, parseFloat(web3.utils.fromWei(spotPrice)), optionStrike, annualVol, timeToExpiry, optionAmount, optionPrice, parseFloat(web3.utils.fromWei(collaterals[2])))
-                    
-                    optionsMV = optionsMV + optionPrice * (option.side == 0 ? 1 : -1) + parseFloat(web3.utils.fromWei(collaterals[2]))
-                }
-                else{
-                    optionsMV = optionsMV + parseFloat(web3.utils.fromWei(collaterals[1]))
-                }
-                // console.log(collaterals, optionsMV)
-            }
-
+            return symbol
+        case 'aum':
+            let saverPV = await saverContract.methods.getPV().call()
+            return parseFloat(web3.utils.fromWei(saverPV))
+        case 'supply':
             let totalSupply = await saverContract.methods.totalSupply().call()
-            let totalUnits = parseFloat(web3.utils.fromWei(totalSupply))
-            let marketCap = parseFloat(web3.utils.fromWei(fundingBalance)) * (10 ** (18 - fundingDecimals)) + optionsMV
-            let unitPrice = marketCap / totalUnits
-            let startCap = (parseFloat(web3.utils.fromWei(vintage.startNAV)) * (10 ** (18 - fundingDecimals))) * totalUnits
-            let vintagePnL = marketCap / startCap - 1
-            // console.log(saverAddress, startCap, marketCap, unitPrice, vintagePnL)
-            let unitHeld = await saverContract.methods.balanceOf(account).call()
-            let holdings = parseFloat(web3.utils.fromWei(unitHeld)) * unitPrice
-            
-            let nextVintage = await saverContract.methods.nextVintageTime().call()
+            return parseFloat(web3.utils.fromWei(totalSupply))
+        case 'balance':
+            let balance = await saverContract.methods.balanceOf(account).call()
+            return parseFloat(web3.utils.fromWei(balance))
+        case 'params':
             let params = await saverContract.methods.fiaParams().call()
-            let estyield = vintageYield / startCap 
-            
-            let nextVintageStart = Math.floor((Number(nextVintage) + Number(params.tradeWindow)) / 86400) * 86400 + Number(params.rollHour)
-            // console.log(params, nextVintage, nextVintageStart)
-
-            saverTable.push({
-                "Name": name,
-                "Symbol": symbol,
-                "Address": saverAddress,
-                "MarketCap": `$${(marketCap).toFixed(0)}`,
-                "UnitAsset": `$${(unitPrice).toFixed(2)}`,
-                "Holding": `$${(holdings).toFixed(2)}`,
-                "UnitHeld": parseFloat(web3.utils.fromWei(unitHeld)).toFixed(1),
-                "StaticYield": estyield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "ProfitLoss": vintagePnL.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
-                "NextVintageTime": nextVintage,
-                "NextVintageStart": new Date(nextVintageStart * 1000).toLocaleString(),
-                "NextVintage": new Date(Number(nextVintage) * 1000).toLocaleString(),
-                "StartLevel": parseFloat(web3.utils.fromWei(vintage.startLevel)).toFixed(0),
-                "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)).toFixed(0),
-                "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)).toFixed(0),
-                "Protection": parseFloat(web3.utils.fromWei(vintage.putSpread)).toFixed(0),
-            })
-        }
-    }))
-
-    return saverTable
+            return params
+        case 'vintage':
+            const vintage = await saverContract.methods.vintage().call()
+            return {
+                "StartLevel": parseFloat(web3.utils.fromWei(vintage.startLevel)),
+                "StartNAV": parseFloat(web3.utils.fromWei(vintage.startNAV)),
+                "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)),
+                "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)),
+                "Protection": parseFloat(web3.utils.fromWei(vintage.putStrike)) - parseFloat(web3.utils.fromWei(vintage.putSpread))
+            }
+        case 'opentime':
+            let vintageOpen = await saverContract.methods.nextVintageTime().call()
+            return Number(vintageOpen)
+        default:
+            return ''
+    }
 }
 
 // 18. invest in a selected saver
 // amount is the USDC amount to invest in saver
-export const quoteInvestInSaver = async (saverAddress, amount) => {
-    try {
-        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
-        const saverToken = await saverContract.methods.symbol().call()
-        const premiumToken = 'USDC'
+// export const quoteInvestInSaver = async (saverAddress, amount) => {
+//     try {
+//         const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
+//         const saverToken = await saverContract.methods.symbol().call()
+//         const premiumToken = 'USDC'
 
-        const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
-        const fundingAddress = await saverContract.methods.funding().call()
-        const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
-        const fundingDecimals = await fundingContract.methods.decimals().call()
+//         const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
+//         const fundingAddress = await saverContract.methods.funding().call()
+//         const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+//         const fundingDecimals = await fundingContract.methods.decimals().call()
         
-        const quoteInvest = Number(amount) / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - Number(fundingDecimals))))
+//         const quoteInvest = Number(amount) / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - Number(fundingDecimals))))
         
-        return {
-            'invest': `${Big(amount).round(5)} ${premiumToken}`,
-            'holding': `${Big(quoteInvest).round(5)} ${saverToken}`,
-            'funding': Number(amount),
-            'units': quoteInvest
-        }
-    }
-    catch (err){
-        console.log(err.message)
-        return err.message
-    }
-}
-
+//         return {
+//             'invest': `${Big(amount).round(5)} ${premiumToken}`,
+//             'holding': `${Big(quoteInvest).round(5)} ${saverToken}`,
+//             'funding': Number(amount),
+//             'units': quoteInvest
+//         }
+//     }
+//     catch (err){
+//         console.log(err.message)
+//         return err.message
+//     }
+// }
 
 export const approveSaver = async (type, saverAddress, funding, units) => {
     try {
         var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
         var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
-        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+        const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
         console.log(type, saverAddress, funding, units)
-        if (type === "topup") {
+        if (type === "save") {
             const fundingAddress = await saverContract.methods.funding().call()
             // console.log('top up', saverAddress, fundingAddress, account, funding, units)
             const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
             await approveMaxAmount(paymentToken, account, saverAddress, funding)
             
             return 'success'
-        } else if (type === "takeout") {
+        } else if (type === "withdraw") {
             // console.log('take out', saverAddress, paymentToken, account, funding, units)
             await approveMaxAmount(saverContract, account, saverAddress, units)
             
@@ -1216,7 +1216,7 @@ export const approveSaver = async (type, saverAddress, funding, units) => {
 export const tradeSaver = async (type, saverAddress, funding, units) => {
     let log = ""
     switch (type) {
-        case "topup":
+        case "save":
             log = await investInSaver(saverAddress, funding)
             break
         default:
@@ -1229,7 +1229,7 @@ export const tradeSaver = async (type, saverAddress, funding, units) => {
 // saverAddress is the selected saver contract address
 // amount is the USDC amount to invest in saver, in funding decimals
 export const investInSaver = async (saverAddress, amount) => {
-    const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+    const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
     const fundingAddress = await saverContract.methods.funding().call()
     const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
     const fundingDecimals = await fundingContract.methods.decimals().call()
@@ -1256,37 +1256,37 @@ export const investInSaver = async (saverAddress, amount) => {
     return approveTradeLink
 }
 
-// 15. divest from a selected pool
+// 19. divest from a selected pool
 // amount is the USDC amount to invest in pool
-export const quoteDivestFromSaver = async (saverAddress, amount) => {
-    try {
-        const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
-        const saverToken = await saverContract.methods.symbol().call()
-        const premiumToken = 'USDC'
+// export const quoteDivestFromSaver = async (saverAddress, amount) => {
+//     try {
+//         const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
+//         const saverToken = await saverContract.methods.symbol().call()
+//         const premiumToken = 'USDC'
 
-        const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
-        const fundingAddress = await saverContract.methods.funding().call()
-        const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
-        const fundingDecimals = await fundingContract.methods.decimals().call()
+//         const unitPrice = await saverContract.methods.getRollsUnitAsset().call()
+//         const fundingAddress = await saverContract.methods.funding().call()
+//         const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+//         const fundingDecimals = await fundingContract.methods.decimals().call()
 
-        const quoteDivest = Number(amount) / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - Number(fundingDecimals))))
+//         const quoteDivest = Number(amount) / (parseFloat(web3.utils.fromWei(unitPrice)) * (10 ** (18 - Number(fundingDecimals))))
         
-        return {
-            'divest': `${Big(amount).round(5)} ${premiumToken}`,
-            'holding': `${Big(quoteDivest).round(5)} ${saverToken}`,
-            'funding': Number(amount),
-            'units': quoteDivest
-        }
-    }
-    catch (err) {
-        return err.message
-    }
-}
+//         return {
+//             'divest': `${Big(amount).round(5)} ${premiumToken}`,
+//             'holding': `${Big(quoteDivest).round(5)} ${saverToken}`,
+//             'funding': Number(amount),
+//             'units': quoteDivest
+//         }
+//     }
+//     catch (err) {
+//         return err.message
+//     }
+// }
 
 // saverAddress is the selected saver contract address
 // amount is the FIP units to divest from saver, in 18 decimals
 export const divestFromSaver = async (saverAddress, units) => {
-    const saverContract = await getContract(web3, getJsonUrl("FixedIncomeAnnuity.json"), saverAddress)
+    const saverContract = await getContract(web3, getJsonUrl("FixedIndex.json"), saverAddress)
     const saverDecimals = await saverContract.methods.decimals().call()
 
     const unitsInWei = web3.utils.toBN(web3.utils.toWei(units.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(saverDecimals))))
@@ -1302,6 +1302,160 @@ export const divestFromSaver = async (saverAddress, units) => {
     
     let approveTradeLink = null
     await saverContract.methods.divest(unitsInWei).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
+}
+
+// 20. list all perps with their features
+export const getAllPerpetuals = (tokenAddr = null) => {
+    const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
+    // const moretContract = await getContract(web3, getJsonUrl("Moret.json"), moretAddress)
+    // const brokerAddress = await moretContract.methods.broker().call()
+    // const brokerContract = await getContract(web3, getJsonUrl("MoretBroker.json"), brokerAddress)
+    // var allPools = await brokerContract.methods.getAllPools(objTokenAddr).call()
+    // allPools = allPools.filter((el) => !excludedPools.includes(el));
+    // return allPools
+    return (objTokenAddr in perpList) ? perpList[objTokenAddr] : []
+}
+
+export const getPerpetualInfo = async (perpAddress, infoType) => {
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+    const perpContract = await getContract(web3, getJsonUrl("Perp.json"), perpAddress)
+
+    switch (infoType) {
+        case 'name':
+            const name = await perpContract.methods.name().call()
+            return name
+        case 'symbol':
+            let symbol = await perpContract.methods.symbol().call()
+            return symbol
+        case 'aum':
+            let perpPV = await perpContract.methods.getPV().call()
+            return parseFloat(web3.utils.fromWei(perpPV)) 
+        case 'supply':
+            let totalSupply = await perpContract.methods.totalSupply().call()
+            return parseFloat(web3.utils.fromWei(totalSupply)) 
+        case 'balance':
+            let balance = await perpContract.methods.balanceOf(account).call()
+            return parseFloat(web3.utils.fromWei(balance)) //`$${isNaN(holding) ? '0.0' : holding.toFixed(2)}`
+        case 'leverage':
+            let lev = await perpContract.methods.getCurrentLeverage().call()
+            return parseFloat(web3.utils.fromWei(lev))
+        case 'params':
+            let params = await perpContract.methods.params().call()
+            return [parseFloat(web3.utils.fromWei(params.leverage)), parseFloat(web3.utils.fromWei(params.criticalLev)), params.long ? 'Long' : 'Short', params.tenor]
+        case 'strike':
+            let strike = await perpContract.methods.optionStrike().call()
+            return parseFloat(web3.utils.fromWei(strike))
+        case 'notional':
+            let notional = await perpContract.methods.notional().call()
+            return parseFloat(web3.utils.fromWei(notional))
+        default:
+            return ''
+    }
+}
+
+// 21. invest in a selected perpetual
+export const approvePerp = async (type, perpAddress, funding, units) => {
+    try {
+        var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+        var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+        const perpContract = await getContract(web3, getJsonUrl("Perp.json"), perpAddress)
+        // console.log(type, perpAddress, funding, units)
+        if (type === "save") {
+            const fundingAddress = await perpContract.methods.funding().call()
+            // console.log('top up', perpAddress, fundingAddress, account, funding, units)
+            const paymentToken = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+            await approveMaxAmount(paymentToken, account, perpAddress, funding)
+
+            return 'success'
+        } else if (type === "withdraw") {
+            // console.log('take out', perpAddress, paymentToken, account, funding, units)
+            await approveMaxAmount(perpContract, account, perpAddress, units)
+
+            return 'success'
+        }
+        else {
+            throw 'Incorrect type for approval.'
+        }
+
+    }
+    catch (err) {
+        return 'failure' //err.message
+    }
+}
+
+export const tradePerp = async (type, perpAddress, funding) => {
+    let log = ""
+    switch (type) {
+        case "save":
+            log = await investInPerp(perpAddress, funding)
+            break
+        default:
+            log = await divestFromPerp(perpAddress, funding)
+    }
+    console.log('trade', log)
+    return log
+}
+
+// perpAddress is the selected perp contract address
+// amount is the USDC amount to invest in perp, in funding decimals
+export const investInPerp = async (perpAddress, amount) => {
+    const perpContract = await getContract(web3, getJsonUrl("Perp.json"), perpAddress)
+    // const fundingAddress = await perpContract.methods.funding().call()
+    // const fundingContract = await getContract(web3, getJsonUrl("ERC20.json"), fundingAddress)
+    const fundingDecimals = await perpContract.methods.fundingDecimals().call()
+
+    const amountInWei = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(fundingDecimals))))
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+    console.log('invest in perp', perpAddress, amount)
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await perpContract.methods.invest(amountInWei).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    let approveTradeLink = null
+    await perpContract.methods.invest(amountInWei).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        // console.log(`https://polygonscan.com/tx/${hash}`)
+        approveTradeLink = `https://polygonscan.com/tx/${hash}`
+    }).on('error', function (error, receipt) {
+        return ""
+    })
+    console.log('link', approveTradeLink)
+    return approveTradeLink
+}
+
+// 22. divest from a selected perp
+// perpAddress is the selected perp contract address
+// amount is the USDC units to divest from perp, in 6 decimals
+export const divestFromPerp = async (perpAddress, amount) => {
+    const perpContract = await getContract(web3, getJsonUrl("Perp.json"), perpAddress)
+    const fundingDecimals = await perpContract.methods.fundingDecimals().call()
+
+    const amountInWei = web3.utils.toBN(web3.utils.toWei(amount.toFixed(18))).div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - Number(fundingDecimals))))
+
+    console.log('Divest from perpetual', perpAddress, amount)
+
+    var accountsOnEnable = await ethereum.request({ method: 'eth_requestAccounts' })
+    var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
+
+    var gasPriceCurrent = await web3.eth.getGasPrice();
+    var gasEstimated = await perpContract.methods.divest(amountInWei).estimateGas({ from: account, gasPrice: gasPriceCurrent });
+    gasEstimated = Number(web3.utils.toBN(gasEstimated).mul(web3.utils.toBN(Number(150))).div(web3.utils.toBN(Number(100))));
+    var nonceNew = await web3.eth.getTransactionCount(account);
+
+    let approveTradeLink = null
+    await perpContract.methods.divest(amountInWei).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
         // console.log(`https://polygonscan.com/tx/${hash}`)
         approveTradeLink = `https://polygonscan.com/tx/${hash}`
     }).on('error', function (error, receipt) {

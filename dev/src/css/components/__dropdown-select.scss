@@ -67,6 +67,10 @@
                 border: 0;
                 padding: 10px 0;
                 margin-bottom: 10px;
+
+                &.error {
+                    background-color: $color-red;
+                }
             }
 
             .input-message {

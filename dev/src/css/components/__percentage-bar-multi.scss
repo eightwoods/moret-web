@@ -1,5 +1,5 @@
 .percentage-bar-multi {
-    max-width: 500px;
+    // max-width: 500px;
     height: 150px;
     display: flex;
     align-items: center;
@@ -10,7 +10,7 @@
         height: 6px;
         background-color: $white-14;
 
-        .pbm-against, .pbm-for, .pbm-progressbar {
+        .pbm-top, .pbm-bottom, .pbm-progressbar {
             position: absolute;
             top: 0;
             left: 0;
@@ -21,7 +21,7 @@
             width: 100%;
         }
 
-        .pbm-value {
+        .pbm-value, .pbm-value-static {
             position: absolute;
             text-align: center;
             white-space: nowrap;
@@ -40,20 +40,22 @@
             }
         }
 
-        .pbm-against {
+        .pbm-top {
             width: 0%;
             .pbm-progressbar {
-                background-color: $color-pink;
+                background-color: $color-green;
             }
-            .pbm-value {
-                width: 120px;
+            .pbm-value, .pbm-value-static {
+                width: 90px;
                 top: -35px;
-                right: -120px;
-                color: $color-pink;
+                right: -90px;
+                color: $color-green;
                 &::before {
-                    background-color: $color-pink;
+                    background-color: $color-green;
                     border-bottom-left-radius: 0;
                 }
+            }
+            .pbm-value {
                 &-50plus {
                     right: 0;
                     &::before {
@@ -62,28 +64,50 @@
                     }
                 }
             }
+            .pbm-value-static {
+                left: 0;
+                right: auto;
+                color: $color-pink;
+                &::before {
+                    background-color: $color-pink;
+                }
+            }
+
+            &.pbm-zindex1 {
+                z-index: 1;
+            }
         }
 
-        .pbm-for {
+        .pbm-bottom {
             width: 0%;
             .pbm-progressbar {
-                background-color: $color-green;
+                background-color: $color-blue;
             }
-            .pbm-value {
+            .pbm-value, .pbm-value-static {
                 width: 90px;
                 top: 12px;
                 right: -90px;
-                color: $color-green;
+                color: $color-blue;
                 &::before {
-                    background-color: $color-green;
+                    background-color: $color-blue;
                     border-top-left-radius: 0;
                 }
+            }
+            .pbm-value {
                 &-50plus {
                     right: 0;
                     &::before {
                         border-top-left-radius: 6px;
                         border-top-right-radius: 0;
                     }
+                }
+            }
+            .pbm-value-static {
+                left: 0;
+                right: auto;
+                color: $color-pink;
+                &::before {
+                    background-color: $color-pink;
                 }
             }
         }

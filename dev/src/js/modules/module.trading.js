@@ -1,20 +1,33 @@
 import { gsap } from "gsap"
 import { tokenActive, tokenName, tokenPrice, tokenAddress, tokens } from "../helpers/constant"
-import { getImageUrl } from "../helpers/utils"
+import { getUrlVars, getImageUrl } from "../helpers/utils"
 import { getPrice } from "../helpers/web3"
 
 export default {
     globals: {
         elem: document.querySelector(".trading"),
         refreshDuration: 15000,
+        elSidenav: null,
     },
 
     init() {
-        const sidenav = this.globals.elem.querySelector(".sidenav")
-        this.sideNav(sidenav)
-        this.sideNavRefreshPrice(sidenav)
-        this.sideNavLimiteView(sidenav)
+        this.elSidenav = this.globals.elem.querySelector(".sidenav")
+        this.headerMenu()
+        this.sideNav(this.elSidenav)
+        this.sideNavRefreshPrice(this.elSidenav)
+        this.sideNavLimiteView(this.elSidenav)
         this.animateEachPanel()
+    },
+
+    headerMenu() {
+        const pageUrlName = window.location.pathname.replace("/", "").replace(".html", "")
+        const navItems = this.globals.elem.parentElement.querySelectorAll(".nav-contents .items li")
+        navItems.forEach((list) => {
+            const linkUrlName = list.querySelector("a").getAttribute("href").replace(".html", "")
+            if (pageUrlName.includes(linkUrlName)) {
+                list.querySelector("a").classList.add("btn-border-active")
+            }
+        })
     },
 
     sideNav(sidenav) {
@@ -110,7 +123,8 @@ export default {
             infoItem.addEventListener("click", () => {
                 localStorage.removeItem(tokenActive)
                 localStorage.setItem(tokenActive, JSON.stringify(data))
-                this.sideNav(this.globals.elem.querySelector(".sidenav"))
+                this.sideNav(this.elSidenav)
+                this.sideNavLimiteView(this.elSidenav)
             })
         }
     },
@@ -125,7 +139,11 @@ export default {
                 sidenav.setAttribute("sidenav-refreshprice", "")
                 // insert tokens price
                 sidenav.querySelectorAll(".token-price").forEach(async (tokenPrice) => {
-                    tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                    try {
+                        tokenPrice.textContent = await getPrice(tokenPrice.dataset.address)
+                    } catch (error) {
+                        console.log("error refreshTokenPrice()", tokenPrice)
+                    }
                 })
             }, this.globals.refreshDuration)
         }

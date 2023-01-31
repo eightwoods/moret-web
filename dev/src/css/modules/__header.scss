@@ -28,10 +28,10 @@ header {
         @include centerElement(y);
         width: calc(100% - spacer(9));
         margin-left: spacer(9);
-        @include mediaQuery($pb-lg, max) {
-            width: calc(100% - spacer(8));
-            margin-left: spacer(8);
-        }
+        // @include mediaQuery($pb-lg, max) {
+        //     width: calc(100% - spacer(8));
+        //     margin-left: spacer(8);
+        // }
 
         @include mediaQuery($pb-lgmd, max) {
             display: none;
@@ -83,7 +83,7 @@ header {
                     display: flex;
                     column-gap: 16px;
                     align-items: center;
-                    justify-content: right;
+                    justify-content: flex-end;
 
                     &-column-gap-lg {
                         column-gap: 26px;
@@ -94,14 +94,16 @@ header {
             @include mediaQuery($pb-lgmd, max) {
                 @include scrollElement(y);
                 position: absolute;
-                top: spacer(9);
+                top: spacer(8);
                 left: 0;
+                padding-right: spacer();
+                padding-left: spacer();
                 width: 100vw;
                 height: calc(100vh - spacer(9));
                 
                 .items {
                     text-align: center;
-                    padding-bottom: spacer(7);
+                    padding-bottom: spacer(3);
                     
                     li {
                         margin-bottom: spacer();
@@ -131,6 +133,10 @@ header {
 
                 .items-right {
                     text-align: center;
+                    padding-bottom: spacer(3);
+                    .active-account {
+                        display: inline-block;
+                    }
                 }
 
                 .social, .notbtn-account {

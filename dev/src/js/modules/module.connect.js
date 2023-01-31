@@ -14,7 +14,7 @@ export default {
         button.textContent = "Requesting..."
 
         try {
-            await window.ethereum.request({ method: "eth_requestAccounts" })
+            await window.ethereum.request({method: "eth_requestAccounts"})
             .then((result) => {
                 // console.log("result", result)
                 // success
@@ -31,7 +31,7 @@ export default {
     },
 
     accountsConnect() {
-        ethereum.request({method: 'eth_accounts'})
+        window.ethereum.request({method: "eth_accounts"})
         .then((accounts) => {
             const connectionButton = document.querySelector(".connection-button")
             if (connectionButton) {
@@ -122,7 +122,7 @@ export default {
                     {name: "", class: "warning-icon"}, 
                     {name: "Please switch to Polygon chain.", class: "warning-text size-lgmd"}
                 ]
-                showOverlayPopup(null, createList(arrNames, "notpolygon"), true)
+                showOverlayPopup(null, createList(arrNames, "notpolygon"), false)
             }
         }
     },

@@ -1,12 +1,32 @@
-export const moretAddress = "0x4D2E4e85fbDFBfbE04049251d375e3Faf574C0B0"
+export const moretAddress = "0xb781291222a1c35ACF39f886260951728ab49a40"
 
-export const exchangeAddress = "0xDAF3ebE73D1bcEAFFDc14f4f75F474bD71c86A3D"
+export const exchangeAddress = "0x6d08ea1ceeB4B4E0270B08FE5dfbD741df410da1"
 
-export const marketMakerFactoryAddress = "0xd772E7fFDb924BA8998D8b64De76D3212605267F"
+export const vaultAddress = "0x5906595607143650E3e905cf80b97e7029A3Da28"
 
-export const poolFactoryAddress = "0xfEeC891BECAe9a497Ffefc4dAb477511205F821d"
+export const marketMakerFactoryAddress = "0xF7Aac55AD1267096A4f53B81dbE55469F8724478"
 
-export const poolGovFactoryAddress = "0xc1CD2084Da3532C4c097AC9Ff69D99faf1df2e22"
+export const poolFactoryAddress = "0x3669DA883027e4099093E10B123a7a506d47afb3"
+
+export const poolGovFactoryAddress = "0x3a18D72918cde10aDe74E96591A43145eA2Db113"
+
+export const excludedPools = []
+
+export const poolList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x33B53299bC6C5D3433AeF84397A1B82e6F7c7E81"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xfBa0168dD9345373E2d391Efd4d83A6322254b87"]
+}
+
+export const fixedIndexList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x5ec0A85f13ee1E4ee3bd3aaeDca69B1Be82A0bfb"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x203AE59E02769F591F2C11F114Ad038A3f842324"]
+}
+
+export const perpList = {
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x14228E9364cBefA706a4DE66d22d605612EFE6F5", "0x89fBe3d6dDDe5c6DE40Ba07a647954C32c954E40"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xc2d76139d933aca33c374161fd0ffd5ef3dfc8d1", "0x84cb8450f44cc8C514F92ecCA85E420f94736D99"]
+}
+
 
 export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -25,6 +45,4 @@ export const tokens = [
     {token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"}
 ]
 
-export const excludedPools = ['0xE896ad64c88042F4f397DE14f3B034957969616C','0x3558246DD5A1E77e9CC11780Cd4523E35209436d']
-
-export const saverList = ['0x4C8fc813D2cc1b2F8977126744f6e7121D8977b5', '0x16b3C53827C5a25cb2BD578DDdCB30f34E2C699a']
+export const stableCoinAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"

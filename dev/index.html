@@ -1,46 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="moreticon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Home</title>
+    {{> head }}
 </head>
 <body>
-<header>
-    <div class="head-wrapper">
-        <div class="head-contents p-t-40 p-b-40">
-            <div class="head-main">
-                <div class="logo"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" height="25"/></a></div>
-                <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/src/img/btn_burgermenu.svg" /></a></div>
-            </div>
-            <div class="head-nav menuPopup">
-                <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/src/img/btn_close.svg" /></a></div>
-                <div class="nav-logo"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" width="118" /></a></div>
-                <div class="nav-contents">
-                    <ul class="items size-sm">
-                        <li><a href="https://meridian-moretti.gitbook.io/moret/overview/master" target="_blank" class="btn-border">About</a></li>
-                        <li><a href="https://meridian-moretti.gitbook.io/moret/developments/audit" target="_blank" class="btn-border">Audit</a></li>
-                        <li><a href="https://github.com/eightwoods/moret" target="_blank" class="btn-border">Development</a></li>
-                    </ul>
-                    <div class="items-right items-right-column-gap-lg">
-                        <div class="social">
-                            <a href="https://discord.gg/Vy2K5mAKVF" target="_blank" class="btn-social"><img src="/src/img/social_discord.svg" alt="Discord icon" /></a>
-                            <a href="https://twitter.com/moret_io" target="_blank" class="btn-social"><img src="/src/img/social_twitter.svg" alt="Twitter icon" /></a>
-                            <a href="https://t.me/moret_options" target="_blank" class="btn-social"><img src="/src/img/social_telegram.svg" alt="Telegram icon" /></a>
-                        </div>
-                        <div class="button"><a href="trader.html" class="btn btn-white">Start trading</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
+{{> header-home }}
 
 <main role="main" class="home">
     <section class="hero">
         <div class="header align-center p-b-60">
-            <h1 class="title h1 m-b-16">Most efficient DeFi exchange for crypto options</h1>
+            <h1 class="title h1 m-b-16">The best place for crypto options and leveraged perpetuals</h1>
             <p class="introcopy size-sm mw-grid-8 white-50">Moret is an innovative exchange with a volatility AMM model, volatility tokens and unique DeFi 2.0 design, running on Polygon chain. It is the most efficient crypto option platform for both market makers and option traders.</p>
             <p class="m-t-32">
                 <a href="https://medium.com/@moret-io" target="_blank" class="btn btn-blue"><span>Read more information</span></a>
@@ -390,59 +360,6 @@
     </section>
 </main>
 
-<footer>
-    <div class="row-top">
-        <div class="contents">
-            <div class="logo m-b-52"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" height="25"/></a></div>
-            <div class="links m-b-52">
-                <div class="link">
-                    <div class="title size-md m-b-24">The company</div>
-                    <ul>
-                        <li class="m-b-12"><a href="https://meridian-moretti.gitbook.io/moret" class="white-50">About</a></li>
-                        <li class="m-b-12"><a href="https://meridian-moretti.gitbook.io/moret/developments/audit" class="white-50">Audit</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">For the record</a></li>
-                    </ul>
-                </div>
-                <div class="link">
-                    <div class="title size-md m-b-24">Communities</div>
-                    <ul>
-                        <li class="m-b-12"><a href="https://discord.gg/k4pFEg7KNr" class="white-50">Traders</a></li>
-                        <li class="m-b-12"><a href="https://discord.gg/ZhdCf8TSMm" class="white-50">Liquidity Providers</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Developers</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Investors</a></li>
-                    </ul>
-                </div>
-                <div class="link">
-                    <div class="title size-md m-b-24">Useful links</div>
-                    <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">Help</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Start trading</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="social">
-            <a href="https://discord.gg/Vy2K5mAKVF" class="btn-social btn-social-circle"><img src="/src/img/social_discord.svg" alt="Discord icon" /></a>
-            <a href="https://twitter.com/moret_io" class="btn-social btn-social-circle"><img src="/src/img/social_twitter.svg" alt="Twitter icon" /></a>
-            <a href="https://t.me/moret_options" class="btn-social btn-social-circle"><img src="/src/img/social_telegram.svg" alt="Telegram icon" /></a>
-        </div>
-    </div>
-    <div class="row-bottom">
-        <div class="legals p-b-32">
-            <ul>
-                <li><a href="#" class="white-50 size-sm">Legal (legal information)</a></li>
-                <li><a href="#" class="white-50 size-sm">Privacy center</a></li>
-                <li><a href="#" class="white-50 size-sm">Privacy policy</a></li>
-                <li><a href="#" class="white-50 size-sm">Cookie settings</a></li>
-                <li><a href="#" class="white-50 size-sm">About ads</a></li>
-            </ul>
-        </div>
-        <div class="copyright size-sm p-b-32">&copy; 2022 Moret. All rights reserved.</div>
-    </div>
-</footer>
-<script type="module" src="/main.js"></script>
-<script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+{{> footer }}
 </body>
 </html>

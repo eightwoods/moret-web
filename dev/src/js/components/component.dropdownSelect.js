@@ -14,6 +14,9 @@ export default {
             const input = dropdownSelect.querySelector("input[name='info-amount']")
             let inputFocus = false
 
+            // only allow for numbers with/without decimal and percentage
+            const expression = new RegExp("^[0-9]*[.]{0,1}[0-9]*[%]{0,1}$")
+
             // set input field
             if (input) {
                 // input events
@@ -26,6 +29,7 @@ export default {
                     inputFocus = true
                     dropdownSelect.querySelectorAll("li").forEach((item) => item.classList.remove("info-active"))
                     if (e.target.value === "") {
+                        if (input.dataset.numberAndPercentage) return
                         this.valueFromInputField(dropdownSelect, 0)
                     }
                 }, false)
@@ -39,17 +43,36 @@ export default {
                     if (e.target.value === "") {
                         inputValue = 0
                     }
-                    this.valueFromInputField(dropdownSelect, inputValue)
+
+                    if (input.dataset.numberAndPercentage) {
+                        if (e.target.value.match(expression)) {
+                            input.classList.remove("error")
+                        } else {
+                            input.classList.add("error")
+                        }
+                    } else {
+                        this.valueFromInputField(dropdownSelect, inputValue)
+                    }
                 }, false)
 
                 input.addEventListener("keydown", (e) => {
                     // ENTER key
                     if (e.keyCode == 13) {
-                        // for MutationObserver use
                         if (e.target.value !== "") {
-                            resetInputEvent()
-                            dropdownSelect.setAttribute("dds-selected", 0)
-                            dropdownSelect.setAttribute("dds-updated", "")
+                            if (input.dataset.numberAndPercentage) {
+                                if (e.target.value.match(expression)) {
+                                    resetInputEvent()
+                                    // for MutationObserver use
+                                    input.setAttribute("numberandpercentage-updated", "")
+                                } else {
+                                    e.target.value = 0
+                                }
+                            } else {
+                                resetInputEvent()
+                                // for MutationObserver use
+                                dropdownSelect.setAttribute("dds-selected", 0)
+                                dropdownSelect.setAttribute("dds-updated", "")
+                            }
                         }
                     }
                 }, false)
@@ -72,7 +95,9 @@ export default {
                 }, 500)
             }, false)
 
-            this.eventListItems(dropdownSelect)
+            if (!dropdownSelect.dataset.customType) {
+                this.eventListItems(dropdownSelect)
+            }
         })
     },
 
@@ -186,5 +211,10 @@ export default {
             insert2elem.textContent = value
         })
         .catch((err) => console.warn(err))
+    },
+
+    setValues(dropdownSelect, value1 = 0, value2 = 0) {
+        dropdownSelect.querySelector(".ds-value1").textContent = value1
+        dropdownSelect.querySelector(".ds-value2").textContent = value2
     },
 }

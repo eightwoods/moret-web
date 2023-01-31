@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/moreticon.1b0b21da.svg"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
-  <script type="module" crossorigin src="/assets/main.78a41c4d.js"></script>
-  <link rel="stylesheet" href="/assets/main.ccf4f836.css">
-</head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-title" content="Moret">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.8a495b38.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.1f216034.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.390cfa1a.png">
+    <link rel="manifest" href="/assets/site.6f0f2424.webmanifest">
+    <link rel="mask-icon" href="/assets/safari-pinned-tab.4ce97554.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+      <script type="module" crossorigin src="/assets/main.27b7157e.js"></script>
+      <link rel="stylesheet" href="/assets/main.9a247e4e.css">
+    </head>
 <body>
 <header>
     <div class="head-wrapper">
         <div class="head-contents p-t-40 p-b-40">
             <div class="head-main">
-                <div class="logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
+                <div class="logo"><a href="/"><img src="/assets/moret_logo.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
                 <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/assets/btn_burgermenu.1006b152.svg" /></a></div>
             </div>
             <div class="head-nav menuPopup">
                 <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/assets/btn_close.be47e55d.svg" /></a></div>
-                <div class="nav-logo"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo"  width="118" /></a></div>
+                <div class="nav-logo"><a href="/"><img src="/assets/moret_logo.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
                 <div class="nav-contents">
                     <ul class="items size-sm">
-                        <li><a href="trader.html" class="btn-border btn-border-active">Trader</a></li>
+                        <li><a href="perpetual.html" class="btn-border">Perpetual</a></li>
+                        <li><a href="trader.html" class="btn-border">Trader</a></li>
                         <li><a href="liquidity-provider.html" class="btn-border">Liquidity provider</a></li>
                         <li><a href="saver.html" class="btn-border">Saver</a></li>
                     </ul>
@@ -31,7 +39,6 @@
         </div>
     </div>
 </header>
-
 <main role="main" class="trading">
     <section class="trader">
         <div class="sidenav animate-panel"></div>
@@ -57,6 +64,10 @@
                                     <div class="ts-item">Call</div>
                                     <div class="ts-item">Put</div>
                                 </div>
+                                <div class="opt-spread custom-checkbox in-border white-50">
+                                    <div class="cc-item"></div>
+                                    <div class="cc-item">Spread</div>
+                                </div>
                             </div>
                             <div class="opt-token toggle-switches ts-bg-grey ts-active1" data-toggle-total="3">
                                 <div class="ts-item">USDC</div>
@@ -77,7 +88,7 @@
                                 </div>
                             </div>
                             <div class="opt-amount in-border white-50">
-                                Amount:&nbsp;<input type="number" name="opt-amount" value="0.01" onKeyPress="if(this.value.length==6) return false;" />
+                                Amount:&nbsp;<input type="number" name="opt-amount" value="1" onKeyPress="if(this.value.length==6) return false;" />
                             </div>
                             <div class="opt-expiry dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
@@ -86,6 +97,19 @@
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
+                                        <ul class="info-list"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="opt-spread dropdown-select hide" data-custom-type="true">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Spread: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <input type="text" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" data-number-and-percentage="true" />
+                                        <div class="input-message">Hit ENTER key when done!</div>
                                         <ul class="info-list"></ul>
                                     </div>
                                 </div>
@@ -137,22 +161,22 @@
 <footer>
     <div class="row-top">
         <div class="contents">
-            <div class="logo m-b-52"><a href="/"><img src="/assets/moreticon.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
+            <div class="logo m-b-52"><a href="/"><img src="/assets/moret_logo.1b0b21da.svg" alt="Moret logo" height="25"/></a></div>
             <div class="links m-b-52">
                 <div class="link">
                     <div class="title size-md m-b-24">The company</div>
                     <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">About</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Works</a></li>
+                        <li class="m-b-12"><a href="https://meridian-moretti.gitbook.io/moret" class="white-50">About</a></li>
+                        <li class="m-b-12"><a href="https://meridian-moretti.gitbook.io/moret/developments/audit" class="white-50">Audit</a></li>
                         <li class="m-b-12"><a href="#" class="white-50">For the record</a></li>
                     </ul>
                 </div>
                 <div class="link">
                     <div class="title size-md m-b-24">Communities</div>
                     <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">For performers</a></li>
+                        <li class="m-b-12"><a href="https://discord.gg/k4pFEg7KNr" class="white-50">Traders</a></li>
+                        <li class="m-b-12"><a href="https://discord.gg/ZhdCf8TSMm" class="white-50">Liquidity Providers</a></li>
                         <li class="m-b-12"><a href="#" class="white-50">Developers</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
                         <li class="m-b-12"><a href="#" class="white-50">Investors</a></li>
                     </ul>
                 </div>
@@ -184,10 +208,5 @@
         </div>
         <div class="copyright size-sm p-b-32">&copy; 2022 Moret. All rights reserved.</div>
     </div>
-</footer>
-
-<script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-<!-- <script src="https://github.com/ChainSafe/web3.js/blob/v1.2.11/dist/web3.min.js"></script> -->
-<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
-</body>
+</footer></body>
 </html>

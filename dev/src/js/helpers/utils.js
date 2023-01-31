@@ -43,6 +43,26 @@ export const getMobileOS = () => {
     return "os-other"
 }
 
+export const getBrowser = () => {
+    const ua = navigator.userAgent
+    let browserName
+    
+    if (ua.match(/chrome|chromium|crios/i)) {
+        browserName = "chrome"
+    } else if (ua.match(/firefox|fxios/i)) {
+        browserName = "firefox"
+    } else if (ua.match(/safari/i)) {
+        browserName = "safari"
+    } else if (ua.match(/opr\//i)) {
+        browserName = "opera"
+    } else if (ua.match(/edg/i)) {
+        browserName = "edge"
+    } else {
+        browserName = "unknown"
+    }
+    return browserName
+}
+
 export const mobileDevices = () => document.body.classList.contains("mobile") || document.body.classList.contains("tablet")
 
 export const elMouseOver = () => (mobileDevices() ? "touchstart" : "mouseenter")
@@ -77,6 +97,7 @@ export const createList = (arrValues, containerClass) => {
         const listItem = document.createElement("li")
 
         listItem.textContent = txtVal.name
+
         if (txtVal.class) {
             listItem.className = txtVal.class
         } else {
@@ -89,14 +110,23 @@ export const createList = (arrValues, containerClass) => {
             listItem.appendChild(span)
         }
 
+        if (txtVal.html) {
+            listItem.innerHTML = txtVal.html
+        }
+
         listContainer.appendChild(listItem)
     }
 
     return listContainer
 }
 
-export const showOverlayPopup = (title = null, data = null, btnClose = false) => {
+export const showOverlayPopup = (title = null, data = null, btnClose = true, delCurr = false) => {
     noScroll()
+
+    // delete current popup
+    if (delCurr && document.querySelector(".overlay-popup")) {
+        document.querySelector(".overlay-popup").remove()
+    }
 
     // set elements
     const opPanel = document.createElement("div")
@@ -116,9 +146,9 @@ export const showOverlayPopup = (title = null, data = null, btnClose = false) =>
 
     const opClose = document.createElement("div")
     if (btnClose) {
-        opClose.className = "op-close hide"
-    } else {
         opClose.className = "op-close cursor"
+    } else {
+        opClose.className = "op-close hide"
     }
     opBox.appendChild(opClose)
     opClose.addEventListener("click", () => {
@@ -180,4 +210,17 @@ export const closeOverlayPopup = () => {
             overlayPopup.remove()
         }})
     }
+}
+
+export const onFailDataLoad = () => {
+    console.log("Fail! refresh data load...")
+    const secsDuration = 5
+    const arrNames = [
+        {name: "", class: "warning-icon"},
+        {name: `Fail data load, page will refresh in ${secsDuration} secs.`, class: "warning-text"},
+        {html: "<a href='#' class='btn btn-pink' onClick='location.reload(); return false;'>Refresh Now!</a>", class: "align-center p-t-20"}
+    ]
+    showOverlayPopup(null, createList(arrNames, "faildataload"), false, true)
+
+    setTimeout(() => location.reload(), secsDuration * 1000)
 }

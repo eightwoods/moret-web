@@ -18,7 +18,10 @@
     "big.js": "^6.2.0",
     "greeks": "^1.0.0",
     "gsap": "^3.10.4",
+    "lightweight-charts": "^3.8.0",
     "swiper": "^8.2.4",
-    "web3": "^1.7.4"
+    "vite-plugin-handlebars": "^1.6.0",
+    "web3": "^1.7.4",
+    "yahoo-finance": "^0.3.7"
   }
 }

@@ -1,34 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="moreticon.svg"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moret | Trader</title>
+    {{> head }}
 </head>
 <body>
-<header>
-    <div class="head-wrapper">
-        <div class="head-contents p-t-40 p-b-40">
-            <div class="head-main">
-                <div class="logo"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" height="25"/></a></div>
-                <div class="menu"><a href="#" class="js-preventDefault js-menuOpen"><img src="/src/img/btn_burgermenu.svg" /></a></div>
-            </div>
-            <div class="head-nav menuPopup">
-                <div class="nav-x"><a href="#" class="btn-x js-preventDefault js-menuClose"><img src="/src/img/btn_close.svg" /></a></div>
-                <div class="nav-logo"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo"  width="118" /></a></div>
-                <div class="nav-contents">
-                    <ul class="items size-sm">
-                        <li><a href="trader.html" class="btn-border btn-border-active">Trader</a></li>
-                        <li><a href="liquidity-provider.html" class="btn-border">Liquidity provider</a></li>
-                        <li><a href="saver.html" class="btn-border">Saver</a></li>
-                    </ul>
-                    <div class="items-right connection-button"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
+{{> header-trading }}
 
 <main role="main" class="trading">
     <section class="trader">
@@ -55,6 +32,10 @@
                                     <div class="ts-item">Call</div>
                                     <div class="ts-item">Put</div>
                                 </div>
+                                <div class="opt-spread custom-checkbox in-border white-50">
+                                    <div class="cc-item"></div>
+                                    <div class="cc-item">Spread</div>
+                                </div>
                             </div>
                             <div class="opt-token toggle-switches ts-bg-grey ts-active1" data-toggle-total="3">
                                 <div class="ts-item">USDC</div>
@@ -75,7 +56,7 @@
                                 </div>
                             </div>
                             <div class="opt-amount in-border white-50">
-                                Amount:&nbsp;<input type="number" name="opt-amount" value="0.01" onKeyPress="if(this.value.length==6) return false;" />
+                                Amount:&nbsp;<input type="number" name="opt-amount" value="1" onKeyPress="if(this.value.length==6) return false;" />
                             </div>
                             <div class="opt-expiry dropdown-select">
                                 <div class="ds-btn in-border white-50" tabindex="0">
@@ -84,6 +65,19 @@
                                 </div>
                                 <div class="ds-info-container">
                                     <div class="ds-info">
+                                        <ul class="info-list"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="opt-spread dropdown-select hide" data-custom-type="true">
+                                <div class="ds-btn in-border white-50" tabindex="0">
+                                    <div class="ds-col word-nowrap">Spread: <span class="white-100 ds-value1">0</span></div>
+                                    <div class="ds-col word-nowrap ds-value2">0%</div>
+                                </div>
+                                <div class="ds-info-container">
+                                    <div class="ds-info">
+                                        <input type="text" name="info-amount" placeholder="Enter value" onKeyPress="if(this.value.length==10) return false;" data-number-and-percentage="true" />
+                                        <div class="input-message">Hit ENTER key when done!</div>
                                         <ul class="info-list"></ul>
                                     </div>
                                 </div>
@@ -132,60 +126,6 @@
     </section>
 </main>
 
-<footer>
-    <div class="row-top">
-        <div class="contents">
-            <div class="logo m-b-52"><a href="/"><img src="/src/img/moreticon.svg" alt="Moret logo" height="25"/></a></div>
-            <div class="links m-b-52">
-                <div class="link">
-                    <div class="title size-md m-b-24">The company</div>
-                    <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">About</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Works</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">For the record</a></li>
-                    </ul>
-                </div>
-                <div class="link">
-                    <div class="title size-md m-b-24">Communities</div>
-                    <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">For performers</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Developers</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Investors</a></li>
-                    </ul>
-                </div>
-                <div class="link">
-                    <div class="title size-md m-b-24">Useful links</div>
-                    <ul>
-                        <li class="m-b-12"><a href="#" class="white-50">Help</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Start trading</a></li>
-                        <li class="m-b-12"><a href="#" class="white-50">Advertising</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="social">
-            <a href="https://discord.gg/Vy2K5mAKVF" class="btn-social btn-social-circle"><img src="/src/img/social_discord.svg" alt="Discord icon" /></a>
-            <a href="https://twitter.com/moret_io" class="btn-social btn-social-circle"><img src="/src/img/social_twitter.svg" alt="Twitter icon" /></a>
-            <a href="https://t.me/moret_options" class="btn-social btn-social-circle"><img src="/src/img/social_telegram.svg" alt="Telegram icon" /></a>
-        </div>
-    </div>
-    <div class="row-bottom">
-        <div class="legals p-b-32">
-            <ul>
-                <li><a href="#" class="white-50 size-sm">Legal (legal information)</a></li>
-                <li><a href="#" class="white-50 size-sm">Privacy center</a></li>
-                <li><a href="#" class="white-50 size-sm">Privacy policy</a></li>
-                <li><a href="#" class="white-50 size-sm">Cookie settings</a></li>
-                <li><a href="#" class="white-50 size-sm">About ads</a></li>
-            </ul>
-        </div>
-        <div class="copyright size-sm p-b-32">&copy; 2022 Moret. All rights reserved.</div>
-    </div>
-</footer>
-<script type="module" src="/main.js"></script>
-<script async src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-<!-- <script src="https://github.com/ChainSafe/web3.js/blob/v1.2.11/dist/web3.min.js"></script> -->
-<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+{{> footer }}
 </body>
 </html>

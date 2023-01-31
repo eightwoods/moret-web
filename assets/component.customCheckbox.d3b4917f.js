@@ -1,0 +1,1 @@
+var c={globals:{elem:document.querySelectorAll(".custom-checkbox")},init(){this.globals.elem.forEach(e=>{e.addEventListener("click",()=>{const s="cc-checked";e.classList.contains(s)?e.classList.remove(s):e.classList.add(s),e.setAttribute("customcheckbox-clicked","")},!1)})}};export{c as default};

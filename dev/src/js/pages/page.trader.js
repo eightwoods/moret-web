@@ -1,5 +1,7 @@
-import { tokenName, tokenPrice } from "../helpers/constant" 
+import Big from "big.js"
+import { tokenName, tokenPrice, tokenAddress } from "../helpers/constant" 
 import { getLoader, createList, showOverlayPopup } from "../helpers/utils"
+import { getPrice } from "../helpers/web3"
 import { getStrikes, calcIV, getVolTokenName, calcOptionPrice, getCapital, approveOptionSpending, executeOptionTrade, getActiveTransactions } from "../helpers/web3"
 import componentDropdownSelect from "../components/component.dropdownSelect"
 import componentPercentageBar from "../components/component.percentageBar"
@@ -41,6 +43,7 @@ export default {
                             document.querySelector(".opt-strike").removeAttribute("dds-selected")
                             this.optStrike(true)
                             this.optExpiry()
+                            this.optSpread(0, 5)
                             
                             this.optPrice()
                             this.liquidityPool()
@@ -100,6 +103,41 @@ export default {
             expiryObserver.disconnect()
         })
         expiryObserver.observe(document.querySelector(".opt-expiry .ds-value1"), {childList: true})
+
+        // observe option Spread checkbox
+        const optSpreadCheckOpt = {attributes: true, attributeFilter: ["customcheckbox-clicked"]}
+        const optSpreadCheckObserver = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.attributeName === "customcheckbox-clicked") {
+                    const optSpreadDropdownSelect = document.querySelector(".opt-spread.dropdown-select")
+                    if (mutation.target.classList.contains("cc-checked")) {
+                        optSpreadDropdownSelect.classList.remove("hide")
+                        this.optPrice()
+                    } else {
+                        optSpreadDropdownSelect.classList.add("hide")
+                    }
+                }
+            }
+        })
+        optSpreadCheckObserver.observe(document.querySelector(".opt-spread.custom-checkbox"), optSpreadCheckOpt)
+
+        // observe option Spread dropdown input
+        const optSpreadInputOpt = {attributes: true, attributeFilter: ["numberandpercentage-updated"]}
+        const optSpreadInputObserver = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.attributeName === "numberandpercentage-updated") {
+                    const optSpreadInputVal = document.querySelector(".opt-spread.dropdown-select input").value
+                    if (optSpreadInputVal.includes("%")) {
+                        this.optSpread(0, optSpreadInputVal.replace("%", ""))
+                    } else {
+                        this.optSpread(optSpreadInputVal)
+                    }
+                    console.log(optSpreadInputVal)
+                    this.optPrice()
+                }
+            }
+        })
+        optSpreadInputObserver.observe(document.querySelector(".opt-spread.dropdown-select input"), optSpreadInputOpt)
     },
 
     optTokenName() {
@@ -132,34 +170,64 @@ export default {
         componentDropdownSelect.createListItems(document.querySelector(".opt-expiry"), calcIV())
     },
 
+    async optSpread(value1 = 0, value2 = 0) {
+        // console.log("optSpread()")
+        try {
+            const currPrice = await getPrice(tokenAddress())
+            let spreadVal1 = value1
+            let spreadVal2 = value2
+            
+            if (value1 > 0) {
+                spreadVal2 = Big(spreadVal1).div(currPrice.replace("$", "")).times(100).round(2).toNumber()
+            } else {
+                spreadVal1 = Big(currPrice.replace("$", "")).times(spreadVal2).div(100).round(2).toNumber()
+            }
+            componentDropdownSelect.setValues(document.querySelector(".opt-spread.dropdown-select"), spreadVal1, `${spreadVal2}%`)
+
+        } catch (error) {
+            console.error(error)
+        }
+    },
+
     optPrice(inOverlayPopup = false) {
-        // console.log("optPrice()")
+        console.log("optPrice()")
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve({
                     "strike": this.getStrikeValue(), 
                     "amount": this.getAmountValue(), 
-                    "expiry": this.getExpiryValue()
+                    "expiry": this.getExpiryValue(),
+                    "spread": this.getSpreadValue()
                 })
             }, this.globals.init ? 2000 : 500)
         })
         .then(async(res) => { 
             // console.log(res)
-            // console.log(tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
-            const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.isCall(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
+            // console.log(tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
+            const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.spread, res.amount, res.expiry)
             
             if (inOverlayPopup) {
                 // console.log("refresh inOverlayPopup")
+                if (document.querySelector(".opt-spread.custom-checkbox.cc-checked")) {
+                    document.querySelector(".overlay-popup .to-spread span").textContent = res.spread
+                }
+
                 document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
                 document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
                 document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
+                document.querySelector(".overlay-popup .to-fee span").textContent = optPrice.collateral
             } else {
                 document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
                 document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
                 document.querySelector(".opt-price .info-collateral").textContent = optPrice.collateral
             }
         })
-        .catch((err) => console.warn(err))
+        .catch((err) => {
+            console.warn(err)
+            document.querySelector(".opt-price .info-volatility").textContent = '-'
+            document.querySelector(".opt-price .info-premium").textContent = '-'
+            document.querySelector(".opt-price .info-collateral").textContent = '-'
+        })
     },
 
     async liquidityPool() {
@@ -186,7 +254,9 @@ export default {
                             <th class="sortable sort-text">B/S</th>
                             <th class="sortable sort-text">Expiry</th>
                             <th class="sortable">Strike</th>
+                            <th class="sortable">Spread</th>
                             <th class="sortable">Amount</th>
+                            <th class="sortable">P&L</th>
                             <th class="sortable">Delta</th>
                             <th class="sortable">Gamma</th>
                             <th class="sortable">Vega</th>
@@ -207,7 +277,9 @@ export default {
                     data.BS,
                     data.Expiry,
                     data.Strike,
+                    data.Spread,
                     data.Amount,
+                    data.PnL,
                     data.Delta,
                     data.Gamma,
                     data.Vega,
@@ -230,11 +302,13 @@ export default {
                     class: "to-buy"
                 }, 
                 {name: "Strike:", span: "-", class: "to-strike"},
+                {name: "Spread:", span: "n.a.", class: "to-spread"},
                 {name: "Expiry:", span: "-", class: "to-expiry"},
                 {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
                 {name: "Implied Volatility:", span: "-", class: "to-volatility"},
                 {name: "Premium:", span: "-", class: "to-premium"},
-                {name: "Collateral:", span: "-", class: "to-collateral"}
+                {name: "Collateral:", span: "-", class: "to-collateral"},
+                { name: "Fee:", span: "-", class: "to-fee" }
             ]
 
             showOverlayPopup("Trade overview", createList(arrNames, "tradeoverview"))
@@ -242,6 +316,7 @@ export default {
             // insert data values in overlay popup
             componentDropdownSelect.insertValues(document.querySelector(".opt-strike"), document.querySelector(".overlay-popup .to-strike span"))
             componentDropdownSelect.insertValues(document.querySelector(".opt-expiry"), document.querySelector(".overlay-popup .to-expiry span"), true)
+
             this.optPrice(true)
             
             setTimeout(() => this.executeTrade(), 500)
@@ -285,7 +360,7 @@ export default {
             // approve option spending
             this.executeTradeTimer(awaitApprovalTimer)
             const warningMessage = "Warning: Transaction has failed."
-            const approveAllowance = await approveOptionSpending(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+            const approveAllowance = await approveOptionSpending(null, this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getSpreadValue(), this.getAmountValue(), this.getExpiryValue())
             if (approveAllowance === "failure") {
                 this.executeTradeFailure(container, warningMessage)
             } else {
@@ -297,7 +372,7 @@ export default {
                 // execute option trade
                 setTimeout(async() => {
                     this.executeTradeTimer(awaitTradeTimer)
-                    const approveTrade = await executeOptionTrade(null, this.isBuy(), this.isCall(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getAmountValue(), this.getExpiryValue())
+                    const approveTrade = await executeOptionTrade(null, this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), this.getStrikeValue(), this.getSpreadValue(), this.getAmountValue(), this.getExpiryValue())
                     if (approveTrade === "") {
                         this.executeTradeFailure(container, warningMessage)
                     } else {
@@ -368,8 +443,30 @@ export default {
         return componentToggleSwitches.getActiveItem(document.querySelector(".opt-buysell")).toLowerCase() === "buy"
     },
 
-    isCall() {
+    isCall(){
         return componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
+    },
+
+    getOptionType() {
+        const isCall = componentToggleSwitches.getActiveItem(document.querySelector(".opt-callput")).toLowerCase() === "call"
+        const isSpreadCheckboxChecked = document.querySelector(".opt-spread.custom-checkbox.cc-checked")
+        
+        if (isCall){
+            if (isSpreadCheckboxChecked === null) {
+                return 0
+            }
+            else{
+                return 2
+            }
+        }
+        else{
+            if (isSpreadCheckboxChecked === null) {
+                return 1
+            }
+            else {
+                return 3
+            }
+        }
     },
 
     getPaymentMethodValue() {
@@ -386,5 +483,16 @@ export default {
 
     getExpiryValue() {
         return document.querySelector(".opt-expiry .ds-value1").textContent.replace("Days", "").replace("Day", "").trim()
-    }
+    },
+
+    getSpreadValue() {
+        const isSpreadCheckboxChecked = document.querySelector(".opt-spread.custom-checkbox.cc-checked")
+
+        if (isSpreadCheckboxChecked === null) {
+            return 0
+        }
+        else{
+            return document.querySelector(".opt-spread .ds-value1").textContent.trim()
+        }   
+    },
 }
