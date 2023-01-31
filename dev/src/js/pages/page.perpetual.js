@@ -15,10 +15,7 @@ export default {
 
     init() {
         // static methods call
-        this.globals.btnRefresh.addEventListener("click", () => {
-            this.setPerpetuals()
-            this.globals.btnRefresh.classList.add("hide")
-        })
+        this.globals.btnRefresh.addEventListener("click", () => this.setPerpetuals())
 
         // for metamask app trigger method
         setTimeout(() => {
@@ -56,6 +53,7 @@ export default {
 
     setPerpetuals() {
         this.globals.appInit = false
+        this.globals.btnRefresh.classList.add("hide")
 
         console.log("setPerpetuals()")
         const perpetualList = document.querySelector(".perpetual-list")
@@ -167,12 +165,14 @@ export default {
                     console.log("Success!!! Row:", succCounter, address)
                     
                 } catch {
-
-                    console.log("Failed!!! Row:", (succCounter + 1), address)
-                    const failTimeout = setTimeout(() => {
-                        setData()
-                        clearTimeout(failTimeout)
-                    }, 2500)
+                    
+                    if (getAllPerpetuals().length > parseInt(perpetualTable.querySelectorAll("tbody tr").length)) {
+                        console.log("Failed!!! Row:", (succCounter + 1), address)
+                        const failTimeout = setTimeout(() => {
+                            setData()
+                            clearTimeout(failTimeout)
+                        }, 2500)
+                    }
                 } 
             }
 

@@ -15,10 +15,7 @@ export default {
 
     init() {
         // static methods call
-        this.globals.btnRefresh.addEventListener("click", () => {
-            this.setSavers()
-            this.globals.btnRefresh.classList.add("hide")
-        })
+        this.globals.btnRefresh.addEventListener("click", () => this.setSavers())
 
         // for metamask app trigger method
         setTimeout(() => {
@@ -56,6 +53,7 @@ export default {
 
     setSavers() {
         this.globals.appInit = false
+        this.globals.btnRefresh.classList.add("hide")
 
         console.log("setSavers()")
         const saverList = document.querySelector(".saver-list")
@@ -174,11 +172,13 @@ export default {
 
                 } catch {
 
-                    console.log("Failed!!! Row:", (succCounter + 1), address)
-                    const failTimeout = setTimeout(() => {
-                        setData()
-                        clearTimeout(failTimeout)
-                    }, 2500)
+                    if (getAllSavers().length > parseInt(saverTable.querySelectorAll("tbody tr").length)) {
+                        console.log("Failed!!! Row:", (succCounter + 1), address)
+                        const failTimeout = setTimeout(() => {
+                            setData()
+                            clearTimeout(failTimeout)
+                        }, 2500)
+                    }
                 } 
             }
 

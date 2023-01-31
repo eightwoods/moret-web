@@ -12,10 +12,7 @@ export default {
 
     init() {
         // static methods call
-        this.globals.btnRefresh.addEventListener("click", () => {
-            this.setLiquidity()
-            this.globals.btnRefresh.classList.add("hide")
-        })
+        this.globals.btnRefresh.addEventListener("click", () => this.setLiquidity())
 
         // for metamask app trigger method
         setTimeout(() => {
@@ -55,6 +52,7 @@ export default {
 
     setLiquidity() {
         this.globals.appInit = false
+        this.globals.btnRefresh.classList.add("hide")
 
         console.log("setLiquidity()")
         const poolList = document.querySelector(".pool-list")
@@ -211,12 +209,14 @@ export default {
                     console.log("Success!!! Row:", succCounter, address)
 
                 } catch {
-
-                    console.log("Failed!!! Row:", (succCounter + 1), address)
-                    const failTimeout = setTimeout(() => {
-                        setData(index)
-                        clearTimeout(failTimeout)
-                    }, 2500)
+                    
+                    if (getAllPools().length > parseInt(poolsTable.querySelectorAll("tbody tr").length)) {
+                        console.log("Failed!!! Row:", (succCounter + 1), address)
+                        const failTimeout = setTimeout(() => {
+                            setData()
+                            clearTimeout(failTimeout)
+                        }, 2500)
+                    }
                 } 
             }
 
