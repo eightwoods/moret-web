@@ -1142,6 +1142,7 @@ export const getSaverInfo = async (saverAddress, infoType) => {
             const vintage = await saverContract.methods.vintage().call()
             return {
                 "StartLevel": parseFloat(web3.utils.fromWei(vintage.startLevel)),
+                "StartNAV": parseFloat(web3.utils.fromWei(vintage.startNAV)),
                 "Upside": parseFloat(web3.utils.fromWei(vintage.callStrike)),
                 "Downside": parseFloat(web3.utils.fromWei(vintage.putStrike)),
                 "Protection": parseFloat(web3.utils.fromWei(vintage.putStrike)) - parseFloat(web3.utils.fromWei(vintage.putSpread))

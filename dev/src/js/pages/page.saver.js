@@ -97,13 +97,14 @@ export default {
                     const aum = await getSaverInfo(address, "aum")
                     const supply = await getSaverInfo(address, "supply")
                     const balance = await getSaverInfo(address, "balance")
+                    console.log(aum, supply, balance)
                     const params = await getSaverInfo(address, "params")
                     const vintage = await getSaverInfo(address, "vintage")
                     const opentime = await getSaverInfo(address, "opentime")
-
+                    
                     const unitAssetVal = supply > 0 ? aum / supply : 1.0
                     const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
-                    const profitLossVal = vintage.StartLevel > 0? (aum / vintage.StartLevel - 1) : 0.0
+                    const profitLossVal = vintage.startNAV > 0 ? (aum / vintage.startNAV - 1) : 0.0
                     const nextVintageStartVal = new Date((opentime + Number(params.tradeWindow)) * 1000).toLocaleString()
                     const vintageOpenVal = opentime < Math.floor(Date.now() / 1000)
 
@@ -115,7 +116,7 @@ export default {
                         "MarketCap": `$${aum.toFixed(2)}`,
                         "UnitAsset": unitAssetVal,
                         "Holding": holdingVal,
-                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
+                        "Yield": (((Number(params.callMoney) / Number(params.multiplier)) - 1) * 365 / 12 / (Number(params.putTenor) / 86400)), //.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }),
                         "ProfitLoss": profitLossVal,
                         "NextVintageStart": nextVintageStartVal,
                         "ThisVintageEnd": new Date(opentime * 1000).toLocaleString(),
@@ -303,7 +304,7 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value size-sm"><span>${data.Yield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> Yield</div>
+                                    <div class="pbm-value size-sm"><span>${data.Yield.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0 }) }</span> MPY</div>
                                 </div>
                             </div>
                         </div>
@@ -344,7 +345,7 @@ export default {
             elem: saverInfo.querySelector(".chart-comparison"),
             endpoint1: `https://api.binance.com/api/v3/klines?symbol=${tokenName()}${tokenPrice()}T&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
             endpoint2: `https://api.binance.com/api/v3/klines?symbol=TKOUSDT&interval=12h&limit=${Math.ceil(data.Tenor / 3600)}`,
-            linedata: [data.StartLevel, data.Upside, data.Downside, data.Downside - data.Protection],
+            linedata: [data.StartLevel, data.Upside, data.Protection],
         })
 
         // console.log(data.ProfitLoss, data.Yield)
