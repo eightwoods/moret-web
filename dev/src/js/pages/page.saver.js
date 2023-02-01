@@ -97,7 +97,6 @@ export default {
                     const aum = await getSaverInfo(address, "aum")
                     const supply = await getSaverInfo(address, "supply")
                     const balance = await getSaverInfo(address, "balance")
-                    console.log(aum, supply, balance)
                     const params = await getSaverInfo(address, "params")
                     const vintage = await getSaverInfo(address, "vintage")
                     const opentime = await getSaverInfo(address, "opentime")
