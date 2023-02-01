@@ -154,13 +154,15 @@ export default {
                         getLoader(hotTubs, false)
 
                         // swiper arrows
-                        const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
-                        swiperBtnNext.classList.remove("hide-important")
-                        swiperBtnNext.addEventListener("click", () => swiper.slideNext())
+                        if (getAllPools().length > 1) {
+                            const swiperBtnNext = poolsSwiper.querySelector(".swiper-button-next")
+                            swiperBtnNext.classList.remove("hide-important")
+                            swiperBtnNext.addEventListener("click", () => swiper.slideNext())
 
-                        const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
-                        swiperBtnPrev.classList.remove("hide-important")
-                        swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
+                            const swiperBtnPrev = poolsSwiper.querySelector(".swiper-button-prev")
+                            swiperBtnPrev.classList.remove("hide-important")
+                            swiperBtnPrev.addEventListener("click", () => swiper.slidePrev())
+                        }
 
                         // reset init
                         succInit = false
