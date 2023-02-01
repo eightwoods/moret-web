@@ -108,7 +108,7 @@ export default {
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
-                        "Description": `${params[2]} ${symbol}<br>Leverage achieved by buying ${(Number(params[3]) / 86400).toFixed(0)}-day options`,
+                        "Description": `${params[2]} ${symbol}<br>Leverage by ${(Number(params[3]) / 86400).toFixed(0)}-day ${params[4]} options`,
                         "MarketCap": `$${aum.toFixed(0)}`,
                         "UnitAsset": unitAssetVal,
                         "Holding": holdingVal,
