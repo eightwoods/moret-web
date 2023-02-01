@@ -1349,7 +1349,7 @@ export const getPerpetualInfo = async (perpAddress, infoType) => {
             return parseFloat(web3.utils.fromWei(lev))
         case 'params':
             let params = await perpContract.methods.params().call()
-            return [parseFloat(web3.utils.fromWei(params.leverage)), parseFloat(web3.utils.fromWei(params.criticalLev)), params.long ? 'Long' : 'Short', params.tenor]
+            return [parseFloat(web3.utils.fromWei(params.leverage)), parseFloat(web3.utils.fromWei(params.criticalLev)), params.long ? 'Long' : 'Short', params.tenor, params.long ? 'call' : 'put']
         case 'strike':
             let strike = await perpContract.methods.optionStrike().call()
             return parseFloat(web3.utils.fromWei(strike))
