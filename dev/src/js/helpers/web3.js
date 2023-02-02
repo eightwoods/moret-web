@@ -1349,7 +1349,7 @@ export const getPerpetualInfo = async (perpAddress, infoType) => {
             return parseFloat(web3.utils.fromWei(lev))
         case 'params':
             let params = await perpContract.methods.params().call()
-            return [parseFloat(web3.utils.fromWei(params.leverage)), parseFloat(web3.utils.fromWei(params.criticalLev)), params.long ? 'Long' : 'Short', params.tenor, params.long ? 'call' : 'put']
+            return [parseFloat(web3.utils.fromWei(params.leverage)), parseFloat(web3.utils.fromWei(params.lower)), parseFloat(web3.utils.fromWei(params.upper)), params.long ? 'Long' : 'Short', params.tenor, params.long ? 'call' : 'put']
         case 'strike':
             let strike = await perpContract.methods.optionStrike().call()
             return parseFloat(web3.utils.fromWei(strike))
@@ -1368,7 +1368,7 @@ export const approvePerp = async (type, perpAddress, funding, units) => {
         var account = web3.utils.toChecksumAddress(accountsOnEnable[0])
 
         const perpContract = await getContract(web3, getJsonUrl("Perp.json"), perpAddress)
-        // console.log(type, perpAddress, funding, units)
+        console.log(type, perpAddress, funding, units)
         if (type === "save") {
             const fundingAddress = await perpContract.methods.funding().call()
             // console.log('top up', perpAddress, fundingAddress, account, funding, units)
@@ -1377,7 +1377,7 @@ export const approvePerp = async (type, perpAddress, funding, units) => {
 
             return 'success'
         } else if (type === "withdraw") {
-            // console.log('take out', perpAddress, paymentToken, account, funding, units)
+            // console.log('take out', perpAddress, account, funding, units)
             await approveMaxAmount(perpContract, account, perpAddress, units)
 
             return 'success'
