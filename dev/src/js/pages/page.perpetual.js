@@ -108,16 +108,16 @@ export default {
                         "Name": name,
                         "Symbol": symbol,
                         "Address": address,
-                        "Description": `${params[2]} ${symbol}<br>Leverage by ${(Number(params[3]) / 86400).toFixed(0)}-day ${params[4]} options`,
+                        "Description": `${params[3]} ${symbol}<br>Leverage by ${(Number(params[4]) / 86400).toFixed(0)}-day ${params[5]} options`,
                         "MarketCap": `$${aum.toFixed(0)}`,
                         "UnitAsset": unitAssetVal,
                         "Holding": holdingVal,
                         "Leverage": leverage,
                         "SetLevel": params[0],
-                        "CriticalLevel": params[1],
-                        "Target": Math.ceil((params[0] + params[1])/2),
-                        "Direction": params[2],
-                        "Tenor": params[3],
+                        "LowerLevel": params[1],
+                        "UpperLevel": params[2],
+                        "Direction": params[3],
+                        "Tenor": params[4],
                         "Strike": strike,
                         "Notional": notional
                     })
@@ -128,7 +128,7 @@ export default {
                     // populate perpetuals table row
                     componentTables.setDynamic(perpetualTable, [
                         name,
-                        params[2],
+                        params[3],
                         leverage.toFixed(1) + 'x',
                         holdingVal,
                         `$${unitAssetVal.toFixed(2)}`
@@ -298,8 +298,8 @@ export default {
                                 </div>
                                 <div class="pbm-bottom">
                                     <div class="pbm-progressbar"></div>
-                                    <div class="pbm-value-static size-sm"><span>${data.CriticalLevel.toFixed(1)}</span>x</div>
-                                    <div class="pbm-value size-sm"><span>${data.SetLevel.toFixed(1)}</span>x</div>
+                                    <div class="pbm-value-static size-sm"><span>${data.LowerLevel.toFixed(1)}</span>x</div>
+                                    <div class="pbm-value size-sm"><span>${data.UpperLevel.toFixed(1)}</span>x</div>
                                 </div>
                             </div>
                         </div>
@@ -344,7 +344,7 @@ export default {
         })
 
         // console.log(data.ProfitLoss, data.Yield)
-        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), (data.Leverage - data.CriticalLevel) / (data.SetLevel - data.CriticalLevel) * 100, 100)
+        compPercentageBarMulti.progressBar(perpetualInfo.querySelector(".percentage-bar-multi"), (data.Leverage - data.LowerLevel) / (data.UpperLevel - data.LowerLevel) * 100, 100)
         
         // click events
         perpetualInfo.querySelector(".js-save").addEventListener("click", (e) => {
@@ -440,7 +440,7 @@ export default {
                 // execute option trade
                 setTimeout(async () => {
                     this.executeTradeTimer(awaitTradeTimer, type==="propose"? 300: 120)
-                    console.log('prior to trade', type, perpetualAddress, funding, units)
+                    // console.log('prior to trade', type, perpetualAddress, funding, units)
                     const approveTrade = await tradePerp(type, perpetualAddress, funding)
                     console.log('trade finished', approveTrade)
                     if (approveTrade === "") {
