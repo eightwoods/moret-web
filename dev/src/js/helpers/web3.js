@@ -1356,6 +1356,19 @@ export const getPerpetualInfo = async (perpAddress, infoType) => {
         case 'notional':
             let notional = await perpContract.methods.notional().call()
             return parseFloat(web3.utils.fromWei(notional))
+        case 'theta':
+            let optionId = await perpContract.methods.optionId().call()
+            const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+            let option = await vaultContract.methods.getOption(optionId).call()
+            const oracle = await getPriceOracle(objTokenAddr)
+            var spot = await oracle.methods.queryPrice().call();
+            var spotPrice = parseFloat(web3.utils.fromWei(spot));
+            let secondsToExpiry = Math.floor(option.maturity - Math.round((new Date()).getTime() / 1000));
+            let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
+            let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
+            let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
+            console.log(spotPrice, parseFloat(web3.utils.fromWei(option.strike)), timeToExpiry, annualVol, 0, 'call') * parseFloat(web3.utils.fromWei(option.amount))
+            return getTheta(spotPrice, parseFloat(web3.utils.fromWei(option.strike)), timeToExpiry, annualVol, 0, 'call') * parseFloat(web3.utils.fromWei(option.amount))
         default:
             return ''
     }
