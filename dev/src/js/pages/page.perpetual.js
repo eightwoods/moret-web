@@ -100,6 +100,7 @@ export default {
                     const strike = await getPerpetualInfo(address, "strike")
                     const notional = await getPerpetualInfo(address, "notional")
                     const params = await getPerpetualInfo(address, "params")
+                    // const theta = await getPerpetualInfo(address, "theta")
 
                     const unitAssetVal = supply > 0 ? aum / supply : 1.0
                     const holdingVal = `$${(supply > 0 ? aum / supply * balance : 0.0).toFixed(2)}`
@@ -119,7 +120,7 @@ export default {
                         "Direction": params[3],
                         "Tenor": params[4],
                         "Strike": strike,
-                        "Notional": notional
+                        "Notional": notional,
                     })
 
                     // successful data
@@ -131,7 +132,8 @@ export default {
                         params[3],
                         leverage.toFixed(1) + 'x',
                         holdingVal,
-                        `$${unitAssetVal.toFixed(2)}`
+                        `$${unitAssetVal.toFixed(2)}`,
+                        // (theta / aum).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })
                     ], false, getAllPerpetuals().length, succCounter)
 
                     // initial success

@@ -224,9 +224,9 @@ export default {
         })
         .catch((err) => {
             console.warn(err)
-            document.querySelector(".opt-price .info-volatility").textContent = '-'
-            document.querySelector(".opt-price .info-premium").textContent = '-'
-            document.querySelector(".opt-price .info-collateral").textContent = '-'
+            document.querySelector(".opt-price .info-volatility").textContent = 'No Quote'
+            document.querySelector(".opt-price .info-premium").textContent = 'No Quote'
+            document.querySelector(".opt-price .info-collateral").textContent = 'No Quote'
         })
     },
 
