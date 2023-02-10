@@ -150,7 +150,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
     for(let i =0;i< allPools.length; i++){
         const poolAddress = allPools[i]
         const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(spread.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), type, isBuy ? 0 : 1)
-        console.log(quotedPrice)
+        // console.log(quotedPrice)
 
         if(quotedPrice[0] != -1){
             const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
@@ -172,7 +172,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
                 bestPool = poolAddress
             }
 
-            // console.log(poolAddress, isBuy, type, paymentMethod, strike, spread, premium, collateral, price, vol)
+            // console.log(bestPool, premium, collateral, price, vol, fee)
         }
     }
 
@@ -201,8 +201,8 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
         return {
             "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
             "premium": `${Big(premium).round(5)} ${premiumToken}`,
-            "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
-            "fee": `${Big(collateral).round(2)} ${collateralToken}`,
+            "collateral": `${Big(collateral).round(5)} ${collateralToken}`,
+            "fee": `${Big(fee).round(5)} ${collateralToken}`,
             "error": ''
         }
     } else {
@@ -230,7 +230,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, spread, amount, type, isBuy) => {
     try{
-        console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
+        // console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
         const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, spread, amount, type, isBuy).call()
         // console.log(poolAddress, quotedPrice)
         return quotedPrice
