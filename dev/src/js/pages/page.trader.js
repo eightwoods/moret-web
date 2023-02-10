@@ -205,6 +205,7 @@ export default {
             // console.log(res)
             // console.log(tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
             const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.spread, res.amount, res.expiry)
+            // console.log(optPrice)
             
             if (inOverlayPopup) {
                 // console.log("refresh inOverlayPopup")
@@ -215,7 +216,7 @@ export default {
                 document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
                 document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
                 document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
-                document.querySelector(".overlay-popup .to-fee span").textContent = optPrice.collateral
+                document.querySelector(".overlay-popup .to-fee span").textContent = optPrice.fee
             } else {
                 document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
                 document.querySelector(".opt-price .info-premium").textContent = optPrice.premium

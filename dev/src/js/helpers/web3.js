@@ -150,7 +150,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
     for(let i =0;i< allPools.length; i++){
         const poolAddress = allPools[i]
         const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(spread.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), type, isBuy ? 0 : 1)
-        console.log(quotedPrice)
+        // console.log(quotedPrice)
 
         if(quotedPrice[0] != -1){
             const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
@@ -172,7 +172,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
                 bestPool = poolAddress
             }
 
-            // console.log(poolAddress, isBuy, type, paymentMethod, strike, spread, premium, collateral, price, vol)
+            // console.log(bestPool, premium, collateral, price, vol, fee)
         }
     }
 
@@ -201,8 +201,8 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
         return {
             "volatility": vol.toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0}),
             "premium": `${Big(premium).round(5)} ${premiumToken}`,
-            "collateral": `${Big(collateral).round(2)} ${collateralToken}`,
-            "fee": `${Big(collateral).round(2)} ${collateralToken}`,
+            "collateral": `${Big(collateral).round(5)} ${collateralToken}`,
+            "fee": `${Big(fee).round(5)} ${collateralToken}`,
             "error": ''
         }
     } else {
@@ -230,7 +230,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
 // paymentMethod is 0 if USDC is selected, 1 if ETH/BTC, 2 if volatility token (such as ETH1)
 export const getOptionPriceOfPool = async (exchangeContract, poolAddress, tenor, strike, spread, amount, type, isBuy) => {
     try{
-        console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
+        // console.log(poolAddress, tenor, strike, spread, amount, type, isBuy)
         const quotedPrice = await exchangeContract.methods.queryOption(poolAddress, tenor, strike, spread, amount, type, isBuy).call()
         // console.log(poolAddress, quotedPrice)
         return quotedPrice
@@ -466,12 +466,16 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
             let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
-            let optionStrike = parseFloat(web3.utils.fromWei(option.strike));
+            let optionStartSpot = parseFloat(web3.utils.fromWei(option.spot))
+            let optionStrike = parseFloat(web3.utils.fromWei(option.strike))
             let optionSpread = parseFloat(web3.utils.fromWei(option.spread))
             let optionAmount = parseFloat(web3.utils.fromWei(option.amount))
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
+            let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
             let optionType = "call";
             switch(option.poType){
+                case 0:
+                    optionCollateral = optionCollateral * spotPrice / optionStartSpot
                 case 1:
                     optionType = "put";
                     break;
@@ -492,7 +496,8 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
                 let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
-                let optionPnL = (parseFloat(web3.utils.fromWei(optionValue._toHolder)) - optionPremium) * optionMultiplier
+                
+                let optionPnL = parseFloat(web3.utils.fromWei(optionValue._toHolder)) - (optionPremium * optionMultiplier + optionCollateral)
             
                 optionTable.push({
                     "Type": option.poType == 0 ? "Call" : "Put",
