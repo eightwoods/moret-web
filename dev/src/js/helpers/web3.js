@@ -466,12 +466,16 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
             let timeToExpiry = secondsToExpiry / (3600 * 24 * 365);
-            let optionStrike = parseFloat(web3.utils.fromWei(option.strike));
+            let optionStartSpot = parseFloat(web3.utils.fromWei(option.spot))
+            let optionStrike = parseFloat(web3.utils.fromWei(option.strike))
             let optionSpread = parseFloat(web3.utils.fromWei(option.spread))
             let optionAmount = parseFloat(web3.utils.fromWei(option.amount))
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
+            let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
             let optionType = "call";
             switch(option.poType){
+                case 0:
+                    optionCollateral = optionCollateral * spotPrice / optionStartSpot
                 case 1:
                     optionType = "put";
                     break;
@@ -492,7 +496,8 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
                 optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
                 let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
-                let optionPnL = (parseFloat(web3.utils.fromWei(optionValue._toHolder)) - optionPremium) * optionMultiplier
+                
+                let optionPnL = parseFloat(web3.utils.fromWei(optionValue._toHolder)) - (optionPremium * optionMultiplier + optionCollateral)
             
                 optionTable.push({
                     "Type": option.poType == 0 ? "Call" : "Put",
