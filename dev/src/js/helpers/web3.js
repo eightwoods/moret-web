@@ -367,7 +367,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentM
             poolAddress, 
             tenor, 
             web3.utils.toWei(strike.toString()), 
-            0,
+            web3.utils.toWei(spread.toString()),
             web3.utils.toWei(amount.toString()), 
             type, 
             isBuy ? 0 : 1, 
@@ -377,7 +377,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentM
         var nonceNew = await web3.eth.getTransactionCount(account)
 
         let approveTradeLink = null
-        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(spread.toString()), web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
