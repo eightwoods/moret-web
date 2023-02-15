@@ -508,7 +508,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                     "BS": option.side == 0 ? "Buy" : "Sell",
                     "Expiry": new Date(option.maturity * 1000).toLocaleString(),
                     "Strike": optionStrike.toFixed(0),
-                    "Spread": optionSpread.toFixed(0),
+                    "Spread": [2, 3].includes(Number(option.poType))? optionSpread.toFixed(0): '-',
                     "Amount": optionAmount.toFixed(3),
                     "PnL": optionPnL.toFixed(3),
                     "Delta": optionDelta.toFixed(3),
