@@ -499,7 +499,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
-                optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType): 0)) //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
                 
                 let optionPnL = optionValue - (optionPremium * optionMultiplier + optionCollateral)
             
