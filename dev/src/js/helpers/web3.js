@@ -3,6 +3,7 @@ import Web3 from "web3"
 import { moretAddress, exchangeAddress, vaultAddress, marketMakerFactoryAddress, poolFactoryAddress, poolGovFactoryAddress, maxAmount, tokenAddress, stableCoinAddress, expirationDays, excludedPools, poolList, fixedIndexList, perpList } from "./constant"
 import { getJsonUrl } from "./utils"
 import { getDelta, getGamma, getVega, getTheta } from "greeks"
+import { blackScholes } from "black-scholes"
 
 export const web3 = new Web3(window.ethereum)
 
@@ -367,7 +368,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentM
             poolAddress, 
             tenor, 
             web3.utils.toWei(strike.toString()), 
-            0,
+            web3.utils.toWei(spread.toString()),
             web3.utils.toWei(amount.toString()), 
             type, 
             isBuy ? 0 : 1, 
@@ -377,7 +378,7 @@ export const executeOptionTrade = async (tokenAddr = null, isBuy, type, paymentM
         var nonceNew = await web3.eth.getTransactionCount(account)
 
         let approveTradeLink = null
-        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), 0, web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
+        await exchangeContract.methods.tradeOption(poolAddress, tenor, web3.utils.toWei(strike.toString()), web3.utils.toWei(spread.toString()), web3.utils.toWei(amount.toString()), type, isBuy ? 0 : 1, paymentMethod).send({ from: account, gas: gasEstimated, gasPrice: gasPriceCurrent, nonce: nonceNew }).on('transactionHash', (hash) => {
             // console.log(`https://polygonscan.com/tx/${hash}`)
             // return `https://polygonscan.com/tx/${hash}`
             approveTradeLink = `https://polygonscan.com/tx/${hash}`
@@ -469,6 +470,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let optionStartSpot = parseFloat(web3.utils.fromWei(option.spot))
             let optionStrike = parseFloat(web3.utils.fromWei(option.strike))
             let optionSpread = parseFloat(web3.utils.fromWei(option.spread))
+            let optionStrikeWithSpread = 0
             let optionAmount = parseFloat(web3.utils.fromWei(option.amount))
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
             let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
@@ -480,24 +482,26 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                     optionType = "put";
                     break;
                 case 2:
-                    optionType = "call spread";
+                    optionType = "call";
+                    optionStrikeWithSpread = optionStrike + optionSpread
                     break;
                 default:
-                    optionType = "put spread";
+                    optionType = "put";
+                    optionStrikeWithSpread = optionStrike - optionSpread
             }
             let optionMultiplier = option.side == 0 ? 1 : -1;
-            let optionDelta, optionGamma, optionVega, optionTheta;
+            let optionDelta, optionGamma, optionVega, optionTheta, optionValue;
             // if (secondsToExpiry > 0) {
             if(Number(option.status) == 1){
                 let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
                 let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
-                optionDelta = getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
-                optionGamma = getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
-                optionVega = getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) * optionMultiplier * optionAmount;
-                optionTheta = getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) * optionMultiplier * optionAmount;
-                let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                optionDelta = (getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? getDelta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
+                optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
+                optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
+                optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
+                optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType): 0)) //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
                 
-                let optionPnL = parseFloat(web3.utils.fromWei(optionValue._toHolder)) - (optionPremium * optionMultiplier + optionCollateral)
+                let optionPnL = optionValue - (optionPremium * optionMultiplier + optionCollateral)
             
                 optionTable.push({
                     "Type": option.poType == 0 ? "Call" : "Put",
