@@ -449,6 +449,7 @@ export const getPastTransactions = async (tokenAddr = null, blockRange = 9000, e
 export const getActiveTransactions = async (tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const vaultContract = await getContract(web3, getJsonUrl("OptionVault.json"), vaultAddress)
+    // const exchangeContract = await getCapital(web3, getJsonUrl("Exchange.json"), exchangeAddress)
 
     const oracle = await getPriceOracle(objTokenAddr)
     var spot = await oracle.methods.queryPrice().call();
@@ -475,31 +476,34 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
             let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
             let optionType = "call";
-            switch(option.poType){
+            switch(Number(option.poType)){
                 case 0:
                     optionCollateral = optionCollateral * spotPrice / optionStartSpot
+                    optionStrikeWithSpread = 0
                 case 1:
                     optionType = "put";
+                    optionStrikeWithSpread = 0
                     break;
                 case 2:
                     optionType = "call";
-                    optionStrikeWithSpread = optionStrike + optionSpread
+                    optionStrikeWithSpread = optionStrike + optionSpread;
                     break;
-                default:
+                case 3:
                     optionType = "put";
-                    optionStrikeWithSpread = optionStrike - optionSpread
+                    optionStrikeWithSpread = optionStrike - optionSpread;
+                    break;
             }
             let optionMultiplier = option.side == 0 ? 1 : -1;
-            let optionDelta, optionGamma, optionVega, optionTheta, optionValue;
+            let optionDelta, optionGamma, optionVega, optionTheta;
             // if (secondsToExpiry > 0) {
             if(Number(option.status) == 1){
                 let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
                 let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
-                optionDelta = (getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? getDelta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
-                optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
-                optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - (optionStrikeWithSpread > 0 ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
-                optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
-                optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - (optionStrikeWithSpread > 0 ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                optionDelta = (getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? getDelta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
+                optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
+                optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
+                optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
+                let optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
                 
                 let optionPnL = optionValue - (optionPremium * optionMultiplier + optionCollateral)
             
