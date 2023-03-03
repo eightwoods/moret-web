@@ -464,6 +464,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
 
     await Promise.all(allPools.map(async (poolAddress) => {
         const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
+        // const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
         await Promise.all(options.map(async (optionId) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
@@ -476,6 +477,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
             let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
             let optionType = "call";
+            // console.log(optionId, option.poType)
             switch(Number(option.poType)){
                 case 0:
                     optionCollateral = optionCollateral * spotPrice / optionStartSpot
@@ -503,13 +505,14 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
-                let optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount //await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                // let optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount 
+                let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
                 
-                let optionPnL = optionValue - (optionPremium * optionMultiplier + optionCollateral)
+                let optionPnL = web3.utils.fromWei(optionValue[0]) - (optionPremium * optionMultiplier + optionCollateral)
             
                 optionTable.push({
-                    "Type": option.poType == 0 ? "Call" : "Put",
-                    "BS": option.side == 0 ? "Buy" : "Sell",
+                    "Type": optionType == "call"? "Call": "Put",
+                    "BS": Number(option.side) == 0 ? "Buy" : "Sell",
                     "Expiry": new Date(option.maturity * 1000).toLocaleString(),
                     "Strike": optionStrike.toFixed(0),
                     "Spread": [2, 3].includes(Number(option.poType))? optionSpread.toFixed(0): '-',
