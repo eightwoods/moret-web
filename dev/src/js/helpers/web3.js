@@ -190,6 +190,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
     else if (paymentMethod == 1){
         premium = premium / price
         collateral = collateral / price
+        fee = fee / price
         premiumToken = collateralToken = token
     }
     else if (paymentMethod == 2){
