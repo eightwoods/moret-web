@@ -41,8 +41,9 @@ export const tokenPrice = () => JSON.parse(localStorage.getItem(tokenActive)).pr
 export const tokenAddress = () => JSON.parse(localStorage.getItem(tokenActive)).address
 
 export const tokens = [
-    {token: "ETH", price: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"},
-    {token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"}
+    { token: "ETH", price: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" },
+    { token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6" }
 ]
 
 export const stableCoinAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
+

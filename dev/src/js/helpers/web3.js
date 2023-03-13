@@ -506,10 +506,11 @@ export const getActiveTransactions = async (tokenAddr = null) => {
                 optionGamma = (getGamma(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getGamma(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionVega = (getVega(spotPrice, optionStrike, timeToExpiry, annualVol, 0) - ([2, 3].includes(Number(option.poType)) ? getVega(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0) : 0)) * optionMultiplier * optionAmount;
                 optionTheta = (getTheta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? getTheta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
-                // let optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount 
-                let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                let optionValue = (blackScholes(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? blackScholes(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount 
+                // let optionValue = await vaultContract.methods.calcOptionUnwindValue(optionId).call()
+                // console.log(optionId, web3.utils.fromWei(optionValue[0]), optionPremium, optionMultiplier, optionCollateral)
                 
-                let optionPnL = web3.utils.fromWei(optionValue[0]) - (optionPremium * optionMultiplier + optionCollateral)
+                let optionPnL = optionValue - (optionPremium * optionMultiplier + optionCollateral)
             
                 optionTable.push({
                     "Type": optionType == "call"? "Call": "Put",
