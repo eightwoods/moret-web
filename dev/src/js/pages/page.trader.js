@@ -213,19 +213,19 @@ export default {
                     document.querySelector(".overlay-popup .to-spread span").textContent = res.spread
                 }
 
-                // document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
+                document.querySelector(".overlay-popup .to-volatility span").textContent = optPrice.volatility
                 document.querySelector(".overlay-popup .to-premium span").textContent = optPrice.premium
                 document.querySelector(".overlay-popup .to-collateral span").textContent = optPrice.collateral
                 document.querySelector(".overlay-popup .to-fee span").textContent = optPrice.fee
             } else {
-                // document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
+                document.querySelector(".opt-price .info-volatility").textContent = optPrice.volatility
                 document.querySelector(".opt-price .info-premium").textContent = optPrice.premium
                 document.querySelector(".opt-price .info-collateral").textContent = optPrice.collateral
             }
         })
         .catch((err) => {
             console.warn(err)
-            // document.querySelector(".opt-price .info-volatility").textContent = 'No Quote'
+            document.querySelector(".opt-price .info-volatility").textContent = 'No Quote'
             document.querySelector(".opt-price .info-premium").textContent = 'No Quote'
             document.querySelector(".opt-price .info-collateral").textContent = 'No Quote'
         })
@@ -306,7 +306,7 @@ export default {
                 {name: "Spread:", span: "n.a.", class: "to-spread"},
                 {name: "Expiry:", span: "-", class: "to-expiry"},
                 {name: "Amount:", span: this.getAmountValue(), class: "to-amount"},
-                // {name: "Implied Volatility:", span: "-", class: "to-volatility"},
+                {name: "Implied Volatility:", span: "-", class: "to-volatility"},
                 {name: "Premium:", span: "-", class: "to-premium"},
                 {name: "Collateral:", span: "-", class: "to-collateral"},
                 { name: "Fee:", span: "-", class: "to-fee" }

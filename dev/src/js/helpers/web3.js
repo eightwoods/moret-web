@@ -464,8 +464,8 @@ export const getActiveTransactions = async (tokenAddr = null) => {
     var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
 
     await Promise.all(allPools.map(async (poolAddress) => {
-        // const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
-        const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
+        const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
+        // const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
         await Promise.all(options.map(async (optionId) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
