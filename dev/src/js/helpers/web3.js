@@ -40,7 +40,7 @@ export const getStrikes = async(tokenAddr = null, isCall) => {
     const tokenPrice = await oracle.methods.queryPrice().call()
     const tokenPriceNumber = Big(web3.utils.fromWei(tokenPrice)).toNumber()
     const strikeMoneyness = [0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.3, 1.4]
-    const minInterval = 50
+    const minInterval = tokenPriceNumber > 100 ? 50 : 0.01
     const strikeDict = []
 
     for (let strikeMoney of strikeMoneyness) {
@@ -80,12 +80,12 @@ export const calcMoneyness = async(tokenAddr = null, strike, isCall) => {
 export const calcIV = async(tokenAddr = null) => {
     const objTokenAddr = tokenAddr ? tokenAddr : tokenAddress()
     const oracle = await getPriceOracle(objTokenAddr)
-    // const expirationDays = [1, 7, 30]
+
     let expirations = []
 
     for (let expiry of expirationDays) {
-        const tenor = Big(expiry).times(86400).round().toNumber() // convert to seconds
-        const timeToExpiry = Big(expiry).div(365)
+        const tenor = Big(expiry * 24).times(3600).round().toNumber() // convert to seconds
+        const timeToExpiry = Big(expiry * 24).div(365*24)
         const volatility = await oracle.methods.queryVol(tenor).call()
         const calcValue = `${Big(web3.utils.fromWei(volatility))
                         .div(timeToExpiry.sqrt())
@@ -93,8 +93,10 @@ export const calcIV = async(tokenAddr = null) => {
                         .toLocaleString(undefined, {style: "percent", minimumFractionDigits: 0})} RV`
 
         const gtDay = Big(expiry).eq(1) ? "" : "s"
+        const gtPeriod = Big(expiry).lt(1) ? "Hour" : "Day"
+        const gtNumber = Big(expiry).lt(1) ? (expiry * 24) : expiry
 
-        expirations.push(`${expiry} Day${gtDay} | ${calcValue}`)
+        expirations.push(`${gtNumber} ${gtPeriod}${gtDay} | ${calcValue}`)
     }
     
     return expirations    
@@ -151,7 +153,7 @@ export const calcOptionPrice = async(tokenAddr = null, token = null, isBuy, type
     for(let i =0;i< allPools.length; i++){
         const poolAddress = allPools[i]
         const quotedPrice = await getOptionPriceOfPool(exchangeContract, poolAddress, tenor, web3.utils.toWei(strike.toString(), 'ether'), web3.utils.toWei(spread.toString(), 'ether'), web3.utils.toWei(amount.toString(), 'ether'), type, isBuy ? 0 : 1)
-        // console.log(quotedPrice)
+        console.log(quotedPrice)
 
         if(quotedPrice[0] != -1){
             const quotedPremium = parseFloat(web3.utils.fromWei(web3.utils.toBN(quotedPrice[0])))
@@ -464,8 +466,8 @@ export const getActiveTransactions = async (tokenAddr = null) => {
     var ts = Math.round((new Date()).getTime() / 1000); // current UNIX timestamp in seconds
 
     await Promise.all(allPools.map(async (poolAddress) => {
-        const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
-        // const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
+        // const options = await vaultContract.methods.getHolderOptions(poolAddress, account).call();
+        const options = await vaultContract.methods.getActiveOptions(poolAddress).call();
         await Promise.all(options.map(async (optionId) => {
             let option = await vaultContract.methods.getOption(optionId).call();
             let secondsToExpiry = Math.floor(option.maturity - ts);
@@ -478,7 +480,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             let optionPremium = parseFloat(web3.utils.fromWei(option.premium))
             let optionCollateral = parseFloat(web3.utils.fromWei(option.cost))
             let optionType = "call";
-            // console.log(optionId, option.poType)
+            console.log(optionId, option.poType)
             switch(Number(option.poType)){
                 case 0:
                     optionCollateral = optionCollateral * spotPrice / optionStartSpot
@@ -498,8 +500,7 @@ export const getActiveTransactions = async (tokenAddr = null) => {
             }
             let optionMultiplier = option.side == 0 ? 1 : -1;
             let optionDelta, optionGamma, optionVega, optionTheta;
-            // if (secondsToExpiry > 0) {
-            if(Number(option.status) == 1){
+            if (secondsToExpiry > 0 && Number(option.status) == 1){
                 let impliedVol = await oracle.methods.queryVol(secondsToExpiry).call();
                 let annualVol = parseFloat(web3.utils.fromWei(impliedVol)) / Math.sqrt(timeToExpiry);
                 optionDelta = (getDelta(spotPrice, optionStrike, timeToExpiry, annualVol, 0, optionType) - ([2, 3].includes(Number(option.poType)) ? getDelta(spotPrice, optionStrikeWithSpread, timeToExpiry, annualVol, 0, optionType) : 0)) * optionMultiplier * optionAmount;
@@ -732,10 +733,10 @@ export const getVolatilityHoldings = async (tokenAddr = null) =>{
 
     await Promise.all(expirationDays.map(async (expiry) => {
         try {
-            const tenor = Big(expiry).times(86400).round().toNumber() // convert to seconds
+            const tenor = Big(expiry * 24).times(3600).round().toNumber() // convert to seconds
             const timeToExpiry = expiry / 365 // converts to days
             const volatility = await oracle.methods.queryVol(tenor).call()
-            const gtDay = Big(expiry).eq(1) ? "" : "s"
+            const stTenor = Big(expiry).gt(1) ? `${expiry} Days` : (Big(expiry).eq(1) ? `${expiry} Day` : `${expiry*24} Hours`)
             const volTokenAddress = await moretContract.methods.getVolatilityToken(String(objTokenAddr), tenor).call()
             const volTokenContract = await getContract(web3, getJsonUrl("VolatilityToken.json"), volTokenAddress)
             const volTokenHolding = await volTokenContract.methods.balanceOf(account).call()
@@ -743,7 +744,7 @@ export const getVolatilityHoldings = async (tokenAddr = null) =>{
             const impliedVol = parseFloat(web3.utils.fromWei(volatility)) / Math.sqrt(timeToExpiry)
             volatilityTable.push({
                 "Token": volTokenName,
-                "Tenor": `${expiry} Day${gtDay}`,
+                "Tenor": stTenor,
                 "Amount": parseFloat(web3.utils.fromWei(volTokenHolding)).toFixed(4),
                 "ImpliedVolatility": impliedVol.toLocaleString(undefined, { style: "percent", minimumFractionDigits: 0}),
             })

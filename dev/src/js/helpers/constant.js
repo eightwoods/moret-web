@@ -1,30 +1,33 @@
-export const moretAddress = "0x38D0C2B061E129c861F66f07eB1Bea5E51f49e62"
+export const vaultAddress = "0x0E24D8ca6681A41E7d2A0e22482110387524bce0"
+export const exchangeAddress = "0x82bc2dA81EbEC639dfeE2D36AC8E82e6E46771d7"
+export const moretAddress = "0xC65DeC0720A7A37079b5e3d8EB650446082e2585"
 
-export const exchangeAddress = "0xD23F204bac794034f15f81543686363a2c488b43"
 
-export const vaultAddress = "0x797E9957Bf4473A0965eC6b11cAA50dd0cd898fc"
-
-export const marketMakerFactoryAddress = "0x062e4595C3D86AC689eEE4809f12c49EB2FF5878"
-
-export const poolFactoryAddress = "0xBD64Fff5387C5599816417D1ec33D7F5EedA458c"
-
-export const poolGovFactoryAddress = "0xc9f3E46C28673D19D8C82F9cA9E898AB856409cB"
+export const marketMakerFactoryAddress = "0xe1FEEaf27bd0d4Aa7BbD40612BaA2Ced41dd64d7"
+export const poolFactoryAddress = "0xFD9aef1Ff0229bE8e63824C78FE9fF52477076FC"
+export const poolGovFactoryAddress = "0xD158e551EbFd9A9CB9D997C529E7aD386a87b7B3"
 
 export const excludedPools = []
 
 export const poolList = {
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x82e1da20966676d731f4b1c9EafD307b3c4CD741"],
-    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x7263902e3c147b8F330C5b95F824134414389cfc"]
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xE15A3a1d19a48c0b1dB46C3F69b9A2F258B56963"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xDf316b15B0d54C3159Be342377E73C8120e23f92"],
+    "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7":
+        ["0xe39b7E5F04FCD8abde312E5B7a4c49Ed1C686A49"]
 }
 
 export const fixedIndexList = {
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x2ab0e320Fb9855750bE8409a29746647a20CEd7D"],
-    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xaB03F44f7bdb4f6839e75194791f7A4BD39921fD"]
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x58BDEA020b4b493a3C4c326D3DAe9b5201C8a70B"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x53C3d9Ff402dC7EbF82E20E488889220009347B8"],
+    "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7":
+        ["0x67312A6ac2fAe67eF5981D8e30aaA5E24E882610"]
 }
 
 export const perpList = {
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0x153B1e88950369623965edD02797B6d3880B5524", "0xDBA53eF38Fa377cf5C3156347fA3c4521c1F2114"],
-    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0x31dA4d4930054fE759e72E2D9eC616213Ddd7A2D", "0xC7d13827d114898E80a99e7f09eEAe74F0DECa13"]
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xbB11C73775F3cF1AF85a4dcA6b12FADF9bE72391","0xbABedEc578Ce3bC131cC63A2fA093b870437Cf8c"],
+    "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6": ["0xa722E3F7252EA5961194E5B0c8A2746e77D7ecDe","0xAA9228DFA5E34Da084B6D03df5c56A92566dbebd"],
+    "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7":
+        ["0x83A2D220132B7f7C07BC4Bd859CA753B04df48aC","0x84b308D1a137Bb01edF59fA0B07434f1Fe5680D4"]
 }
 
 
@@ -32,7 +35,7 @@ export const maxAmount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 export const tokenActive = "tokenActive"
 
-export const expirationDays = [1, 7, 30]
+export const expirationDays = [0.5, 1, 7, 30]
 
 export const tokenName = () => JSON.parse(localStorage.getItem(tokenActive)).token
 
@@ -42,7 +45,9 @@ export const tokenAddress = () => JSON.parse(localStorage.getItem(tokenActive)).
 
 export const tokens = [
     { token: "ETH", price: "USD", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" },
-    { token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6" }
+    { token: "BTC", price: "USD", address: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6" },
+    // { token: "MATIC", price: "USD", address: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270" },
+    { token: "GHST", price: "USD", address: "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7" }
 ]
 
 export const stableCoinAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
