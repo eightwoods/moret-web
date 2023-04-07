@@ -147,8 +147,8 @@ export default {
 
     async optToken() {
         // console.log("optToken()")
-        const optToken = await getVolTokenName(null, this.getExpiryValue())
-        document.querySelector(".opt-token .ts-token").textContent = optToken
+        // const optToken = await getVolTokenName(null, this.getExpiryValue())
+        // document.querySelector(".opt-token .ts-token").textContent = optToken
     },
 
     optStrike(resetInput = false) {
@@ -202,7 +202,7 @@ export default {
             }, this.globals.init ? 2000 : 500)
         })
         .then(async(res) => { 
-            // console.log(res)
+            console.log(res)
             // console.log(tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.amount, res.expiry)
             const optPrice = await calcOptionPrice(null, tokenName(), this.isBuy(), this.getOptionType(), this.getPaymentMethodValue(), res.strike, res.spread, res.amount, res.expiry)
             // console.log(optPrice)
@@ -483,7 +483,8 @@ export default {
     },
 
     getExpiryValue() {
-        return document.querySelector(".opt-expiry .ds-value1").textContent.replace("Days", "").replace("Day", "").trim()
+        const expiryText = document.querySelector(".opt-expiry .ds-value1").textContent
+        return expiryText.includes('Hours') ? (expiryText.replace("Hours", "").trim() / 24) : expiryText.replace("Days", "").replace("Day", "").trim()
     },
 
     getSpreadValue() {

@@ -3,7 +3,7 @@ import { tokenName, tokenPrice } from "../helpers/constant"
 export default {
     globals: {
         elem: document.querySelector(".tradingview-widget-wrapper"),
-        exchange: "BINANCE",
+        exchange: "KRAKEN",
     },
 
     init() {
